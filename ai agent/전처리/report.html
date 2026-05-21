@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OTT 이탈 예측 프로젝트 | 권동근</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', -apple-system, sans-serif;
+    background: #f8f9fa;
+    color: #1a1a2e;
+    line-height: 1.7;
+  }
+
+  /* 헤더 */
+  .hero {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: white;
+    padding: 72px 48px;
+    text-align: center;
+  }
+  .hero h1 { font-size: 2.6rem; font-weight: 700; margin-bottom: 12px; }
+  .hero p  { font-size: 1.1rem; opacity: 0.75; margin-bottom: 8px; }
+  .hero .badge {
+    display: inline-block; background: rgba(255,255,255,0.15);
+    border-radius: 20px; padding: 4px 16px; font-size: 0.85rem; margin: 4px;
+  }
+
+  /* 컨테이너 */
+  .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+
+  /* 섹션 */
+  section { padding: 56px 0; }
+  section + section { border-top: 1px solid #e9ecef; }
+
+  .section-label {
+    font-size: 0.75rem; font-weight: 700; letter-spacing: 2px;
+    color: #e94560; text-transform: uppercase; margin-bottom: 8px;
+  }
+  h2 {
+    font-size: 1.8rem; font-weight: 700; margin-bottom: 24px;
+    color: #1a1a2e;
+  }
+  h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 12px; color: #16213e; }
+
+  /* 카드 그리드 */
+  .grid { display: grid; gap: 20px; }
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+  .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+  .card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .card.accent { border-left: 4px solid #e94560; }
+  .card.blue   { border-left: 4px solid #0f3460; }
+  .card.green  { border-left: 4px solid #2ecc71; }
+  .card.orange { border-left: 4px solid #f39c12; }
+
+  /* 메트릭 */
+  .metric { text-align: center; }
+  .metric .num {
+    font-size: 2.4rem; font-weight: 800; color: #0f3460; display: block;
+  }
+  .metric .label { font-size: 0.85rem; color: #666; margin-top: 4px; }
+
+  /* 테이블 */
+  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  th {
+    background: #1a1a2e; color: white;
+    padding: 12px 16px; text-align: left; font-weight: 600;
+  }
+  td { padding: 11px 16px; border-bottom: 1px solid #f0f0f0; }
+  tr:hover td { background: #f8f9fa; }
+  .best td { background: #e8f8ee; font-weight: 600; }
+
+  /* 배지 */
+  .tag {
+    display: inline-block; padding: 3px 10px; border-radius: 12px;
+    font-size: 0.78rem; font-weight: 600; margin: 2px;
+  }
+  .tag-red    { background: #fdecea; color: #c0392b; }
+  .tag-green  { background: #e8f8ee; color: #27ae60; }
+  .tag-blue   { background: #e8f0fe; color: #1a73e8; }
+  .tag-orange { background: #fef3e2; color: #e67e22; }
+  .tag-gray   { background: #f0f0f0; color: #555; }
+
+  /* SHAP 바 */
+  .shap-bar { margin: 10px 0; }
+  .shap-bar .name { font-size: 0.85rem; margin-bottom: 4px; display: flex; justify-content: space-between; }
+  .shap-bar .bar-bg {
+    background: #f0f0f0; border-radius: 4px; height: 10px; overflow: hidden;
+  }
+  .shap-bar .bar-fill {
+    height: 100%; border-radius: 4px;
+    background: linear-gradient(90deg, #0f3460, #e94560);
+  }
+
+  /* 파이프라인 */
+  .pipeline {
+    display: flex; align-items: center; gap: 0; flex-wrap: wrap;
+    background: white; border-radius: 12px; overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .pipe-step {
+    flex: 1; padding: 20px 16px; text-align: center; position: relative;
+    min-width: 120px;
+  }
+  .pipe-step:not(:last-child)::after {
+    content: '▶';
+    position: absolute; right: -8px; top: 50%; transform: translateY(-50%);
+    color: #ccc; font-size: 1rem; z-index: 1;
+  }
+  .pipe-step .icon { font-size: 1.8rem; margin-bottom: 6px; }
+  .pipe-step .title { font-size: 0.82rem; font-weight: 600; color: #1a1a2e; }
+  .pipe-step .sub   { font-size: 0.72rem; color: #888; margin-top: 2px; }
+  .pipe-step:nth-child(1) { background: #f8f9fa; }
+  .pipe-step:nth-child(2) { background: #eef2ff; }
+  .pipe-step:nth-child(3) { background: #e8f8ee; }
+  .pipe-step:nth-child(4) { background: #fff8e1; }
+  .pipe-step:nth-child(5) { background: #fdecea; }
+  .pipe-step:nth-child(6) { background: #f3e8ff; }
+
+  /* 규칙 블록 */
+  .rule-box {
+    background: #f8f9fa; border-radius: 8px; padding: 16px 20px;
+    font-family: 'Courier New', monospace; font-size: 0.83rem;
+    border-left: 3px solid #0f3460; margin: 12px 0; line-height: 1.8;
+  }
+
+  /* 챗봇 미리보기 */
+  .chat-preview {
+    background: #1a1a2e; border-radius: 12px; padding: 24px;
+    color: white;
+  }
+  .chat-bubble {
+    border-radius: 16px; padding: 12px 16px; margin: 8px 0;
+    font-size: 0.9rem; max-width: 80%;
+  }
+  .chat-user {
+    background: #0f3460; margin-left: auto; border-bottom-right-radius: 4px;
+  }
+  .chat-ai {
+    background: #16213e; border-bottom-left-radius: 4px;
+  }
+  .chat-ai .ai-label { font-size: 0.72rem; color: #e94560; margin-bottom: 4px; }
+
+  /* 인사이트 */
+  .insight {
+    display: flex; gap: 16px; align-items: flex-start;
+    background: white; border-radius: 10px; padding: 16px 20px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.05); margin: 10px 0;
+  }
+  .insight .icon { font-size: 1.4rem; flex-shrink: 0; }
+  .insight .text { font-size: 0.88rem; color: #333; }
+  .insight .text strong { color: #1a1a2e; }
+
+  /* 푸터 */
+  footer {
+    background: #1a1a2e; color: rgba(255,255,255,0.5);
+    text-align: center; padding: 32px;
+    font-size: 0.85rem;
+  }
+
+  @media (max-width: 600px) {
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 1.8rem; }
+    .pipe-step:not(:last-child)::after { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 히어로 -->
+<div class="hero">
+  <h1>📺 OTT 이탈 예측 & 방지 AI</h1>
+  <p>구독자 시청 행동 기반 이탈 예측 모델 및 맞춤 개입 전략 시스템</p>
+  <p style="margin-top:20px">
+    <span class="badge">권동근</span>
+    <span class="badge">2026.05</span>
+    <span class="badge">XGBoost + XAI</span>
+    <span class="badge">Gemini AI</span>
+  </p>
+</div>
+
+<div class="container">
+
+  <!-- 1. 프로젝트 개요 -->
+  <section>
+    <div class="section-label">Overview</div>
+    <h2>프로젝트 개요</h2>
+
+    <div class="pipeline">
+      <div class="pipe-step">
+        <div class="icon">🗂️</div>
+        <div class="title">데이터 수집</div>
+        <div class="sub">Membership + View History</div>
+      </div>
+      <div class="pipe-step">
+        <div class="icon">🔧</div>
+        <div class="title">피처 엔지니어링</div>
+        <div class="sub">~85개 파생변수</div>
+      </div>
+      <div class="pipe-step">
+        <div class="icon">📉</div>
+        <div class="title">다중공선성 제거</div>
+        <div class="sub">VIF 기반 14개 제거</div>
+      </div>
+      <div class="pipe-step">
+        <div class="icon">🤖</div>
+        <div class="title">모델 학습</div>
+        <div class="sub">XGBoost AUC 0.8826</div>
+      </div>
+      <div class="pipe-step">
+        <div class="icon">🔍</div>
+        <div class="title">XAI 분석</div>
+        <div class="sub">SHAP · Surrogate · CF</div>
+      </div>
+      <div class="pipe-step">
+        <div class="icon">🛡️</div>
+        <div class="title">이탈 방지 AI</div>
+        <div class="sub">맞춤 개입 전략 생성</div>
+      </div>
+    </div>
+
+    <div class="grid grid-4" style="margin-top:24px">
+      <div class="card metric">
+        <span class="num">23,343</span>
+        <div class="label">분석 구독자 수</div>
+      </div>
+      <div class="card metric">
+        <span class="num">74개</span>
+        <div class="label">최종 사용 변수</div>
+      </div>
+      <div class="card metric">
+        <span class="num">28.4%</span>
+        <div class="label">전체 이탈률</div>
+      </div>
+      <div class="card metric">
+        <span class="num">21일</span>
+        <div class="label">관측창 (CUTOFF)</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. 데이터 & 피처 엔지니어링 -->
+  <section>
+    <div class="section-label">Feature Engineering</div>
+    <h2>데이터 및 피처 엔지니어링</h2>
+
+    <div class="grid grid-2">
+      <div>
+        <div class="card accent" style="margin-bottom:16px">
+          <h3>📋 데이터 구성</h3>
+          <p style="font-size:0.88rem;color:#555;margin-bottom:12px">
+            <strong>관측창</strong>: 가입일로부터 0~20일 고정<br>
+            <strong>타겟</strong>: is_repurchase (0=이탈, 1=재구매)<br>
+            <strong>누수 방지</strong>: 이탈 유발 변수 제거, end_date 사용 금지
+          </p>
+          <div>
+            <span class="tag tag-blue">Membership_v2.csv</span>
+            <span class="tag tag-blue">View_History.csv</span>
+          </div>
+        </div>
+
+        <div class="card blue">
+          <h3>⚠️ 중요 발견: 날짜 인코딩 버그</h3>
+          <p style="font-size:0.85rem;color:#555">
+            reg_date가 <code>DD-MM-YY</code> 비표준 형식으로 저장됨<br>
+            → <strong>decode_date()</strong> 함수로 전처리 후 정상화
+          </p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>🔧 생성된 파생변수 (85개)</h3>
+        <div style="margin-top:8px">
+          <div style="margin-bottom:10px">
+            <span class="tag tag-blue">날짜/가격 4개</span>
+            <span style="font-size:0.82rem;color:#666"> duration_days, price_per_day 등</span>
+          </div>
+          <div style="margin-bottom:10px">
+            <span class="tag tag-green">시청 기본 9개</span>
+            <span style="font-size:0.82rem;color:#666"> active_days, avg_session_time 등</span>
+          </div>
+          <div style="margin-bottom:10px">
+            <span class="tag tag-orange">주차별 시청 12개</span>
+            <span style="font-size:0.82rem;color:#666"> dur_w1/w2/w3, retention_ratio 등</span>
+          </div>
+          <div style="margin-bottom:10px">
+            <span class="tag tag-red">트렌드 7개</span>
+            <span style="font-size:0.82rem;color:#666"> w3_minus_w1, front_loaded_flag 등</span>
+          </div>
+          <div style="margin-bottom:10px">
+            <span class="tag tag-gray">장르 11개</span>
+            <span style="font-size:0.82rem;color:#666"> drama_ratio, horror_ratio 등</span>
+          </div>
+          <div>
+            <span class="tag tag-gray">시청 패턴 7개</span>
+            <span class="tag tag-gray">인구통계 5개</span>
+            <span class="tag tag-gray">몰아보기 3개</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:20px">
+      <h3>📉 다중공선성 분석 (VIF 기반 제거)</h3>
+      <div class="grid grid-3" style="margin-top:12px">
+        <div>
+          <div style="font-size:0.82rem;font-weight:700;color:#e94560;margin-bottom:8px">완전 중복 제거</div>
+          <div style="font-size:0.82rem;color:#555">
+            total_watch_time = dur_w1+w2+w3<br>
+            week1/2/3_active, week1/2/3_sessions
+          </div>
+        </div>
+        <div>
+          <div style="font-size:0.82rem;font-weight:700;color:#f39c12;margin-bottom:8px">파생 관계 중복</div>
+          <div style="font-size:0.82rem;color:#555">
+            w2_minus_w1, w3_minus_w2<br>
+            signup_to_first_watch 등
+          </div>
+        </div>
+        <div>
+          <div style="font-size:0.82rem;font-weight:700;color:#27ae60;margin-bottom:8px">결과</div>
+          <div style="font-size:0.82rem;color:#555">
+            100개 → <strong>74개</strong> (26개 제거)<br>
+            F1 오히려 +0.0025 향상
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. 모델 비교 -->
+  <section>
+    <div class="section-label">Model Comparison</div>
+    <h2>단계별 모델 성능 비교</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>모델</th>
+          <th>변수 수</th>
+          <th>AUC-ROC</th>
+          <th>F1</th>
+          <th>Precision</th>
+          <th>Recall</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Baseline <span class="tag tag-gray">구독 정보만</span></td>
+          <td>12개</td>
+          <td>0.5690</td>
+          <td>0.6491</td>
+          <td>0.7571</td>
+          <td>0.5681</td>
+        </tr>
+        <tr>
+          <td>전처리 완료 <span class="tag tag-blue">전체 파생변수</span></td>
+          <td>93개 <small style="color:#999">(전체 100개 중 ID·타겟 7개 제외)</small></td>
+          <td>0.8845</td>
+          <td>0.8557</td>
+          <td>0.8978</td>
+          <td>0.8174</td>
+        </tr>
+        <tr class="best">
+          <td>다중공선성 제거 <span class="tag tag-green">★ 채택</span></td>
+          <td>74개</td>
+          <td>0.8826</td>
+          <td><strong>0.8582</strong></td>
+          <td><strong>0.9015</strong></td>
+          <td><strong>0.8189</strong></td>
+        </tr>
+        <tr>
+          <td>SHAP 기반 추가 제거</td>
+          <td>61개</td>
+          <td>0.8837</td>
+          <td>0.8538</td>
+          <td>0.9012</td>
+          <td>0.8111</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="grid grid-2" style="margin-top:20px">
+      <div class="card green">
+        <h3>✅ 최종 모델 채택 이유</h3>
+        <p style="font-size:0.88rem;color:#555">
+          <strong>다중공선성 제거 모델</strong>이 F1(0.8582)과 Recall(0.8189) 모두 최고.<br><br>
+          이탈 예측에서 Recall이 중요한 이유: 실제 이탈자를 놓치면 비용이 크기 때문.
+          변수 74개로 해석 가능한 범위이며, VIF 제거가 노이즈를 줄여 오히려 성능 향상.
+        </p>
+      </div>
+      <div class="card accent">
+        <h3>🔑 핵심 발견</h3>
+        <p style="font-size:0.88rem;color:#555">
+          <strong>Baseline AUC 0.5690 → 전처리 후 0.8826</strong><br>
+          차이: +0.3136 — 시청 이력 파생변수가 예측력의 핵심.<br><br>
+          구독 정보(나이, 요금제)만으로는 이탈 예측이 불가능하며,
+          <strong>시청 행동 데이터</strong>가 절대적으로 필요함을 증명.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. XAI -->
+  <section>
+    <div class="section-label">XAI Analysis</div>
+    <h2>설명 가능한 AI 분석</h2>
+
+    <div class="grid grid-2">
+      <div>
+        <h3 style="margin-bottom:16px">📊 SHAP 변수 중요도 Top 10</h3>
+        <div class="shap-bar"><div class="name"><span>1. dur_w3 (3주차 시청 시간)</span><span>0.55</span></div><div class="bar-bg"><div class="bar-fill" style="width:100%"></div></div></div>
+        <div class="shap-bar"><div class="name"><span>2. retention_w3_ratio</span><span>0.37</span></div><div class="bar-bg"><div class="bar-fill" style="width:67%"></div></div></div>
+        <div class="shap-bar"><div class="name"><span>3. drama_ratio</span><span>0.31</span></div><div class="bar-bg"><div class="bar-fill" style="width:56%"></div></div></div>
+        <div class="shap-bar"><div class="name"><span>4. family_ratio</span><span>0.29</span></div><div class="bar-bg"><div class="bar-fill" style="width:53%"></div></div></div>
+        <div class="shap-bar"><div class="name"><span>5. romance_ratio</span><span>0.28</span></div><div class="bar-bg"><div class="bar-fill" style="width:51%"></div></div></div>
+        <div class="shap-bar"><div class="name"><span>6. retention_w2_ratio</span><span>0.27</span></div><div class="bar-bg"><div class="bar-fill" style="width:49%"></div></div></div>
+        <div class="shap-bar"><div class="name"><span>7. price_per_day</span><span>0.25</span></div><div class="bar-bg"><div class="bar-fill" style="width:45%"></div></div></div>
+        <div class="shap-bar"><div class="name"><span>8. thriller_ratio ⚠️이탈방향</span><span>0.23</span></div><div class="bar-bg"><div class="bar-fill" style="width:42%;background:linear-gradient(90deg,#e94560,#c0392b)"></div></div></div>
+        <div class="shap-bar"><div class="name"><span>9. week1_ratio</span><span>0.22</span></div><div class="bar-bg"><div class="bar-fill" style="width:40%"></div></div></div>
+        <div class="shap-bar"><div class="name"><span>10. action_sf_thriller_affinity</span><span>0.21</span></div><div class="bar-bg"><div class="bar-fill" style="width:38%"></div></div></div>
+      </div>
+
+      <div>
+        <h3 style="margin-bottom:16px">🌳 Surrogate Tree 핵심 규칙</h3>
+        <div class="rule-box">
+<span style="color:#e94560">【이탈 규칙】</span>
+IF  dur_w3 ≤ 3.5분          ← 3주차 거의 안 봄
+AND dur_w2 ≤ 62.5분         ← 2주차도 적음
+AND week1_ratio ≤ 0.355     ← 1주차 집중도 낮음
+AND price_per_day ≤ 13.89원 ← 저가 요금제
+→ <strong>이탈 확률 높음</strong>
+
+<span style="color:#27ae60">【재구매 규칙】</span>
+IF  dur_w3 > 3.5분           ← 3주차에도 시청 지속
+AND action_sf_thriller ≤ 0.5 ← 장르 편향 낮음
+AND horror_ratio ≤ 0.233     ← 공포 집중 아님
+→ <strong>재구매 확률 높음</strong>
+        </div>
+
+        <div style="margin-top:16px">
+          <h3 style="margin-bottom:12px">💡 주요 인사이트</h3>
+          <div class="insight">
+            <div class="icon">🎯</div>
+            <div class="text"><strong>3주차 시청이 핵심</strong> — 이탈/재구매 분기점은 "15~21일에도 계속 보는가"</div>
+          </div>
+          <div class="insight">
+            <div class="icon">🎬</div>
+            <div class="text"><strong>드라마·패밀리·로맨스 → 재구매</strong>, <strong>스릴러·공포 → 이탈</strong> (장르가 중요)</div>
+          </div>
+          <div class="insight">
+            <div class="icon">📅</div>
+            <div class="text"><strong>구독 기간보다 시청 패턴이 중요</strong> — duration_days는 SHAP 18위</div>
+          </div>
+          <div class="insight">
+            <div class="icon">📺</div>
+            <div class="text"><strong>몰아보기 후 이탈</strong> — max_day_share 높으면 이탈 방향 (binge & churn)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. 이탈 방지 AI -->
+  <section>
+    <div class="section-label">Churn Prevention AI</div>
+    <h2>이탈 방지 AI 시스템</h2>
+
+    <div class="grid grid-2">
+      <div>
+        <div class="card" style="margin-bottom:20px">
+          <h3>🏗️ 시스템 구조</h3>
+          <div style="font-size:0.88rem;color:#555;line-height:2.2">
+            <div>① 기존 23,343명에서 고위험 고객 자동 탐색</div>
+            <div>② XGBoost로 이탈 확률 계산</div>
+            <div>③ SHAP으로 이탈 원인 분석</div>
+            <div>④ Gemini AI가 맞춤 개입 전략 생성</div>
+            <div>⑤ 나이별 쿠폰·콘텐츠·문자 메시지 자동 작성</div>
+          </div>
+        </div>
+
+        <div class="card blue">
+          <h3>🛠️ 기술 스택</h3>
+          <div style="margin-top:8px">
+            <span class="tag tag-blue">Streamlit</span>
+            <span class="tag tag-blue">XGBoost</span>
+            <span class="tag tag-blue">SHAP</span>
+            <span class="tag tag-green">Google Gemini API</span>
+            <span class="tag tag-gray">Pandas</span>
+            <span class="tag tag-gray">Python</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-preview">
+        <div style="font-size:0.78rem;color:rgba(255,255,255,0.4);margin-bottom:16px">AI 생성 예시 — 35세 이탈 위험 고객</div>
+
+        <div class="chat-bubble chat-user">
+          고객 #4521 분석 (이탈확률 78%, 35세, 3주차 시청 0분)
+        </div>
+
+        <div class="chat-bubble chat-ai">
+          <div class="ai-label">🛡️ OTT 이탈 방지 AI</div>
+          <strong>이탈 위험 분석</strong><br>
+          3주차 시청이 전무하여 구독 후반부 참여도가 급격히 하락했습니다. 드라마 중심 시청자임에도 콘텐츠 소진 후 재방문 동기가 없는 상태입니다.<br><br>
+          <strong>맞춤 개입 전략 (30대)</strong><br>
+          🎟️ 다음 달 구독료 30% 할인 쿠폰<br>
+          🎬 미시청 드라마 신작 3편 큐레이션 발송<br>
+          💡 가족 요금제 전환 안내 (2인 공유)<br><br>
+          <strong>발송 문자</strong><br>
+          <em>"[OTT] 고객님이 못 보신 드라마 신작이 왔어요! 이번 달 30% 할인 쿠폰도 드립니다 👉 바로보기"</em>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-3" style="margin-top:20px">
+      <div class="card">
+        <div style="font-size:1.4rem;margin-bottom:8px">🔍</div>
+        <h3>탭 1: 고위험 고객 탐색</h3>
+        <p style="font-size:0.85rem;color:#555">전체 고객 이탈 확률 계산 → 슬라이더로 위험도 필터 → 고객 선택 후 개입 전략 생성</p>
+      </div>
+      <div class="card">
+        <div style="font-size:1.4rem;margin-bottom:8px">➕</div>
+        <h3>탭 2: 새 고객 분석</h3>
+        <p style="font-size:0.85rem;color:#555">나이·시청 시간·장르 직접 입력 → 즉시 이탈 확률 예측 → 맞춤 전략 생성</p>
+      </div>
+      <div class="card">
+        <div style="font-size:1.4rem;margin-bottom:8px">📱</div>
+        <h3>문자 메시지 자동 생성</h3>
+        <p style="font-size:0.85rem;color:#555">나이대별 특성 반영 (20대: 콘텐츠 다양성 / 40대: 가족 요금제) → 80자 이내 발송용 문자</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. 결론 -->
+  <section>
+    <div class="section-label">Conclusion</div>
+    <h2>결론 및 기여</h2>
+
+    <div class="grid grid-2">
+      <div class="card accent">
+        <h3>📌 핵심 결론</h3>
+        <ol style="font-size:0.88rem;color:#555;padding-left:20px;line-height:2">
+          <li>시청 이력 파생변수가 이탈 예측의 핵심 (AUC +0.31)</li>
+          <li><strong>3주차 시청</strong>이 재구매 여부를 결정하는 단일 최강 예측 변수</li>
+          <li>드라마·패밀리·로맨스 시청자 = 재구매, 스릴러·공포 집중 = 이탈</li>
+          <li>다중공선성 제거가 변수를 줄이면서 성능을 유지 (F1 +0.003)</li>
+          <li>AI 기반 개인화 개입으로 이탈 방지 액션 자동화 가능</li>
+        </ol>
+      </div>
+      <div class="card blue">
+        <h3>🚀 비즈니스 활용 방안</h3>
+        <ol style="font-size:0.88rem;color:#555;padding-left:20px;line-height:2">
+          <li>구독 15일차 고위험 고객 자동 알림 시스템</li>
+          <li>장르별 맞춤 콘텐츠 푸시 알림 (드라마 신작 등)</li>
+          <li>나이대별 차등 쿠폰 발급 자동화</li>
+          <li>이탈 방지 효과 A/B 테스트 설계</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  OTT 이탈 예측 프로젝트 | 권동근 | 2026.05<br>
+  XGBoost · SHAP · Google Gemini · Streamlit
+</footer>
+
+</body>
+</html>
