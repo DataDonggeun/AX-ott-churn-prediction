@@ -145,9 +145,10 @@
       <span class="badge badge-dify">Dify</span>
     </div>
     <p class="reason">
-      <b>이미 결정된 정책:</b> 사용 피처는 expanded 기준 <b>76개</b> (is_promotion 포함 스코프) 또는 <b>75개</b> (is_promotion 제외 스코프)로 확정.<br>
-      차이는 is_promotion 1개. conservative 22개 vs expanded 비교는 완료됨.<br>
-      새 데이터에서도 동일한 피처 목록 사용. Dify가 피처 리스트를 변수로 06단계에 전달.
+      <b>이미 결정된 정책:</b> conservative <b>22개</b> (weekly behavior 중심) / expanded <b>76개</b>(is_promotion 포함) 또는 <b>75개</b>(제외)로 확정.<br>
+      15단계 결제 디바이스 민감도 감사 결과: payment_is_mobile·pc·android·ios 4개 제거 → expanded 최종 수 (원래 ~80개에서 감소).<br>
+      conservative 22개 vs expanded 비교는 11x~12x에서 완료됨. 새 데이터에서도 동일 피처 목록 사용.<br>
+      Dify가 피처 리스트를 변수로 06단계에 전달.
     </p>
   </div>
 
@@ -364,20 +365,25 @@
   <div class="step fast-only">
     <div class="step-header">
       <span class="step-num">17</span>
-      <span class="step-title">세그먼트 분류 (Segmentation Design)</span>
+      <span class="step-title">세그먼트 분류 (Segmentation Design) — 17x 7-세그먼트</span>
     </div>
     <div class="flow">
       <span class="badge badge-fast">FastAPI</span>
       <span class="arrow">→</span>
-      <span class="badge badge-dify">Dify (IF/ELSE)</span>
+      <span class="badge badge-dify">Dify (IF/ELSE × 7)</span>
     </div>
     <p class="reason">
-      <b>FastAPI:</b> 3주 시청 패턴 기반으로 고객 분류.<br>
-      &nbsp;&nbsp;• watch_w3 &lt; watch_w1 × 0.5 → <b>감소형</b><br>
-      &nbsp;&nbsp;• is_cold_start_7d == 1 → <b>냉각형</b><br>
-      &nbsp;&nbsp;• 나머지 → <b>성장형</b><br>
-      <b>Gemini 불필요:</b> 숫자 규칙으로 딱 떨어지는 분류라 LLM 해석 없이 바로 결과 나옴.<br>
-      <b>Dify IF/ELSE:</b> 세그먼트에 따라 다른 메시지 생성 경로로 분기.
+      <b>FastAPI:</b> churn_risk 점수(15x payment-removed OOF) + day0~20 행동 규칙 기반으로 row당 1개 세그먼트 배정.<br>
+      &nbsp;&nbsp;• churn_risk 상위 20% &amp; (3주차 inactive·drop·retention decay) → <b>high_risk_week3_inactive_or_drop</b> (3,793행)<br>
+      &nbsp;&nbsp;• churn_risk 상위 20% &amp; (week1만 활동 or cold_start_fixed 약화) → <b>high_risk_only_w1_or_cold_start_weak</b> (265행)<br>
+      &nbsp;&nbsp;• churn_risk 상위 20% &amp; 저활동 → <b>high_risk_low_activity</b> (511행)<br>
+      &nbsp;&nbsp;• 중위험(20~50%) &amp; retention 감소 → <b>medium_risk_retention_decay</b> (3,195행)<br>
+      &nbsp;&nbsp;• 비고위험 &amp; 콘텐츠 proxy 뚜렷 → <b>content_preference_target_candidate</b> (6,195행)<br>
+      &nbsp;&nbsp;• churn_risk 하위 20% &amp; retention 안정 → <b>stable_retained_user</b> (1,224행)<br>
+      &nbsp;&nbsp;• 나머지 → <b>general_observation</b> (7,896행)<br>
+      <b>주의:</b> payment/auth/demographic proxy는 세그먼트 규칙으로 사용하지 않음. 행동 변수 우선.<br>
+      <b>Gemini 불필요:</b> 규칙 기반 배정이므로 LLM 해석 없이 바로 결과 나옴.<br>
+      <b>Dify IF/ELSE:</b> 7개 세그먼트에 따라 다른 메시지 생성 경로로 분기.
     </p>
   </div>
 
@@ -395,8 +401,11 @@
     <p class="reason">
       <b>FastAPI 불필요:</b> 01~17단계의 모든 결과가 이미 Dify에 쌓여 있음. 추가 계산 없음.<br>
       <b>Gemini:</b> 전체 파이프라인 결과를 종합해 보고서·캠페인 추천·개인화 메시지 생성.<br>
-      &nbsp;&nbsp;• 감소형 + 드라마 선호 → "요즘 바쁘셨죠? OO 드라마 기다리고 있어요"<br>
-      &nbsp;&nbsp;• 냉각형 + 100원딜 → "아직 시작 못 하셨나요? 지금 바로 추천 영화 보여드려요"<br>
+      &nbsp;&nbsp;• high_risk_week3_inactive_or_drop + 드라마 선호 → "요즘 바쁘셨죠? 3주차에 멈춘 OO 드라마 기다리고 있어요"<br>
+      &nbsp;&nbsp;• high_risk_only_w1_or_cold_start_weak + 100원딜 → "아직 시작 못 하셨나요? 딱 맞는 첫 영화를 골라드릴게요"<br>
+      &nbsp;&nbsp;• medium_risk_retention_decay + 선호 장르 → "요즘 시청이 줄었네요, OO 장르 신작이 기다려요"<br>
+      &nbsp;&nbsp;• content_preference_target_candidate + 콘텐츠 proxy → "OO 장르 팬이시군요! 이번 달 신작 추천"<br>
+      &nbsp;&nbsp;• stable_retained_user → 방어성 할인 대신 만족도 유지·업셀 메시지<br>
       <b>Dify:</b> 최종 보고서 + 메시지 출력. 파이프라인 완료.
     </p>
   </div>

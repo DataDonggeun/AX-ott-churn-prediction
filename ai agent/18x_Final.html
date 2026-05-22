@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>project_guide_v3 · 100원딜 OTT 이탈 분석 최종 설명서</title>
+<style>
+  :root {
+    --bg: #f7f8fa;
+    --card: #ffffff;
+    --ink: #1c2330;
+    --ink-soft: #4a5568;
+    --ink-faint: #71809a;
+    --line: #e3e7ee;
+    --line-soft: #eef1f6;
+    --accent: #2f5fb0;
+    --accent-soft: #eaf0fb;
+
+    --b-fact: #1f6feb;     /* 확인된 수치 */
+    --b-fact-bg: #e8f1ff;
+    --b-interp: #6b46c1;   /* 해석 */
+    --b-interp-bg: #f0ebfb;
+    --b-user: #1d9e75;     /* 사용자 확인 */
+    --b-user-bg: #e6f6ef;
+    --b-suggest: #c2761a;  /* 제안 / 후속 실험 */
+    --b-suggest-bg: #fcf2e3;
+    --b-caution: #c0392b;  /* 주의 / 금지 */
+    --b-caution-bg: #fcebe9;
+    --b-action: #2f5fb0;   /* action layer */
+    --b-action-bg: #eaf0fb;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", "Noto Sans KR", sans-serif;
+    line-height: 1.72;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
+
+  .page {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 0 20px 96px;
+  }
+
+  /* 헤더 */
+  header.top {
+    padding: 56px 0 28px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 32px;
+  }
+  header.top .kicker {
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    color: var(--ink-faint);
+    margin: 0 0 10px;
+  }
+  header.top h1 {
+    font-size: 28px;
+    line-height: 1.35;
+    margin: 0 0 14px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  header.top p.sub {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 15px;
+  }
+  header.top .meta {
+    margin-top: 18px;
+    font-size: 13px;
+    color: var(--ink-faint);
+  }
+
+  /* 핵심 5줄 요약 박스 */
+  .summary5 {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--accent);
+    border-radius: 10px;
+    padding: 24px 26px;
+    margin: 0 0 36px;
+  }
+  .summary5 h2 {
+    margin: 0 0 14px;
+    font-size: 15px;
+    color: var(--accent);
+    letter-spacing: 0.01em;
+  }
+  .summary5 ol {
+    margin: 0;
+    padding-left: 22px;
+  }
+  .summary5 ol li {
+    margin: 8px 0;
+    font-weight: 500;
+  }
+  .summary5 code {
+    font-size: 13px;
+    background: var(--line-soft);
+    padding: 1px 6px;
+    border-radius: 4px;
+    word-break: break-all;
+  }
+
+  /* 목차 */
+  nav.toc {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 0 0 40px;
+  }
+  nav.toc h2 {
+    margin: 0 0 12px;
+    font-size: 14px;
+    color: var(--ink-faint);
+    letter-spacing: 0.02em;
+  }
+  nav.toc .toc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 28px;
+  }
+  nav.toc a {
+    display: block;
+    color: var(--ink-soft);
+    text-decoration: none;
+    font-size: 14px;
+    padding: 3px 0;
+    border-bottom: 1px solid transparent;
+  }
+  nav.toc a:hover { color: var(--accent); }
+  nav.toc .toc-divider {
+    grid-column: 1 / -1;
+    margin: 8px 0 4px;
+    font-size: 12px;
+    color: var(--ink-faint);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* 섹션 카드 */
+  section.card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 30px 30px 32px;
+    margin: 0 0 22px;
+  }
+  section.card > h2 {
+    margin: 0 0 4px;
+    font-size: 21px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  section.card > .sec-no {
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    margin: 0 0 8px;
+  }
+  section.card h3 {
+    font-size: 16px;
+    margin: 26px 0 10px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  section.card h4 {
+    font-size: 14.5px;
+    margin: 18px 0 8px;
+    font-weight: 700;
+    color: var(--ink-soft);
+  }
+  section.card p { margin: 12px 0; }
+  section.card ul { margin: 12px 0; padding-left: 22px; }
+  section.card ul li { margin: 6px 0; }
+
+  .appendix-head {
+    margin: 48px 0 18px;
+    padding: 14px 18px;
+    background: #2c3650;
+    color: #fff;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+  }
+  .appendix-head span {
+    display: block;
+    font-size: 12px;
+    font-weight: 400;
+    color: #c3cbdc;
+    margin-top: 4px;
+  }
+
+  /* 근거 배지 */
+  .badge {
+    display: inline-block;
+    font-size: 11.5px;
+    font-weight: 600;
+    line-height: 1;
+    padding: 4px 9px;
+    border-radius: 999px;
+    margin: 0 4px 4px 0;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+  .b-fact { color: var(--b-fact); background: var(--b-fact-bg); }
+  .b-interp { color: var(--b-interp); background: var(--b-interp-bg); }
+  .b-user { color: var(--b-user); background: var(--b-user-bg); }
+  .b-suggest { color: var(--b-suggest); background: var(--b-suggest-bg); }
+  .b-caution { color: var(--b-caution); background: var(--b-caution-bg); }
+  .b-action { color: var(--b-action); background: var(--b-action-bg); }
+
+  .badge-row { margin: 0 0 14px; }
+
+  /* 표 깨짐 방지 */
+  .table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    margin: 16px 0;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+  .table-wrap table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+    font-size: 14px;
+  }
+  th, td {
+    white-space: normal;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+    text-align: left;
+    padding: 10px 13px;
+    border-bottom: 1px solid var(--line-soft);
+    vertical-align: top;
+  }
+  thead th {
+    background: #f1f4f9;
+    color: var(--ink-soft);
+    font-weight: 700;
+    font-size: 13px;
+    border-bottom: 1px solid var(--line);
+  }
+  td.num, th.num { text-align: right; white-space: nowrap; }
+  tbody tr:last-child td { border-bottom: none; }
+
+  /* 정보 박스 */
+  .box {
+    border-radius: 9px;
+    padding: 16px 18px;
+    margin: 16px 0;
+    font-size: 14.5px;
+  }
+  .box .box-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    margin: 0 0 6px;
+    text-transform: uppercase;
+  }
+  .box.info { background: var(--accent-soft); border: 1px solid #d3e0f5; }
+  .box.info .box-label { color: var(--accent); }
+  .box.caution { background: var(--b-caution-bg); border: 1px solid #f3cfca; }
+  .box.caution .box-label { color: var(--b-caution); }
+  .box.quote {
+    background: #fbfcfe;
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--accent);
+    font-size: 15px;
+    line-height: 1.75;
+  }
+  .box.quote .box-label { color: var(--accent); }
+
+  code, .mono {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 13px;
+    background: var(--line-soft);
+    padding: 1px 5px;
+    border-radius: 4px;
+    word-break: break-all;
+  }
+
+  /* 5줄 요약 / tier 카드 그리드 */
+  .tier-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin: 18px 0;
+  }
+  .tier {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 16px 18px;
+    background: #fbfcfe;
+  }
+  .tier .tier-name {
+    font-weight: 700;
+    font-size: 15px;
+    margin: 0 0 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .tier .tier-num {
+    display: inline-flex;
+    width: 22px; height: 22px;
+    align-items: center; justify-content: center;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    flex: none;
+  }
+  .tier ul { margin: 6px 0 0; padding-left: 18px; }
+  .tier ul li { font-size: 13.5px; margin: 4px 0; color: var(--ink-soft); }
+
+  /* Q&A */
+  .qa { margin: 16px 0; }
+  .qa .q {
+    font-weight: 700;
+    color: var(--ink);
+    margin: 18px 0 6px;
+    padding-left: 24px;
+    position: relative;
+  }
+  .qa .q::before {
+    content: "Q";
+    position: absolute; left: 0; top: 0;
+    color: var(--accent);
+    font-weight: 800;
+  }
+  .qa .a {
+    padding-left: 24px;
+    position: relative;
+    color: var(--ink-soft);
+    margin: 0 0 6px;
+  }
+  .qa .a::before {
+    content: "A";
+    position: absolute; left: 0; top: 0;
+    color: var(--ink-faint);
+    font-weight: 800;
+  }
+
+  /* 말하는 것 / 말하지 않는 것 */
+  .says-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 16px 0;
+  }
+  .says-col {
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .says-col.does { background: var(--b-user-bg); border: 1px solid #c5e8d8; }
+  .says-col.doesnt { background: var(--b-caution-bg); border: 1px solid #f3cfca; }
+  .says-col h4 { margin: 0 0 10px; }
+  .says-col.does h4 { color: var(--b-user); }
+  .says-col.doesnt h4 { color: var(--b-caution); }
+  .says-col ul { margin: 0; padding-left: 18px; }
+  .says-col ul li { margin: 7px 0; font-size: 14px; }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 10px;
+    margin: 14px 0 0;
+    padding: 14px 16px;
+    background: #fbfcfe;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+  .legend .legend-item { font-size: 12.5px; color: var(--ink-soft); }
+
+  footer.bottom {
+    margin-top: 40px;
+    padding-top: 22px;
+    border-top: 1px solid var(--line);
+    font-size: 13px;
+    color: var(--ink-faint);
+  }
+
+  @media (max-width: 680px) {
+    .summary5, section.card { padding: 22px 18px; }
+    nav.toc .toc-grid,
+    .tier-grid,
+    .says-grid { grid-template-columns: 1fr; }
+    header.top h1 { font-size: 23px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="top">
+    <p class="kicker">XAI 기반 OTT 신규 고객 이탈 요인 분석 및 리텐션 전략</p>
+    <h1>100원딜 OTT 이탈 분석 최종 설명서<br>project_guide_v3</h1>
+    <p class="sub">100원딜 프로모션으로 유입된 OTT 신규 고객의 day0~20 이용 행동을 근거로 정가 전환 실패 위험을 설명하고, 세그먼트별 리텐션 개입 우선순위를 제안하는 프로젝트의 최종 발표 및 인수인계 문서입니다.</p>
+    <p class="meta">기준 파이프라인: park.ingyeom · 작성 근거: final_note.md, project_execution_plan_260521.md, project_guide_v3_design_plan_260521.md</p>
+  </header>
+
+  <!-- 핵심 5줄 요약 -->
+  <div class="summary5">
+    <h2>가장 먼저 읽을 다섯 줄</h2>
+    <ol>
+      <li>최종 계산 기준은 <code>park.ingyeom</code> 파이프라인입니다.</li>
+      <li><code>PUBLIC</code>은 최종 파이프라인이 아니라 reference branch입니다.</li>
+      <li>최종 score source는 <code>LightGBM / expanded_no_payment_device / overall_with_promotion / OOF churn_risk</code>입니다.</li>
+      <li>17x 세그먼트 rule은 그대로 유지하고, 100원딜과 인구통계는 segment rule이 아니라 action layer에서 살립니다.</li>
+      <li>1~4순위는 이탈 방어 개입 우선군, 5~7순위는 버리는 집단이 아니라 역할 재분류 대상입니다.</li>
+    </ol>
+  </div>
+
+  <!-- 목차 -->
+  <nav class="toc">
+    <h2>목차</h2>
+    <div class="toc-grid">
+      <div class="toc-divider">본문 · 발표와 설명</div>
+      <a href="#s1">1. Executive summary</a>
+      <a href="#s2">2. 프로젝트 주제와 핵심 결론</a>
+      <a href="#s3">3. 이 문서가 말하는 것 / 말하지 않는 것</a>
+      <a href="#s4">4. 데이터셋 lineage 요약</a>
+      <a href="#s5">5. 전처리와 시간축</a>
+      <a href="#s6">6. feature contract 요약</a>
+      <a href="#s7">7. AARRR 설계</a>
+      <a href="#s8">8. 07x~18x pipeline timeline</a>
+      <a href="#s9">9. score source와 XAI 기준</a>
+      <a href="#s10">10. 7개 세그먼트 요약</a>
+      <a href="#s11">11. 4개 action tier</a>
+      <a href="#s12">12. 세그먼트별 비즈니스 전략</a>
+      <a href="#s13">13. 100원딜 narrative</a>
+      <a href="#s14">14. age/gender personalization</a>
+      <a href="#s15">15. Referral 후속 실험 제안</a>
+      <a href="#s16">16. safe / unsafe wording</a>
+      <a href="#s17">17. 멘토 Q&amp;A</a>
+      <div class="toc-divider">Appendix · 검증과 인수인계</div>
+      <a href="#a1">A1. 데이터셋 lineage 상세</a>
+      <a href="#a2">A2. 전처리 정책 상세</a>
+      <a href="#a3">A3. feature contract 상세</a>
+      <a href="#a4">A4. derived feature lineage</a>
+      <a href="#a5">A5. 07x~18x timeline 상세</a>
+      <a href="#a6">A6. traceability matrix</a>
+    </div>
+    <div class="legend">
+      <span class="legend-item"><span class="badge b-fact">확인된 수치</span> 근거 파일에서 확인</span>
+      <span class="legend-item"><span class="badge b-interp">해석</span> 근거 기반 정리 판단</span>
+      <span class="legend-item"><span class="badge b-user">사용자 확인</span> 대화에서 확정</span>
+      <span class="legend-item"><span class="badge b-suggest">제안</span> 승인 전 후보</span>
+      <span class="legend-item"><span class="badge b-action">action layer</span> 메시지 조정 층</span>
+      <span class="legend-item"><span class="badge b-caution">주의</span> 표현 제한</span>
+    </div>
+  </nav>
+
+  <!-- 1. Executive summary -->
+  <section class="card" id="s1">
+    <p class="sec-no">SECTION 01</p>
+    <h2>Executive summary</h2>
+    <p>이 프로젝트는 OTT 신규 고객의 재구매 실패 위험을 XAI 기반으로 분석하고, 특히 100원딜 프로모션으로 유입된 고객의 day0~20 행동 신호를 중심으로 리텐션 개입 전략을 도출하는 작업입니다. 분석 단위는 고객 개인이 아니라 구독 이벤트 row 단위이며, 최종 분석 cohort는 23,079 rows입니다.</p>
+    <p>최종 계산 기준은 <code>park.ingyeom</code> 파이프라인이고, 세그먼트 점수는 <code>LightGBM / expanded_no_payment_device / overall_with_promotion</code> 기준의 OOF churn_risk를 사용합니다. <code>PUBLIC</code>은 100원딜 중심 해석과 발표 구조를 검토한 reference branch이며, 그 numeric score와 segment assignment는 최종 기준으로 사용하지 않습니다.</p>
+    <p>17x가 만든 7개 대표 세그먼트의 rule과 assignment는 변경하지 않습니다. 다만 발표에서는 7개를 같은 무게로 나열하지 않고 4개 action tier로 역할을 재분류합니다. 1~4순위는 이탈 방어와 리텐션 개입의 1차 우선순위 후보군이고, 5~7순위는 정가 전환 강화군, 안정 유지군, 모니터링 후보군으로 역할을 다르게 부여합니다.</p>
+    <div class="box info">
+      <p class="box-label">이 문서의 성격</p>
+      이 문서는 새 분석 결과가 아닙니다. 이미 확정된 park.ingyeom 파이프라인과 final_note 원칙을 발표 및 인수인계용으로 정리한 설명서입니다. 새 모델, 새 SHAP, 새 segmentation은 수행하지 않았습니다.
+    </div>
+  </section>
+
+  <!-- 2. 프로젝트 주제와 핵심 결론 -->
+  <section class="card" id="s2">
+    <p class="sec-no">SECTION 02</p>
+    <h2>프로젝트 주제와 핵심 결론</h2>
+
+    <h3>공식 주제</h3>
+    <div class="box quote">
+      <p class="box-label">주제</p>
+      XAI 기반 OTT 신규 고객 이탈 요인 분석 및 리텐션 전략
+    </div>
+    <p>프로모션으로 유입되는 OTT 고객의 이탈 행동 패턴과 요인을 분석하여, 맞춤형 리텐션 전략을 포함한 비즈니스 제언을 도출합니다. 다만 이 프로젝트를 100원딜 고객만 분석한 프로젝트처럼 좁게 보지 않습니다. park.ingyeom 최종 파이프라인은 전체 23,079 row를 기준으로 하고, 그 안에서 100원딜 고객과 비100원딜 고객을 함께 해석하는 구조입니다.</p>
+
+    <h3>핵심 문제의식</h3>
+    <p><span class="badge b-interp">해석</span> 100원딜은 가입 장벽을 극단적으로 낮춘 유입 장치이므로, 가입 자체보다 가입 이후 1~3주차에 실제 이용 습관으로 전환되는지가 핵심 관찰 지점입니다. 자세한 narrative는 13번 섹션에서 다룹니다.</p>
+
+    <div class="box caution">
+      <p class="box-label">분석의 범위 제한</p>
+      이 프로젝트는 100원딜이 이탈을 유발했다는 인과 분석이 아닙니다. 100원딜이라는 초저가 유입 맥락에서 어떤 행동 신호가 재구매 실패와 함께 관찰되는지를 설명하는 분석입니다.
+    </div>
+  </section>
+
+  <!-- 3. 말하는 것 / 말하지 않는 것 -->
+  <section class="card" id="s3">
+    <p class="sec-no">SECTION 03</p>
+    <h2>이 문서가 말하는 것 / 말하지 않는 것</h2>
+    <p>이 프로젝트는 방어해야 할 표현이 많습니다. 따라서 문서가 주장하는 범위와 주장하지 않는 범위를 먼저 분명히 합니다.</p>
+    <div class="says-grid">
+      <div class="says-col does">
+        <h4>이 문서가 말하는 것</h4>
+        <ul>
+          <li>day0~20 관측 행동과 OOF churn_risk를 근거로 한 개입 우선순위 후보군</li>
+          <li>100원딜 유입 맥락에서 함께 관찰된 행동 신호</li>
+          <li>세그먼트별 리텐션 전략 설계안과 메시지 방향</li>
+          <li>park.ingyeom 기준의 정합적인 score source 선택 근거</li>
+        </ul>
+      </div>
+      <div class="says-col doesnt">
+        <h4>이 문서가 말하지 않는 것</h4>
+        <ul>
+          <li>100원딜이 이탈을 유발했다고 말하지 않습니다.</li>
+          <li>SHAP이 원인을 증명했다고 말하지 않습니다.</li>
+          <li>세그먼트를 최종 캠페인 타겟으로 확정하지 않습니다.</li>
+          <li>age/gender를 이탈 원인으로 말하지 않습니다.</li>
+          <li>PUBLIC score를 final score로 사용하지 않습니다.</li>
+          <li>row count를 unique customer 수로 말하지 않습니다.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. 데이터셋 lineage 요약 -->
+  <section class="card" id="s4">
+    <p class="sec-no">SECTION 04</p>
+    <h2>데이터셋 lineage 요약</h2>
+    <div class="badge-row"><span class="badge b-fact">확인된 수치</span></div>
+    <p>원천 데이터를 그대로 사용한 것이 아니라, day0~20 관측창을 만족하는 row-level / subscription-event-level cohort를 만들었습니다. 원천 master는 23,343 rows, 91 columns이고, 최종 primary main cohort는 23,079 rows입니다.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>단계</th><th class="num">입력 row</th><th class="num">출력 row</th><th>핵심 정책</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>raw master profile</td><td class="num">-</td><td class="num">23,343</td><td>원천 master. USER_KEY 중복 가능. unique customer 수로 말하지 않음</td></tr>
+          <tr><td>duration filter</td><td class="num">23,343</td><td class="num">23,105</td><td>duration &lt; 21인 238행 제외. day0~20 관측창을 완성할 수 없기 때문</td></tr>
+          <tr><td>exact full duplicate filter</td><td class="num">23,105</td><td class="num">23,079</td><td>exact full duplicate extra row 26행 제외</td></tr>
+          <tr><td>primary main cohort</td><td class="num">23,105</td><td class="num">23,079</td><td>최종 row-level / subscription-event-level 분석 기준</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="box info">
+      <p class="box-label">정확한 표현</p>
+      최종 분석 단위는 고객 개인 단위가 아니라 구독 이벤트 row 단위입니다. duration &lt; 21 row는 1~3주차 관측창을 완성할 수 없으므로 primary main cohort에서 제외했습니다.
+    </div>
+    <p style="font-size:13.5px;color:var(--ink-faint);">feature set 단계(conservative, expanded, expanded_no_payment_device)별 상세 row와 정책은 <a href="#a1" style="color:var(--accent);">Appendix A1</a>에서 확인할 수 있습니다.</p>
+  </section>
+
+  <!-- 5. 전처리와 시간축 -->
+  <section class="card" id="s5">
+    <p class="sec-no">SECTION 05</p>
+    <h2>전처리와 시간축</h2>
+    <p>전처리는 단순 cleaning이 아니라 모델링 시간축을 지키기 위한 정책이었습니다. 핵심은 관측기간과 대응기간의 분리입니다.</p>
+    <ul>
+      <li><span class="badge b-fact">확인된 수치</span> day0은 <code>reg_date</code> 기준 가입 시작일입니다.</li>
+      <li>day0~20은 모델 feature와 행동 신호를 관측하는 기간입니다.</li>
+      <li>day21 이후는 리텐션 대응기간이며, day21 이후 행동은 feature로 사용하지 않습니다.</li>
+      <li>target은 <code>is_repurchase</code>입니다.</li>
+      <li>모델은 <code>repurchase_score = P(is_repurchase=1)</code>을 출력하고, 비즈니스 해석에서는 <code>churn_risk = 1 - repurchase_score</code>로 변환합니다.</li>
+    </ul>
+    <div class="box info">
+      <p class="box-label">Activation 시점 주의</p>
+      day21 이후 처음 시청한 사람은 서비스 전체 관점에서는 activation일 수 있으나, 본 프로젝트의 scoring point에서는 activation 미관측 고객입니다. day21 이후 행동은 feature나 segment rule로 사용하지 않습니다.
+    </div>
+  </section>
+
+  <!-- 6. feature contract 요약 -->
+  <section class="card" id="s6">
+    <p class="sec-no">SECTION 06</p>
+    <h2>feature contract 요약</h2>
+    <p>91개 원천 컬럼은 모델 feature, target, group key, audit-only, action layer 등으로 정리됐습니다. feature를 넣었다고 해서 그 자체를 원인으로 해석하지 않는다는 점이 설계 원칙입니다.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>컬럼</th><th>최종 역할</th><th>설명</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>USER_KEY</td><td>group key / audit-only</td><td>모델 feature 아님. 중복 때문에 unique user 분석이라고 말하지 않음</td></tr>
+          <tr><td>is_repurchase</td><td>target</td><td>positive class는 재구매. churn_risk는 여기서 변환됨</td></tr>
+          <tr><td>is_promotion</td><td>Acquisition context / split</td><td>100원딜 맥락. 인과 효과 아님</td></tr>
+          <tr><td>payment_is_mobile / pc / android / ios</td><td>해석 기준에서 제외</td><td>결제기기 proxy. 시청기기 아님</td></tr>
+          <tr><td>age_group</td><td>demographic / action layer</td><td>원인이 아니라 메시지 조정 layer</td></tr>
+          <tr><td>is_female / is_male</td><td>demographic / action layer</td><td>원인이 아니라 메시지 조정 layer</td></tr>
+          <tr><td>retention_w2_ratio / w3_ratio</td><td>Retention</td><td>1~3주차 사용 유지/감소 신호</td></tr>
+          <tr><td>genre / content ratio 계열</td><td>content proxy</td><td>콘텐츠 선호 직접 증명 아님. Movie_Master mapping proxy</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:13.5px;color:var(--ink-faint);">전체 컬럼 역할과 caveat는 <a href="#a3" style="color:var(--accent);">Appendix A3</a>에서 확인할 수 있습니다.</p>
+  </section>
+
+  <!-- 7. AARRR 설계 -->
+  <section class="card" id="s7">
+    <p class="sec-no">SECTION 07</p>
+    <h2>AARRR 설계</h2>
+    <p>AARRR은 이 프로젝트를 단순 모델링 결과가 아니라 마케팅 및 비즈니스 프레임으로 설명하기 위한 구조입니다. feature와 행동 신호를 다섯 단계로 묶어 설명합니다.</p>
+
+    <h4>Acquisition</h4>
+    <p>가입 또는 유입 맥락입니다. 이 프로젝트에서는 100원딜 여부인 <code>is_promotion=1</code>이 핵심 Acquisition context입니다. <span class="badge b-interp">해석</span> 100원딜은 가입 장벽을 극단적으로 낮춘 유입 장치이지만, 이것을 이탈의 원인으로 말하지 않습니다.</p>
+
+    <h4>Activation</h4>
+    <p>가입 직후 실제 이용이 시작되는가를 봅니다. day0~20 관측창 안, 특히 day0~6 초기 시청과 cold-start fixed가 핵심입니다.</p>
+
+    <h4>Retention</h4>
+    <p>1~3주차 동안 사용이 유지되는가를 봅니다. 특히 2~3주차와 3주차 시청 유지 또는 감소가 핵심입니다. 3주차 시청 감소는 이탈 원인이 아니라 이탈 위험과 함께 관찰되는 행동 신호입니다.</p>
+
+    <h4>Revenue</h4>
+    <p>실제 매출액이 아니라 다음 달 재구매 여부인 <code>is_repurchase</code>를 Revenue proxy로 사용합니다. 매출액, ARPU, LTV를 직접 분석한 것이 아닙니다. target은 segment rule에 직접 넣지 않습니다.</p>
+
+    <h4>Referral</h4>
+    <p><span class="badge b-suggest">후속 실험 제안</span> 현재 데이터에는 referral 행동 로그가 없으므로, 분석 결과가 아니라 후속 실험 제안으로만 다룹니다. 자세한 내용은 15번 섹션에서 다룹니다.</p>
+
+    <h3>AARRR별 대표 관측 feature</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>AARRR 단계</th><th>프로젝트 내 정의</th><th>대표 관측 feature / 지표</th><th>해석 제한</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Acquisition</td>
+            <td>100원딜 또는 비100원딜 유입 맥락</td>
+            <td><code>is_promotion</code>, 가입 시점 context</td>
+            <td>프로모션 효과의 인과 추정이 아니라 유입 맥락 구분입니다.</td>
+          </tr>
+          <tr>
+            <td>Activation</td>
+            <td>day0~20 안에서 실제 시청이 관측되는지</td>
+            <td><code>is_cold_start_3d_fixed</code>, <code>is_cold_start_7d_fixed</code>, week1 watch time/session</td>
+            <td>day21 이후 첫 시청은 본 프로젝트의 feature가 아니라 대응기간 행동입니다.</td>
+          </tr>
+          <tr>
+            <td>Retention</td>
+            <td>1~3주차 사용이 유지되는지, 또는 감소하는지</td>
+            <td>week2/week3 watch time, session, retention ratio, diff, recency, inactive gap</td>
+            <td>사용 감소는 이탈 원인이 아니라 위험 신호로 표현합니다.</td>
+          </tr>
+          <tr>
+            <td>Revenue</td>
+            <td>실제 매출액이 아니라 다음 달 재구매 여부 proxy</td>
+            <td><code>is_repurchase</code>, <code>repurchase_score</code>, <code>churn_risk</code></td>
+            <td>ARPU, LTV, 실제 결제금액을 분석한 것이 아닙니다.</td>
+          </tr>
+          <tr>
+            <td>Referral</td>
+            <td>현재 데이터에는 직접 관측되지 않음</td>
+            <td>추천 링크, 초대, 공유 로그 없음</td>
+            <td>분석 결과가 아니라 후속 실험 제안으로만 사용합니다.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </section>
+
+  <!-- 8. pipeline timeline -->
+  <section class="card" id="s8">
+    <p class="sec-no">SECTION 08</p>
+    <h2>07x~18x pipeline timeline</h2>
+    <div class="badge-row"><span class="badge b-fact">확인된 수치</span></div>
+    <p>단계가 많으므로 각 단계가 무엇을 했고 무엇을 하지 않았는지 한 줄로 정리합니다. 단계별 상세 표는 <a href="#a5" style="color:var(--accent);">Appendix A5</a>에 있습니다.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>단계</th><th>수행한 것</th><th>수행하지 않은 것</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>07x</td><td>06x feature를 AARRR stage와 caveat로 매핑</td><td>모델링, SHAP, segmentation</td></tr>
+          <tr><td>08x</td><td>100원딜 / 비100원딜 관찰 비교 EDA</td><td>인과 주장, 모델링</td></tr>
+          <tr><td>09x</td><td>promotion × repurchase 2×2 기술통계</td><td>causal claim</td></tr>
+          <tr><td>10x</td><td>분포, 중복, VIF, proxy risk 사전 점검</td><td>feature 제거</td></tr>
+          <tr><td>11x</td><td>conservative vs expanded baseline 비교</td><td>final model 확정</td></tr>
+          <tr><td>12x</td><td>모델군 비교</td><td>final campaign model 확정</td></tr>
+          <tr><td>14x</td><td>후보 경량 tuning</td><td>최종 모델 확정</td></tr>
+          <tr><td>15x</td><td>payment-device 제거 민감도, canonical 재생성</td><td>causal 전체 재생성</td></tr>
+          <tr><td>16x</td><td>payment 제거 기준 model explanation (SHAP)</td><td>인과 증명</td></tr>
+          <tr><td>17x</td><td>OOF churn_risk와 행동 flag로 대표 segment 배정</td><td>캠페인 확정</td></tr>
+          <tr><td>18x</td><td>발표 안전 문구와 action layer 정리</td><td>새 분석</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 9. score source와 XAI -->
+  <section class="card" id="s9">
+    <p class="sec-no">SECTION 09</p>
+    <h2>score source와 XAI 기준</h2>
+    <div class="box quote">
+      <p class="box-label">최종 score source</p>
+      LightGBM / expanded_no_payment_device / overall_with_promotion / OOF churn_risk
+    </div>
+
+    <h3>왜 LightGBM인가</h3>
+    <ul>
+      <li><span class="badge b-fact">확인된 수치</span> 15x overall_with_promotion 기준 OOF AUC는 LightGBM 0.878716, CatBoost 0.877838, HistGradientBoosting 0.877867입니다.</li>
+      <li><span class="badge b-interp">해석</span> 성능 차이만으로 final model을 확정한 것은 아닙니다. 더 중요한 이유는 16x payment-removed SHAP candidate plan이 overall_with_promotion LightGBM을 설명 기준으로 사용했고, 17x segmentation도 같은 기준의 OOF churn_risk를 사용했기 때문입니다.</li>
+      <li>CatBoost가 강하더라도 17x assignment와 16x explanation basis를 바꾸지 않습니다.</li>
+      <li>PUBLIC GradientBoosting은 reference branch 산출물이므로 final score source로 쓰지 않습니다.</li>
+    </ul>
+
+    <div class="box caution">
+      <p class="box-label">중요한 제한</p>
+      이 score source는 최종 운영 모델 확정이 아니라, 17x segmentation을 위한 기준 score source입니다. 또한 SHAP은 원인이 아니라 fitted model explanation입니다.
+    </div>
+
+    <h3>PUBLIC의 지위</h3>
+    <p><span class="badge b-interp">해석</span> PUBLIC은 100원딜 중심 promo-scope segmentation과 business storyline을 시도한 reference branch입니다. PUBLIC의 numeric score, segment assignment, model decision은 최종 기준으로 가져오지 않습니다. PUBLIC에서 가져올 수 있는 것은 narrative 구조, visual guide 구성, safe wording, action matrix 표현 방식입니다. PUBLIC은 헛수고가 아니라, promo-scope segmentation을 직접 final 기준으로 쓰는 것이 왜 위험한지 확인한 우회 검증입니다.</p>
+  </section>
+
+  <!-- 10. 7개 세그먼트 -->
+  <section class="card" id="s10">
+    <p class="sec-no">SECTION 10</p>
+    <h2>7개 세그먼트 요약</h2>
+    <div class="badge-row"><span class="badge b-fact">확인된 수치</span> <span class="badge b-caution">주의: 모든 segment name은 provisional label</span></div>
+    <p>먼저 17x가 만든 7개 대표 세그먼트의 데이터 근거를 그대로 보여줍니다. 전체 churn rate는 28.3%입니다. rule과 assignment는 변경하지 않았으며, 발표용 label만 보정했습니다.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="num">순위</th><th>segment_id</th><th>발표용 label</th>
+            <th class="num">rows</th><th class="num">share</th>
+            <th class="num">churn rate</th><th class="num">mean churn_risk</th><th class="num">promo1 share</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="num">1</td><td>high_risk_week3_inactive_or_drop</td><td>3주차 이탈 임박 고위험군</td><td class="num">3,793</td><td class="num">16.4%</td><td class="num">73.2%</td><td class="num">0.733</td><td class="num">59.0%</td></tr>
+          <tr><td class="num">2</td><td>high_risk_only_w1_or_cold_start_weak</td><td>초기 활성화 약화 고위험군</td><td class="num">265</td><td class="num">1.1%</td><td class="num">71.7%</td><td class="num">0.698</td><td class="num">70.6%</td></tr>
+          <tr><td class="num">3</td><td>high_risk_low_activity</td><td>저활동 고위험군</td><td class="num">511</td><td class="num">2.2%</td><td class="num">81.4%</td><td class="num">0.765</td><td class="num">60.9%</td></tr>
+          <tr><td class="num">4</td><td>medium_risk_retention_decay</td><td>관심 감소 관찰군</td><td class="num">3,195</td><td class="num">13.8%</td><td class="num">38.8%</td><td class="num">0.358</td><td class="num">54.6%</td></tr>
+          <tr><td class="num">5</td><td>content_preference_target_candidate</td><td>콘텐츠 큐레이션 기반 정가 전환 강화군</td><td class="num">6,195</td><td class="num">26.8%</td><td class="num">10.1%</td><td class="num">0.095</td><td class="num">48.5%</td></tr>
+          <tr><td class="num">6</td><td>stable_retained_user</td><td>안정 재구매 가능군</td><td class="num">1,224</td><td class="num">5.3%</td><td class="num">1.1%</td><td class="num">0.017</td><td class="num">34.2%</td></tr>
+          <tr><td class="num">7</td><td>general_observation</td><td>추가 관찰 필요 잔여군</td><td class="num">7,896</td><td class="num">34.2%</td><td class="num">15.9%</td><td class="num">0.169</td><td class="num">50.6%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="box info">
+      <p class="box-label">발표 방식</p>
+      단, 이 7개를 같은 무게로 발표하지 않습니다. 비즈니스 제언에서는 다음 11번 섹션의 4개 action tier로 역할을 재분류합니다.
+    </div>
+  </section>
+
+  <!-- 11. 4개 action tier -->
+  <section class="card" id="s11">
+    <p class="sec-no">SECTION 11</p>
+    <h2>4개 action tier</h2>
+    <div class="badge-row"><span class="badge b-interp">해석</span> <span class="badge b-action">action layer</span></div>
+    <p>7개 표는 데이터 근거이고, 4개 tier는 비즈니스 해석입니다. 이 계층은 17x representative segment assignment를 바꾸는 것이 아니라, 각 세그먼트의 역할을 발표와 제언에서 다르게 부여하기 위한 해석 계층입니다.</p>
+    <div class="tier-grid">
+      <div class="tier">
+        <p class="tier-name"><span class="tier-num">1</span> 즉시 개입 우선군</p>
+        <ul>
+          <li>high_risk_week3_inactive_or_drop</li>
+          <li>high_risk_low_activity</li>
+          <li>high_risk_only_w1_or_cold_start_weak</li>
+        </ul>
+      </div>
+      <div class="tier">
+        <p class="tier-name"><span class="tier-num">2</span> 관찰 강화군</p>
+        <ul>
+          <li>medium_risk_retention_decay</li>
+        </ul>
+      </div>
+      <div class="tier">
+        <p class="tier-name"><span class="tier-num">3</span> 정가 전환 강화군</p>
+        <ul>
+          <li>content_preference_target_candidate</li>
+          <li>stable_retained_user</li>
+        </ul>
+      </div>
+      <div class="tier">
+        <p class="tier-name"><span class="tier-num">4</span> 모니터링 / 추가분해 후보군</p>
+        <ul>
+          <li>general_observation</li>
+        </ul>
+      </div>
+    </div>
+    <div class="box caution">
+      <p class="box-label">표현 주의</p>
+      각 tier는 개입 우선순위 후보군입니다. 최종 캠페인 타겟이라고 말하지 않습니다. 실제 캠페인 집행 전에는 팀 검토와 A/B test가 필요합니다.
+    </div>
+
+    <h3>왜 promo × age × gender로 다시 세그먼트를 쪼개지 않는가</h3>
+    <div class="box info">
+      <p class="box-label">표본 크기와 action layer 원칙</p>
+      현재 고위험군과 중간위험군을 합쳐도 전체의 일부이며, 이를 다시 100원딜/비100원딜, 성별, 연령대로 세분화하면 일부 cell의 N이 급격히 작아질 수 있습니다. 따라서 대표 세그먼트는 행동 기반 17x rule을 유지하고, promo 여부와 age/gender는 세그먼트를 다시 자르는 기준이 아니라 메시지와 개입 전략을 조정하는 action layer로 사용합니다.
+    </div>
+    <p>이 구조는 5~7순위를 버린다는 뜻이 아닙니다. <code>content_preference_target_candidate</code>와 <code>general_observation</code>은 전체 비중이 크므로 분석 범위 안에 남깁니다. 다만 고위험 이탈 방어군이 아니라 각각 정가 전환 강화군, 모니터링 / 추가분해 후보군으로 역할을 재분류합니다.</p>
+
+  </section>
+
+  <!-- 12. 세그먼트별 비즈니스 전략 -->
+  <section class="card" id="s12">
+    <p class="sec-no">SECTION 12</p>
+    <h2>세그먼트별 비즈니스 전략</h2>
+
+    <p>아래 표는 17x representative segment rule을 바꾸지 않고, 각 세그먼트를 어떤 비즈니스 역할과 메시지 전략으로 해석할지 정리한 것입니다. 모든 항목은 최종 캠페인 확정 타겟이 아니라 개입 우선순위와 action layer 설계안입니다.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>발표용 label</th><th>행동 신호</th><th>100원딜 맥락</th><th>주요 action</th><th>인구통계 메시지 조정</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>3주차 이탈 임박 고위험군</td>
+            <td>3주차 비활성 또는 3주차 사용 감소</td>
+            <td>100원딜 체험이 이용 습관으로 전환되지 못하고 3주차에 관심이 꺾이는 신호로 해석</td>
+            <td>3주차 초입/종료 직전 이어보기 추천, 혜택 종료 전 리마인드, 짧은 복귀 메시지</td>
+            <td>20대는 모바일 푸시·인기 콘텐츠, 30대는 퇴근/주말 맥락, 40대 이상은 명확한 혜택 안내</td>
+          </tr>
+          <tr>
+            <td>초기 활성화 약화 고위험군</td>
+            <td>only_w1 또는 cold_start 약화</td>
+            <td>가입 장벽은 낮았지만 초기 탐색과 첫 이용 습관 형성이 약한 집단</td>
+            <td>가입 직후 온보딩, 첫 시청 유도, 바로 볼 수 있는 추천 콘텐츠 묶음</td>
+            <td>20대는 짧은 클립/화제작, 30대는 시간 효율 추천, 40대 이상은 장르별 입문 콘텐츠</td>
+          </tr>
+          <tr>
+            <td>저활동 고위험군</td>
+            <td>전반적 활동량 낮음</td>
+            <td>100원딜 유입 후 실제 서비스 이용으로 충분히 연결되지 않은 후보</td>
+            <td>가벼운 재방문 유도, 혜택 리마인드, 저부담 콘텐츠 추천</td>
+            <td>연령대별로 메시지 길이와 혜택 강조 정도를 조정</td>
+          </tr>
+          <tr>
+            <td>관심 감소 관찰군</td>
+            <td>retention decay</td>
+            <td>아직 고위험 확정은 아니지만 이용 열기가 식는 watchlist</td>
+            <td>이전 시청 흐름 기반 이어보기, 취향 기반 큐레이션, 약한 강도의 리마인드</td>
+            <td>30대 이상은 주말/퇴근 후 시청 상황을 강조하면 적합</td>
+          </tr>
+          <tr>
+            <td>콘텐츠 큐레이션 기반 정가 전환 강화군</td>
+            <td>content/genre proxy가 관찰되지만 churn risk는 낮음</td>
+            <td>이탈 방어보다 100원딜 체험을 정가 전환 가치로 연결할 후보</td>
+            <td>콘텐츠 큐레이션, 취향 기반 추천, 다음 결제 전 이용 가치 상기</td>
+            <td>연령/성별별 콘텐츠 선호 차이가 확인될 때만 메시지 variant로 사용</td>
+          </tr>
+          <tr>
+            <td>안정 재구매 가능군</td>
+            <td>낮은 churn_risk, 안정적 이용</td>
+            <td>100원딜에서 정가 이용자로 전환될 가능성이 높은 유지군</td>
+            <td>과도한 할인보다 이용 가치 강화, 프리미엄 콘텐츠 안내, 만족 유지 메시지</td>
+            <td>명확한 혜택보다 개인화 추천과 서비스 가치 상기 중심</td>
+          </tr>
+          <tr>
+            <td>추가 관찰 필요 잔여군</td>
+            <td>명확한 대표 rule에 걸리지 않은 residual</td>
+            <td>즉시 개입보다 후속 모니터링과 추가분해가 필요한 큰 집단</td>
+            <td>dashboard 모니터링, 하위 행동 신호 추적, 후속 decomposition 후보 관리</td>
+            <td>promo/age/gender로 새 segment를 확정하지 않고 관찰 지표로만 사용</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+
+    <h3>즉시 개입 우선군</h3>
+    <p>재구매율이 낮고 평균 churn_risk가 높습니다. 본 프로젝트가 이탈 방지와 리텐션 전략을 목적으로 하므로, 이 세 집단이 1차 intervention priority입니다.</p>
+    <div class="box quote">
+      100원딜 고객 중에서도 3주차 사용이 꺾이거나, 초기 활성화가 약하거나, 전반적 활동량이 낮은 고객은 정가 전환 실패 위험이 높게 관찰됩니다. 이들은 리텐션 개입의 1차 우선순위 후보군입니다.
+    </div>
+
+    <h3>관찰 강화군</h3>
+    <p>고위험군만큼 위험하지는 않지만 retention decay가 관찰되는 중간위험군입니다. 아직 고위험군으로 확정하기는 어렵지만 사용량 감소 신호가 나타나므로 watchlist 또는 관찰 강화군으로 관리합니다.</p>
+
+    <h3>정가 전환 강화군 · 콘텐츠 큐레이션 기반 정가 전환 강화군</h3>
+    <div class="badge-row"><span class="badge b-caution">주의: 고위험 이탈 방어 타겟 아님</span></div>
+    <p><code>content_preference_target_candidate</code>는 6,195행으로 전체의 26.8%이며, segment churn rate는 10.1%로 전체 churn rate 28.3%보다 낮습니다. 따라서 이 집단을 churn target candidate라고 말하는 것은 과합니다. 이 집단은 고위험 이탈 방어군이 아니라 콘텐츠 큐레이션 기반 정가 전환 강화군입니다.</p>
+    <div class="box quote">
+      이 집단은 이탈 방어보다 정가 전환 강화와 이용 가치 상기 전략에 적합합니다. 콘텐츠 큐레이션, 취향 기반 추천, 다음 결제 전 혜택 상기 메시지를 중심으로 접근합니다.
+    </div>
+    <p>다만 content/genre는 콘텐츠 선호를 직접 증명한 지표가 아니라 Movie_Master mapping proxy입니다. 추천하면 반드시 전환된다고 말하지 않습니다. <code>stable_retained_user</code>는 안정적 이용과 낮은 churn_risk를 보이는 안정 재구매 가능군으로, 이용 가치 상기 중심으로 관리합니다.</p>
+
+    <h3>모니터링 / 추가분해 후보군</h3>
+    <div class="badge-row"><span class="badge b-caution">주의: 버리는 집단 아님</span></div>
+    <p><code>general_observation</code>은 7,896행으로 전체 34.2%입니다. 기술적으로는 default residual이지만 내부에 low activity, cold-start weak, retention decay, week3 inactive 신호가 일부 남아 있습니다. 따라서 분석에서 제외하지 않습니다. 다만 발표 핵심 세그먼트로 세우지 않고, 규모가 크므로 dashboard와 후속 분석에서 계속 추적하는 monitoring group으로 둡니다.</p>
+    <div class="box quote">
+      명확한 대표 rule에는 걸리지 않았지만 규모가 크고 일부 행동 신호가 남아 있으므로, 즉시 타겟이 아니라 후속 모니터링과 추가 세분화 후보군으로 관리합니다.
+    </div>
+  </section>
+
+  <!-- 13. 100원딜 narrative -->
+  <section class="card" id="s13">
+    <p class="sec-no">SECTION 13</p>
+    <h2>100원딜 narrative</h2>
+    <div class="badge-row"><span class="badge b-user">사용자 확인</span> <span class="badge b-interp">해석</span></div>
+    <div class="box quote">
+      <p class="box-label">핵심 문장</p>
+      100원딜은 가입 장벽을 극단적으로 낮춘 유입 장치다. 따라서 정가 가입자보다 이용 동기와 지불 의향이 이질적인 고객이 함께 유입될 가능성이 크다. 이 때문에 100원딜 고객은 가입 자체보다 가입 이후 1~3주차에 실제 이용 습관으로 전환되는지가 핵심이며, 특히 3주차 이용 유지 여부는 정가 전환 실패 위험을 설명하는 중요한 행동 신호로 볼 수 있다.
+    </div>
+    <div class="box caution">
+      <p class="box-label">반드시 함께 두는 caveat</p>
+      이는 100원딜이 이탈을 유발했다는 인과 주장이 아니라, 100원딜 유입 맥락에서 관찰된 행동 신호를 해석한 것이다.
+    </div>
+
+    <h4>허용 문장</h4>
+    <ul>
+      <li>100원딜은 가입 장벽을 낮춘다.</li>
+      <li>100원딜 고객은 이용 동기와 지불 의향이 이질적일 수 있다.</li>
+      <li>100원딜 고객에게 중요한 것은 가입 이후 이용 습관 전환이다.</li>
+      <li>3주차 이용 유지 여부는 정가 전환 실패 위험을 설명하는 중요한 행동 신호다.</li>
+    </ul>
+    <h4>금지 문장</h4>
+    <ul>
+      <li>100원딜이 이탈을 유발했다.</li>
+      <li>100원딜 고객은 어차피 이탈한다.</li>
+      <li>100원딜 때문에 충성도가 낮다.</li>
+    </ul>
+  </section>
+
+  <!-- 14. age/gender personalization -->
+  <section class="card" id="s14">
+    <p class="sec-no">SECTION 14</p>
+    <h2>age/gender personalization layer</h2>
+    <div class="badge-row"><span class="badge b-action">action layer</span> <span class="badge b-caution">주의: 이탈 원인 아님</span></div>
+    <p>age/gender는 segment rule이 아니며 이탈 원인도 아닙니다. 메시지, 채널, 콘텐츠 추천 방식을 조정하는 action personalization layer로만 사용합니다. 적용 순서는 1차 행동 기반 segment, 2차 100원딜 여부에 따른 해석 차이, 3차 age/gender 기반 메시지 variant입니다.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>대상</th><th>메시지 / 채널 방향</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>20대</td><td>짧고 즉시성 있는 인기 콘텐츠, 친구추천 또는 쿠폰 메시지, 모바일 푸시</td></tr>
+          <tr><td>30대</td><td>퇴근 후 또는 주말 시청 맥락, 시간 효율, 취향 기반 추천</td></tr>
+          <tr><td>40대 이상</td><td>명확한 혜택 안내, 장르 기반 추천, 가족 또는 주말 시청 맥락</td></tr>
+          <tr><td>남성 / 여성</td><td>데이터에서 관찰된 선호 차이가 있을 때만 메시지 variant 후보로 사용. 원인처럼 말하지 않음</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="box caution">
+      <p class="box-label">표현 주의</p>
+      age/gender를 세그먼트 이름에 넣지 않습니다. 예를 들어 "20대 여성 이탈형" 같은 표현은 사용하지 않습니다.
+    </div>
+  </section>
+
+  <!-- 15. Referral -->
+  <section class="card" id="s15">
+    <p class="sec-no">SECTION 15</p>
+    <h2>Referral 후속 실험 제안</h2>
+    <div class="badge-row"><span class="badge b-suggest">후속 실험 제안</span></div>
+    <p>Referral은 AARRR 프레임에 포함하되, 데이터 분석 결과가 아니라 후속 실험 제안으로만 둡니다. 현재 데이터에는 referral 로그가 없으므로 효과를 검증했다고 말하지 않습니다.</p>
+    <div class="box info">
+      모바일 친화 고객군, 특히 20~30대 100원딜 고객을 대상으로 친구추천 100원딜 쿠폰 실험을 제안할 수 있습니다. 다만 현재 데이터에는 referral 로그가 없으므로 효과는 실제 캠페인 또는 A/B test로 검증해야 합니다.
+    </div>
+  </section>
+
+  <!-- 16. safe / unsafe wording -->
+  <section class="card" id="s16">
+    <p class="sec-no">SECTION 16</p>
+    <h2>safe / unsafe wording</h2>
+    <p>발표와 문서 전반에서 사용하는 표현 기준입니다. 왼쪽 위험 표현 대신 오른쪽 안전 표현을 사용합니다.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>위험 표현</th><th>안전 표현</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>100원딜이 이탈을 유발했다</td><td>100원딜 고객군에서 특정 행동 신호와 재구매 실패가 함께 관찰됐다</td></tr>
+          <tr><td>3주차 시청량 감소가 이탈 원인이다</td><td>3주차 시청량 감소는 이탈 위험 신호다</td></tr>
+          <tr><td>SHAP이 원인을 증명했다</td><td>SHAP은 fitted model explanation이다</td></tr>
+          <tr><td>age/gender가 이탈 원인이다</td><td>age/gender는 메시지 차별화 layer다</td></tr>
+          <tr><td>세그먼트는 최종 캠페인 타겟이다</td><td>세그먼트는 개입 우선순위 후보군이다</td></tr>
+          <tr><td>content_preference는 명확한 이탈 방어 타겟이다</td><td>content_preference는 콘텐츠 큐레이션 기반 정가 전환 강화군이다</td></tr>
+          <tr><td>general은 별 특징 없는 고객군이다</td><td>general은 추가 관찰 필요 residual / monitoring group이다</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 17. 멘토 Q&A -->
+  <section class="card" id="s17">
+    <p class="sec-no">SECTION 17</p>
+    <h2>멘토 Q&amp;A</h2>
+    <div class="qa">
+      <p class="q">왜 100원딜 분석인가?</p>
+      <p class="a">100원딜은 가입 장벽을 극단적으로 낮춘 유입 장치이므로, 정가 가입자보다 이용 동기와 지불 의향이 이질적인 고객이 함께 유입될 가능성이 큽니다. 따라서 가입 자체보다 가입 이후 1~3주차에 실제 이용 습관으로 전환되는지가 정가 전환 실패 위험을 설명하는 핵심 관찰 지점이기 때문입니다. 다만 이는 인과 주장이 아니라 유입 맥락에서 관찰된 행동 신호의 해석입니다.</p>
+
+      <p class="q">왜 PUBLIC을 final로 쓰지 않았나?</p>
+      <p class="a">PUBLIC은 100원딜 중심 promo-scope segmentation과 business storyline을 시도한 reference branch이기 때문입니다. PUBLIC은 promo0 / promo1 분리와 log-retention-only 조건 중심의 emergency 및 reference 구조이며, final canonical model evidence가 아닙니다. PUBLIC의 numeric score를 park 17x 기준과 섞으면 row scope, feature policy, model stage가 충돌합니다. 그래서 PUBLIC은 narrative와 표현 방식 참고용으로만 사용합니다.</p>
+
+      <p class="q">왜 5~7순위를 버리지 않았나?</p>
+      <p class="a">5~7순위는 전체 row에서 차지하는 비중이 크기 때문입니다. content_preference_target_candidate와 general_observation만으로도 전체의 약 61%를 차지합니다. 이들을 분석에서 제외하면 전체 구조를 설명할 수 없습니다. 따라서 버리는 것이 아니라 역할을 재분류합니다. 5순위는 정가 전환 강화군, 6순위는 안정 유지군, 7순위는 모니터링 후보군으로 둡니다.</p>
+
+      <p class="q">왜 age/gender를 rule로 쓰지 않았나?</p>
+      <p class="a">age/gender는 이탈 원인이 아니기 때문입니다. 또한 행동 기반 대표 세그먼트를 다시 promo 여부 × 성별 × 연령대로 세분화하면 일부 cell의 N이 급격히 작아져 통계적으로나 발표상으로 방어하기 어려운 작은 집단이 생길 수 있습니다. 그래서 age/gender는 대표 세그먼트를 쪼개는 1차 rule이 아니라, 각 세그먼트 안에서 메시지와 채널을 조정하는 action personalization layer로만 사용합니다.</p>
+
+      <p class="q">왜 payment-device 계열을 해석 기준에서 제거했나?</p>
+      <p class="a">payment_is_mobile / pc / android / ios는 실제 시청기기가 아니라 결제 환경과 계정 생성 맥락을 반영하는 proxy이기 때문입니다. 따라서 최종 해석 기준에서는 제외했습니다. 다만 원본 CSV나 기존 feature set을 삭제한 것은 아니고, 해석 기준에서만 제거했습니다.</p>
+
+      <p class="q">왜 세그먼트가 최종 캠페인 타겟이 아니라 후보군인가?</p>
+      <p class="a">현재 데이터는 제공받은 분석 표본이고, 세그먼트는 day0~20 관측 행동과 OOF churn_risk를 바탕으로 만든 개입 우선순위 후보군이기 때문입니다. 실제 캠페인 집행 전에는 전체 고객 DB에서 동일 rule을 재검증하고, 팀 검토와 A/B test를 거쳐야 합니다.</p>
+    </div>
+  </section>
+
+  <!-- ===== APPENDIX ===== -->
+  <div class="appendix-head" id="appendix">
+    Appendix
+    <span>검증 및 인수인계용 상세 자료입니다. 발표 본문에서는 요약만 사용하고, 상세 근거가 필요할 때 참고합니다.</span>
+  </div>
+
+  <!-- A1 -->
+  <section class="card" id="a1">
+    <p class="sec-no">APPENDIX A1</p>
+    <h2>데이터셋 lineage 상세</h2>
+    <div class="badge-row"><span class="badge b-fact">확인된 수치</span></div>
+    <p>원천 master는 23,343 rows, 91 columns입니다. 최종 primary main cohort는 23,079 rows이며, 이후 feature set 단계에서도 row 수는 23,079로 유지됩니다.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>단계</th><th class="num">입력 row</th><th class="num">출력 row</th><th>핵심 정책</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>raw master profile</td><td class="num">-</td><td class="num">23,343</td><td>분석 기준 master dataset. USER_KEY 중복 가능. unique customer 수로 말하지 않음</td></tr>
+          <tr><td>duration filter</td><td class="num">23,343</td><td class="num">23,105</td><td>duration &lt; 21인 238행 제외. day0~20 관측창을 완성할 수 없기 때문</td></tr>
+          <tr><td>exact full duplicate filter</td><td class="num">23,105</td><td class="num">23,079</td><td>duration filter 이후 exact full duplicate extra row 26행 제외</td></tr>
+          <tr><td>primary main cohort</td><td class="num">23,105</td><td class="num">23,079</td><td>최종 row-level / subscription-event-level 분석 기준</td></tr>
+          <tr><td>conservative dataset</td><td class="num">23,079</td><td class="num">23,079</td><td>conservative_safe_22 feature set + USER_KEY + target</td></tr>
+          <tr><td>expanded dataset</td><td class="num">23,079</td><td class="num">23,079</td><td>expanded_feature_set 80 model features + keys/target</td></tr>
+          <tr><td>expanded_no_payment_device</td><td class="num">23,079</td><td class="num">23,079</td><td>payment_is_* 4개를 runtime feature matrix에서 제외한 76 feature 기준</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h4>금지 표현</h4>
+    <ul>
+      <li>"23,079명의 고객"</li>
+      <li>"완전히 유저 단위 분석"</li>
+      <li>"duration &lt; 21은 이탈했기 때문에 제외했다"</li>
+      <li>"중복 USER_KEY는 모두 제거했다"</li>
+    </ul>
+  </section>
+
+  <!-- A2 -->
+  <section class="card" id="a2">
+    <p class="sec-no">APPENDIX A2</p>
+    <h2>전처리 정책 상세</h2>
+    <h4>영어 / 변수명 풀이</h4>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>용어</th><th>뜻</th></tr></thead>
+        <tbody>
+          <tr><td>duration</td><td>구독기간 또는 관측 가능한 기간. 21일 미만이면 day0~20 관측창을 완성하지 못함</td></tr>
+          <tr><td>row-level</td><td>행 단위</td></tr>
+          <tr><td>subscription-event-level</td><td>구독 이벤트 단위. 한 고객이 여러 subscription-event row를 가질 수 있음</td></tr>
+          <tr><td>is_repurchase</td><td>다음 달 재구매 여부. 1이면 재구매, 0이면 미재구매. 이 프로젝트의 target</td></tr>
+          <tr><td>repurchase_score</td><td>모델이 예측한 재구매 가능성. P(is_repurchase=1)</td></tr>
+          <tr><td>churn_risk</td><td>이탈 위험 점수. 1 - repurchase_score</td></tr>
+          <tr><td>OOF</td><td>Out-Of-Fold. 자기 자신을 학습하지 않은 모델이 예측한 점수. 최종 캠페인 threshold는 아님</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- A3 -->
+  <section class="card" id="a3">
+    <p class="sec-no">APPENDIX A3</p>
+    <h2>feature contract 상세</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>컬럼</th><th>최종 역할</th><th>설명</th></tr></thead>
+        <tbody>
+          <tr><td>USER_KEY</td><td>group key / audit-only</td><td>모델 feature 아님. 중복 때문에 unique user 분석이라고 말하지 않음</td></tr>
+          <tr><td>is_repurchase</td><td>target</td><td>positive class는 재구매. churn_risk는 여기서 변환됨</td></tr>
+          <tr><td>is_promotion</td><td>Acquisition context / split variable</td><td>100원딜 맥락. 인과 효과 아님</td></tr>
+          <tr><td>payment_is_mobile / pc / android / ios</td><td>expanded_no_payment_device에서 제외</td><td>결제기기 proxy. 시청기기 아님. 최종 해석 기준에서 제외</td></tr>
+          <tr><td>is_churn_prevented</td><td>historical churn prevention context</td><td>과거 churn prevention 이력. current-cycle 사후효과처럼 말하지 않음</td></tr>
+          <tr><td>age_group</td><td>demographic context / action layer</td><td>원인이 아니라 메시지 조정 layer</td></tr>
+          <tr><td>is_female / is_male</td><td>demographic context / action layer</td><td>원인이 아니라 메시지 조정 layer</td></tr>
+          <tr><td>is_user_verified</td><td>profile context</td><td>모델 feature에는 남을 수 있으나 원인처럼 해석 금지</td></tr>
+          <tr><td>is_cold_start_3d_fixed / 7d_fixed</td><td>Activation</td><td>row-level first watch timing 기준 fixed cold_start</td></tr>
+          <tr><td>retention_w2_ratio / w3_ratio</td><td>Retention</td><td>1~3주차 사용 유지/감소 신호</td></tr>
+          <tr><td>watch_time_min_w1 / w2 / w3</td><td>Activation / Retention</td><td>주차별 시청시간</td></tr>
+          <tr><td>watch_session_w1 / w2 / w3</td><td>Activation / Retention</td><td>주차별 시청 세션</td></tr>
+          <tr><td>recency</td><td>Retention</td><td>day0~20 안에서의 최근성. day21+ 아님</td></tr>
+          <tr><td>genre / content ratio 계열</td><td>Retention_context / content proxy</td><td>콘텐츠 선호 직접 증명 아님. Movie_Master mapping proxy</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- A4 -->
+  <section class="card" id="a4">
+    <p class="sec-no">APPENDIX A4</p>
+    <h2>derived feature lineage</h2>
+    <p>원래 컬럼이 어떻게 파생변수로 변환됐는지와 그 해석상 caveat를 정리합니다.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>파생변수</th><th>뜻</th><th>사용 위치</th><th>caveat</th></tr></thead>
+        <tbody>
+          <tr><td>is_basic</td><td>basic plan 여부</td><td>expanded feature</td><td>plan/product proxy. 선호도 아님</td></tr>
+          <tr><td>is_cold_start_3d_fixed</td><td>가입 후 첫 3일 안 첫 시청 여부</td><td>Activation</td><td>original cold_start가 아니라 row-level fixed version</td></tr>
+          <tr><td>is_cold_start_7d_fixed</td><td>가입 후 7일 안 첫 시청 여부</td><td>Activation</td><td>day0~6 기준</td></tr>
+          <tr><td>age_group</td><td>나이대 bucket</td><td>action personalization</td><td>이탈 원인 아님</td></tr>
+          <tr><td>is_female / is_male</td><td>성별 flag</td><td>action personalization</td><td>원인 아님</td></tr>
+          <tr><td>payment_is_*</td><td>결제기기 one-hot</td><td>최종 해석 기준 제외</td><td>시청기기 아님</td></tr>
+          <tr><td>reg_hour_* / reg_is_weekend</td><td>가입 시간대 / 주말 여부</td><td>context feature</td><td>의도 직접 증명 아님</td></tr>
+          <tr><td>retention_w2_ratio / w3_ratio</td><td>사용 유지 비율</td><td>Retention</td><td>저활동 row에서 불안정 가능</td></tr>
+          <tr><td>diff_between_w*</td><td>주차 간 사용량 차이</td><td>Retention</td><td>감소의 인과 아님. 관측 신호</td></tr>
+          <tr><td>watch_ratio_under_1m / 5m</td><td>짧은 시청 비율</td><td>expanded feature</td><td>탐색 / 중단 / 짧은 콘텐츠 가능성</td></tr>
+          <tr><td>genre ratio</td><td>장르별 시청 비중</td><td>content proxy</td><td>Movie_Master mapping proxy</td></tr>
+          <tr><td>new / old movie ratio</td><td>신작 / 구작 비중</td><td>content proxy</td><td>release 기준 caveat</td></tr>
+          <tr><td>recency / inactive gap</td><td>최근 시청 / 비활성 gap</td><td>Retention</td><td>day0~20 안에서만 해석</td></tr>
+          <tr><td>only_w1 / w2 / w3</td><td>특정 주차에만 시청</td><td>Activation / Retention</td><td>행동 신호이지 원인 아님</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- A5 -->
+  <section class="card" id="a5">
+    <p class="sec-no">APPENDIX A5</p>
+    <h2>07x~18x timeline 상세</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>단계</th><th>목적</th><th>수행한 것</th><th>수행하지 않은 것</th><th>guide v3 relevance</th></tr></thead>
+        <tbody>
+          <tr><td>07x</td><td>AARRR feature mapping</td><td>06x feature를 AARRR stage와 caveat로 매핑</td><td>모델링, SHAP, segmentation</td><td>feature 설명 근거</td></tr>
+          <tr><td>08x</td><td>promotion vs nonpromotion EDA</td><td>100원딜 / 비100원딜 관찰 비교</td><td>인과 주장, 모델링</td><td>100원딜 narrative caveat</td></tr>
+          <tr><td>09x</td><td>promotion × repurchase 2×2 EDA</td><td>2×2 집단 기술통계</td><td>causal claim</td><td>target / scope 설명</td></tr>
+          <tr><td>10x</td><td>feature distribution / redundancy pre-audit</td><td>분포, 중복, VIF, proxy risk 점검</td><td>feature 제거</td><td>feature caveat</td></tr>
+          <tr><td>11x</td><td>baseline growth comparison</td><td>conservative vs expanded baseline 비교</td><td>final model 확정</td><td>baseline story</td></tr>
+          <tr><td>12x</td><td>model family comparison</td><td>모델군 비교</td><td>final campaign model 확정</td><td>CatBoost / LightGBM 맥락</td></tr>
+          <tr><td>14x</td><td>lightweight tuning</td><td>후보 경량 tuning</td><td>최종 모델 확정</td><td>tuning reference</td></tr>
+          <tr><td>15x</td><td>payment-device sensitivity</td><td>payment_is_* 제거 민감도, canonical 전체 재생성</td><td>causal 전체 재생성</td><td>payment 제거 근거</td></tr>
+          <tr><td>16x</td><td>payment-removed SHAP</td><td>payment 제거 기준 model explanation</td><td>인과 증명</td><td>XAI 설명 근거</td></tr>
+          <tr><td>17x</td><td>segmentation</td><td>OOF churn_risk와 행동 flag로 대표 segment 배정</td><td>캠페인 확정</td><td>segment cards</td></tr>
+          <tr><td>18x</td><td>business storyline / FINAL patches</td><td>발표 안전 문구와 action layer 정리</td><td>새 분석</td><td>최종 guide story</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- A6 -->
+  <section class="card" id="a6">
+    <p class="sec-no">APPENDIX A6</p>
+    <h2>traceability matrix</h2>
+    <p>이 문서의 주요 주장과 근거 파일, 근거 등급의 연결입니다. HTML 안의 모든 수치 주장은 아래 근거 파일에서 확인된 값이며, 문서에 없는 수치는 새로 만들지 않았습니다.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>guide v3 주장</th><th>근거 파일</th><th>근거 등급</th></tr></thead>
+        <tbody>
+          <tr><td>primary main cohort는 23,079 rows</td><td>dataset_lineage_summary.csv</td><td>확인됨</td></tr>
+          <tr><td>duration &lt; 21 row 238개 제외</td><td>dataset_lineage_summary.csv</td><td>확인됨</td></tr>
+          <tr><td>exact duplicate extra row 26개 제외</td><td>dataset_lineage_summary.csv</td><td>확인됨</td></tr>
+          <tr><td>최종 score source는 LightGBM / expanded_no_payment_device / overall_with_promotion / OOF churn_risk</td><td>model_and_score_source_summary.md</td><td>확인됨</td></tr>
+          <tr><td>PUBLIC은 reference branch</td><td>final_note.md / PUBLIC policy</td><td>확인됨 + 해석</td></tr>
+          <tr><td>AARRR은 feature 해석 프레임</td><td>AARRR_design_summary.md</td><td>확인됨</td></tr>
+          <tr><td>general_observation은 monitoring group</td><td>segmentation_basis_summary.md / final_note patch</td><td>확인됨 + 해석</td></tr>
+          <tr><td>content_preference는 정가 전환 강화군</td><td>segmentation_basis_summary.md / final_note patch</td><td>확인됨 + 해석</td></tr>
+          <tr><td>age/gender는 personalization layer</td><td>final_note.md</td><td>사용자 확인 + 해석</td></tr>
+          <tr><td>100원딜은 강하게 말하되 인과 금지</td><td>사용자 확인 / final_note</td><td>사용자 확인 + 해석</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="box info">
+      <p class="box-label">traceability note</p>
+      이 문서는 새 모델, 새 SHAP, 새 segmentation을 수행하지 않았습니다. 17x segment rule과 assignment는 변경하지 않았고, PUBLIC numeric score는 final 기준으로 사용하지 않았습니다. 근거 파일에 없는 정보는 미확인으로 둡니다.
+    </div>
+  </section>
+
+  <footer class="bottom">
+    project_guide_v3 · 100원딜 OTT 이탈 분석 최종 설명서<br>
+    계산 기준 park.ingyeom · score source LightGBM / expanded_no_payment_device / overall_with_promotion / OOF churn_risk · 분석 단위 row-level / subscription-event-level (23,079 rows)
+  </footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,99 @@
+"""파이프라인 공통 설정 — 경로, 상수, 피처 계약"""
+from pathlib import Path
+
+# ── 경로 ──────────────────────────────────────────────────────────────────────
+BASE      = Path(__file__).parent.parent          # ai agent/
+DATA_DIR  = BASE / "_data"
+CACHE_DIR = Path(__file__).parent / "cache"
+CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+# 원본 데이터
+MEM_PATH  = DATA_DIR / "02_interim" / "260513 feature" / "Membership_v3.csv"
+VIEW_PATH = DATA_DIR / "01_raw" / "Views_train.csv"
+
+# ── 파이프라인 상수 ────────────────────────────────────────────────────────────
+COHORT_MIN_DAYS  = 21    # 관측창 완료 기준 (day0~20)
+N_SPLITS         = 5     # StratifiedGroupKFold
+RANDOM_STATE     = 42
+N_OPTUNA_TRIALS  = 30    # Step 14 Optuna trial 수
+RETRAIN_MONTHS   = 6     # 모델 재학습 주기 (개월)
+
+# ── 피처 계약 (05y/06x/15x 기준) ──────────────────────────────────────────────
+
+# conservative_safe_22: 주차별 행동 중심 (cold_start_fixed 적용)
+CONSERVATIVE_FEATURES = [
+    "watch_time(min)_w1", "watch_time(min)_w2", "watch_time(min)_w3",
+    "watch_session_w1",   "watch_session_w2",   "watch_session_w3",
+    "retention_w2_ratio", "retention_w3_ratio",
+    "is_cold_start_3d_fixed", "is_cold_start_7d_fixed",
+    "is_only_w1",         "is_w1_over_50pct",
+    "diff_between_w3_w2", "diff_between_w3_w1", "diff_between_w2_w1",
+    "recency",            "max_inactive_gap_days",
+    "active_ratio",       "watch_per_day",
+    "age_group",          "is_promotion",
+]
+
+# expanded — 15x payment 제거 후 최종
+PAYMENT_FEATURES = [
+    "payment_is_mobile", "payment_is_pc",
+    "payment_is_android", "payment_is_ios",
+]
+
+# expanded_no_payment (15x 결과 반영)
+EXPANDED_FEATURES_NO_PAYMENT = [
+    # 주차별 행동
+    "watch_time(min)_w1", "watch_time(min)_w2", "watch_time(min)_w3",
+    "watch_session_w1",   "watch_session_w2",   "watch_session_w3",
+    "retention_w2_ratio", "retention_w3_ratio",
+    "is_cold_start_3d_fixed", "is_cold_start_7d_fixed",
+    "is_only_w1",  "is_w2_over_50pct", "is_w3_over_50pct", "is_w1_over_50pct",
+    "diff_between_w3_w2", "diff_between_w3_w1", "diff_between_w2_w1",
+    "recency",     "max_inactive_gap_days",
+    "active_ratio", "watch_per_day",
+    # 사용량 요약
+    "total_watch_count",    "unique_movie",        "watch_days",
+    "avg_watch_time(min)",  "median_watch_time(min)", "std_watch_time(min)",
+    "avg_daily_watch_time(min)", "max_watch_time(min)", "max_daily_watch_time(min)",
+    "max_daily_sessions",   "avg_gap_between_watch_days",
+    "avg_gap_w1_watch_days", "avg_gap_w2_watch_days", "avg_gap_w3_watch_days",
+    "avg_rewatch_ratio",    "weekend_watch_ratio",
+    "watch_ratio_under_1m", "watch_ratio_under_5m",
+    "movie_per_active_day", "max_day_share", "day_count_over_3times",
+    "total_watch_time(min)",
+    # 콘텍스트
+    "age_group", "is_female", "is_male",
+    "is_standard", "is_premium", "is_basic",
+    "reg_is_weekend",
+    "reg_hour_morning", "reg_hour_afternoon", "reg_hour_evening", "reg_hour_night",
+    "is_user_verified", "is_churn_prevented",
+    # 콘텐츠
+    "genre_diversity_count",
+    "action_adventure_ratio", "family_animation_ratio", "drama_ratio",
+    "thriller_crime_ratio",   "sf_fantasy_ratio",       "comedy_ratio",
+    "romance_ratio",          "horror_ratio",            "documentary_ratio",
+    "historical_war_ratio",   "other_ratio",
+    "new_movie_in_90d_ratio", "new_movie_in_180d_ratio", "new_movie_in_365d_ratio",
+    "old_movie_ratio(5y)",    "avg_ott_release_year",
+    # scope conditional (overall_with_promotion에서만)
+    "is_promotion",
+]
+
+# 제외 컬럼 (타겟·식별자·원본 cold_start)
+EXCLUDED_COLS = [
+    "USER_KEY", "is_repurchase", "reg_date", "end_date",
+    "product_code", "billing_method", "payment_device",
+    "gender", "age", "reg_hour",
+    "price", "max_screen",
+    "is_cold_start_3d", "is_cold_start_7d",  # _fixed 버전 사용
+] + PAYMENT_FEATURES
+
+# ── 17x 세그먼트 순서 ──────────────────────────────────────────────────────────
+SEGMENT_ORDER = [
+    "high_risk_week3_inactive_or_drop",
+    "high_risk_only_w1_or_cold_start_weak",
+    "high_risk_low_activity",
+    "medium_risk_retention_decay",
+    "content_preference_target_candidate",
+    "stable_retained_user",
+    "general_observation",
+]
