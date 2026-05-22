@@ -17,7 +17,7 @@ OTT 이탈 방지 파이프라인 FastAPI 서버
     빈 문자열(기본값)이면 인증 비활성화 — 개발/로컬 환경 전용.
 
 파이프라인 순서 (FastAPI 담당 단계):
-    01 → 03 → 06 → 08 → 09 → 10 → 11 → 12 → 14 → 15 → 16 → 17
+    00 → 01 → 03 → 06 → 08 → 09 → 10 → 11 → 12 → 14 → 15 → 16 → 17
     (02·04·05·07은 Dify 정책 기록만, 13은 없음)
 """
 import sys
@@ -34,6 +34,7 @@ from cache import load_state, list_cache, reset_pipeline, needs_retrain
 from config import API_KEY
 
 # ── 단계별 모듈 로드 ────────────────────────────────────────────────────────────
+step00 = importlib.import_module("00_feature_engineering.step00")
 step01 = importlib.import_module("01_data_contract.step01")
 step03 = importlib.import_module("03_observation_window.step03")
 step06 = importlib.import_module("06_dataset_generation.step06")
@@ -54,6 +55,7 @@ app = FastAPI(
 )
 
 # ── 라우터 등록 ────────────────────────────────────────────────────────────────
+app.include_router(step00.router)
 app.include_router(step01.router)
 app.include_router(step03.router)
 app.include_router(step06.router)
@@ -104,6 +106,7 @@ def _run_full(job_id: str):
     results = _jobs[job_id]["results"]
 
     try:
+        _run_step("step00", step00.feature_engineering,    results, force=True)
         _run_step("step01", step01.data_contract,          results, force=True)
         _run_step("step03", step03.observation_window,     results, force=True)
         _run_step("step06", step06.dataset_generation,     results, force=True)
@@ -130,7 +133,7 @@ def _run_fast(job_id: str):
     """
     빠른 실행 — 새 데이터 유입 시.
 
-    흐름: 01(데이터 검증) → 03(코호트) → 06(데이터셋 생성)
+    흐름: 00(피처생성) → 01(데이터 검증) → 03(코호트) → 06(데이터셋 생성)
           → 15/scoring(저장된 모델로 점수만 계산, 재학습 없음)
           → 17(세그먼트 재배정)
 
@@ -140,11 +143,12 @@ def _run_fast(job_id: str):
     results = _jobs[job_id]["results"]
 
     try:
-        _run_step("step01", step01.data_contract,      results, force=True)
-        _run_step("step03", step03.observation_window, results, force=True)
-        _run_step("step06", step06.dataset_generation, results, force=True)
-        _run_step("step15_scoring", step15.scoring,    results, force=True)
-        _run_step("step17", step17.segmentation,       results, force=True)
+        _run_step("step00", step00.feature_engineering, results, force=True)
+        _run_step("step01", step01.data_contract,       results, force=True)
+        _run_step("step03", step03.observation_window,  results, force=True)
+        _run_step("step06", step06.dataset_generation,  results, force=True)
+        _run_step("step15_scoring", step15.scoring,     results, force=True)
+        _run_step("step17", step17.segmentation,        results, force=True)
         _jobs[job_id]["status"] = "DONE"
 
     except StopIteration as failed_step:
@@ -250,5 +254,5 @@ def root():
     return {
         "message": "OTT 이탈 방지 파이프라인 서버 실행 중",
         "docs":    "/docs",
-        "steps":   "01→03→06→08→09→10→11→12→14→15→16→17",
+        "steps":   "00→01→03→06→08→09→10→11→12→14→15→16→17",
     }

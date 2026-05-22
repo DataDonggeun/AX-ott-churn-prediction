@@ -1,0 +1,124 @@
+﻿카테고리,변수명,데이터타입,설명,생성방식,비고
+타겟,is_repurchase,int (0/1),재구독 여부 (타겟),원시 데이터,"1=잔존, 0=이탈"
+기본 멤버십,is_standard,binary,2화면 요금제 여부,"max_screen == 2이면 1, 아니면 0",max_screen != 2 and max_screen != 4 then is_basic == 1
+,is_premium,binary,4화면 요금제 여부,"max_screen == 4이면 1, 아니면 0",max_screen != 2 and max_screen != 4 then is_basic == 1
+,is_churn_prevented,binary,이탈 방지 처리 여부,"Membership_v2.csv에서 그대로 가져오면 되며, 수정을 일체 금함",
+,is_promotion,binary,프로모션 가입 여부,"Membership_v2.csv에서 그대로 가져오면 되며, 수정을 일체 금함",
+,is_user_verified,binary,본인 인증 여부,"Membership_v2.csv에서 그대로 가져오면 되며, 수정을 일체 금함",
+인구통계,a,int,나이 10단위 그룹 (20/30/40/50...),age // 10 * 10,"기존의 데이터는 5단위 나이 (25, 30, 35...)였으며, 이를 10단위로 끊었음 (20, 30, 40...)"
+,is_female,binary,여성 여부,"gender == ""F"" 이면 1, 아니면 0","gender != ""F"" and gender != ""M"" then gender = ""N"" (NaN)"
+,is_male,binary,남성 여부,"gender == ""M""이면 1, 아니면 0","gender != ""F"" and gender != ""M"" then gender = ""N"" (NaN)"
+가입 시간대,reg_is_weekend,binary,주말(토·일) 가입 여부,"int( to_datetime(reg_date).weekday() in [5, 6] )","주말이면 1, 평일이면 0"
+,reg_hour_morning,binary,오전(6~11시) 가입 여부,"6 < = reg_hour <= 11이면 1, 아니면 0",
+,reg_hour_afternoon,binary,오후(12~17시) 가입 여부,"12 < = reg_hour <= 17이면 1, 아니면 0",
+,reg_hour_evening,binary,저녁(18~23시) 가입 여부,"18 < = reg_hour <= 23이면 1, 아니면 0",
+,reg_hour_night,binary,심야(0~5시) 가입 여부,"0 < = reg_hour <= 5이면 1, 아니면 0",
+결제 디바이스,payment_is_mobile,binary,모바일 결제 여부,"payment_device == ""mobile""이면 1, 아니면 0","android, ios, mobile, pc가 모두 아닐 경우 smarttv, ott 등의 기타 부류들에 속하는 것으로 간주함"
+,payment_is_pc,binary,PC 결제 여부,"payment_device == ""pc""이면 1, 아니면 0",
+,payment_is_android,binary,Android 결제 여부,"payment_device == ""android""이면 1, 아니면 0",
+,payment_is_ios,binary,Ios 결제 여부,"payment_device == ""ios""이면 1, 아니면 0",
+시청 기본,total_watch_count,int,총 시청 횟수 (세션 수),"df.groupby(""USER_NUM"")[""MOVIE_NUM""].count()",USER_NUM 당 집계
+,unique_movie,int,고유 영화(영화) 시청 수,"df.groupby(""USER_NUM"")[""MOVIE_NUM""].nunique()",
+,watch_days,int,시청한 고유 날짜 수,"df.groupby(""USER_NUM"")[""watch_date""].nunique()",df['watch_date'] = df['reg_date'].dt.date
+,active_ratio,float,활동률 (watch_days / 21),"df.groupby(""USER_NUM"")[""watch_date""].nunique() / 21",관측창 21일 기준
+,total_watch_time(min),float,총 시청 시간 (분),"df.groupby(""USER_NUM"")[""watch_time(min)""].sum()",
+,watch_per_day,float,하루 평균 시청 횟수,"df.groupby(""USER_NUM"")[""MOVIE_NUM""].count() / df.groupby(""USER_NUM"")[""watch_date""].nunique()",
+시청 시간 분포,avg_watch_time(min),float,회당 평균 시청 시간 (분),df.groupby('USER_NUM')['watch_time(min)'].mean(),View_History 테이블의 행 1개
+,median_watch_time(min),float,회당 중앙 시청 시간 (분),df.groupby('USER_NUM')['watch_time(min)'].median(),"N이 홀수 → 가운데 값 
+N이 짝수 → 가운데 두 값의 평균"
+,std_watch_time(min),float,회당 시청 시간 표준편차,df.groupby('USER_NUM')['watch_time(min)'].std(),σ = √[ (w₁-x̄)² + (w₂-x̄)² + ... + (wₙ-x̄)² ] / N
+,avg_daily_watch_time(min),float,하루 평균 시청 시간 (분),"daily_stats.groupby(""USER_NUM"")[""daily_sum""].mean()","daily_stats = df.groupby([""USER_NUM"", ""watch_date""]).agg(
+daily_sum=(""watch_time(min)"", ""sum""),
+daily_count=(""watch_time(min)"", ""count"")
+).reset_index()"
+,max_watch_time(min),int,최대 시청 시간 (분),"df.groupby(""USER_NUM"")[""watch_time(min)""].max()",
+,max_daily_watch_time(min),int,하루 최대 시청량,"daily_stats.groupby(""USER_NUM"")[""daily_sum""].max()",가입 후 21일 내 하루 시청 시간 합계 중 최댓값 (단위: 분)
+,max_daily_sessions,int,하루 최대 시청 횟수,"daily_stats.groupby(""USER_NUM"")[""daily_count""].max()",가입 후 21일 내 하루 시청 세션 수 중 최댓값
+시청 패턴,recency,int,마지막 시청 경과일 (20 - last_watch_day),"df.groupby(""USER_NUM"")[""obs_day""].max().apply(lambda x: 20 - x)",obs_day = watch_date - reg_date
+,avg_gap_between_watch_days,float,1~3주(1~21일) 평균 시청 간격(일),"df.groupby(""USER_NUM"")[""watch_date""].apply(lambda x: pd.Series(sorted(x.unique())).diff().dropna().mean())",[(d₂-d₁)+(d₃-d₂)+...+(dₙ-dₙ₋₁)] / (N-1)
+,avg_gap_w1_watch_days,float,1주차(1~7일) 평균 시청 간격(일),"df[df[""obs_day""] < 7].groupby(""USER_NUM"")[""watch_date""].apply(lambda x: pd.Series(sorted(x.unique())).diff().dropna().mean())","[(d₂-d₁)+...+(dₙ-dₙ₋₁)] / (N-1), obs_day 0~6
+"
+,avg_gap_w2_watch_days,float,2주차(8~14일) 평균 시청 간격(일),"df[(df[""obs_day""]>=7)&(df[""obs_day""]<14)].groupby(""USER_NUM"")[""watch_date""].apply(lambda x: pd.Series(sorted(x.unique())).diff().dropna().mean())","[(d₂-d₁)+...+(dₙ-dₙ₋₁)] / (N-1), obs_day 7~13"
+,avg_gap_w3_watch_days,float,3주차(15~21일) 평균 시청 간격(일),"df[(df[""obs_day""]>=14)&(df[""obs_day""]<21)].groupby(""USER_NUM"")[""watch_date""].apply(lambda x: pd.Series(sorted(x.unique())).diff().dropna().mean())","[(d₂-d₁)+...+(dₙ-dₙ₋₁)] / (N-1), obs_day 14~20"
+,max_inactive_gap_days,int,최장 미시청 기간 (일),"df.groupby(""USER_NUM"")[""watch_date""].apply(lambda x: pd.Series(sorted(x.unique())).diff().dropna().max())","max(d₂-d₁, d₃-d₂, ... , dₙ-dₙ₋₁)
+"
+,avg_rewatch_ratio,float,재시청 비율,"rewatch[rewatch[""cnt""]>=2].groupby(""USER_NUM"").size() / df.groupby(""USER_NUM"").size()","rewatch = df.groupby([""USER_NUM"",""MOVIE_NUM""]).size().reset_index(name=""cnt"");
+
+같은 MOVIE_NUM 2회 이상 시청 횟수 / 전체 시청 횟수"
+,weekend_watch_ratio,float,주말(토·일) 시청 비율,"df[""is_weekend""] = df[""watch_date""].dt.weekday >= 5; df.groupby(""USER_NUM"")[""is_weekend""].mean()",토·일 시청 횟수 / 전체 시청 횟수
+,watch_ratio_under_1m,float,1분 이하 시청 비율 (오류/탐색),"df.groupby(""USER_NUM"").apply(lambda x: (x[""watch_time(min)""] < 1).sum() / len(x))",watch_time(min) < 1분인 세션 수 / 전체 세션 수
+,watch_ratio_under_5m,float,5분 이하 시청 비율 (탐색/이탈),"df.groupby(""USER_NUM"").apply(lambda x: (x[""watch_time(min)""] < 5).sum() / len(x))",watch_time(min) < 5분인 세션 수 / 전체 세션 수
+온보딩,is_cold_start_3d,binary,구독 후 3일 이내 첫 시청 여부,int( 0 <= (first_watch_date - reg_date_dt).days <= 3),"조건 : to_datetime(reg_date) <= to_datetime(watch_day) <= to_datetime(end_date)
+reg_date_dt = to_datetime(reg_date)
+watch_date = to_datetime(watch_day, format=""%Y%m%d"")
+first_watch_date = groupby(""USER_NUM"").min(watch_date)"
+,is_cold_start_7d,binary,구독 후 7일 이내 첫 시청 여부,int( 0 <= (first_watch_date - reg_date_dt).days <= 7),"조건 : to_datetime(reg_date) <= to_datetime(watch_day) <= to_datetime(end_date)
+reg_date_dt = to_datetime(reg_date)
+watch_date = to_datetime(watch_day, format=""%Y%m%d"")
+first_watch_date = groupby(""USER_NUM"").min(watch_date)"
+시청 강도,movie_per_active_day,float,활동일 당 평균 고유한 영화 수,"df.groupby(""USER_NUM"")[""MOVIE_NUM""].nunique() / df.groupby(""USER_NUM"")[""watch_date""].nunique()",unique_movie / watch_days
+,max_day_share,float,하루 최대 집중도 (높으면 이탈 방향),df['max_daily_watch_time(min)'] / df['total_watch_time(min)'],"24행 , 31행 참고
+totla_watch_time(min) = df.groupby(""USER_NUM"")[""watch_time(min)""].sum()
+max_daily_watch_time(min) = daily_stats.groupby(""USER_NUM"")[""daily_sum""].max()"
+,day_count_over_3times,int,하루 3회 이상 시청한 날 수,daily_stats[daily_stats['daily_count'] >= 3].groupby('USER_NUM').size(),"daily_stats = df.groupby([""USER_NUM"", ""watch_date""]).agg(
+daily_sum=(""watch_time(min)"", ""sum""),
+daily_count=(""watch_time(min)"", ""count"")
+).reset_index()"
+주차별 시청,watch_time(min)_w1,float,1주차(1~7일) 시청 시간 (분),"view.loc[view[""watch_rel_day""].between(1, 7), ""watch_time(min)""].sum()","watch_rel_day = View_History_v2.watch_day - Membership_v2.reg_date + 1
+의미: 구독 시작일(reg_date)을 기준으로, 해당 시청일(watch_day)이 구독 시작 후 몇 일차의 시청인지?
+
+watch_rel_day = 1 → 구독 시작 당일 시청
+watch_rel_day = 2 → 구독 시작 다음 날 시청
+watch_rel_day = 8 → 구독 2주차 첫날 시청
+watch_rel_day = 15 → 구독 3주차 첫날 시청
+watch_rel_day = 21 → 구독 3주차 마지막 날 시청"
+,watch_time(min)_w2,float,2주차(8~14일) 시청 시간 (분),"view.loc[view[""watch_rel_day""].between(8, 14), ""watch_time(min)""].sum()",
+,watch_time(min)_w3,float,3주차(15~21일) 시청 시간 (분),"view.loc[view[""watch_rel_day""].between(15, 21), ""watch_time(min)""].sum()",
+,watch_session_w1,float,1주차(1~7일) 시청 세션 (횟수),"view.loc[view[""watch_rel_day""].between(1, 7)].shape[0]",
+,watch_session_w2,float,2주차(8~14일) 시청 세션 (횟수),"view.loc[view[""watch_rel_day""].between(8, 14)].shape[0]",
+,watch_session_w3,float,3주차(15~21일) 시청 세션 (횟수),"view.loc[view[""watch_rel_day""].between(15, 21)].shape[0]",
+,retention_w2_ratio,float,1주차 대비 2주차 시청시간 유지율,(watch_time(min)_w2 + 1) / (watch_time(min)_w1 + 1),"전(前)주차 대비 현(現)주차 시청시간 변화비.
+단, 전주차 시청시간이 0인 경우에도 계산 가능하도록 분자와 분모에 1을 더해 보정한다.
+다만 w1=0, w2=0이면 ratio는 1이 됌(양변에 1 더했기 떄문) 어쩔수없는?"
+,retention_w3_ratio,float,2주차 대비 3주차 시청시간 유지율,(watch_time(min)_w3 + 1) / (watch_time(min)_w2 + 1),
+,diff_between_w2_w1,float,1주차 대비 2주차 시청 시간(분)의 차이,watch_time(min)_w2 - watch_time(min)_w1,"48~50행에서 만든 watch_time(min)_w1~w3을 사용할거임
+예)
+watch_time(min)_w1 = 300분
+watch_time(min)_w2 = 180분
+diff_between_w2_w1 = 180 - 300 = -120 (음수가 나올 수도 있음! 당연한 것임!)"
+,diff_between_w3_w1,float,1주차 대비 3주차 시청 시간(분)의 차이,watch_time(min)_w3 - watch_time(min)_w1,
+,diff_between_w3_w2,float,2주차 대비 3주차 시청 시간(분)의 차이,watch_time(min)_w3 - watch_time(min)_w2,
+시청 유형 플래그,is_w1_over_50pct,binary,1주차 50% 이상 집중 시청 여부(0/1),int((total_watch_time(min)_3w > 0) and (watch_time(min)_w1 / total_watch_time(min)_3w >= 0.5)),"새로운 임시변수 생성해야 함
+total_watch_time(min)_3w = watch_time(min)_w1 + watch_time(min)_w2 + watch_time(min)_w3"
+,is_w2_over_50pct,binary,2주차 50% 이상 집중 시청 여부(0/1),int((total_watch_time(min)_3w > 0) and (watch_time(min)_w2 / total_watch_time(min)_3w >= 0.5)),
+,is_w3_over_50pct,binary,3주차 50% 이상 집중 시청 여부(0/1),int((total_watch_time(min)_3w > 0) and (watch_time(min)_w3 / total_watch_time(min)_3w >= 0.5)),
+,is_only_w1,binary,1주차만 시청 여부(0/1),int((watch_time(min)_w1 > 0) and (watch_time(min)_w2 == 0) and (watch_time(min)_w3 == 0)),
+,is_only_w2,binary,2주차만 시청 여부(0/1),int((watch_time(min)_w1 == 0) and (watch_time(min)_w2 > 0) and (watch_time(min)_w3 == 0)),
+,is_only_w3,binary,3주차만 시청 여부(0/1),int((watch_time(min)_w1 == 0) and (watch_time(min)_w2 == 0) and (watch_time(min)_w3 > 0)),
+신규 영화 시청,new_movie_in_90d_ratio,float,신규 영화 시청 비율 (2021년 01월 이후),ott_release_month ≥ 202101인 세션 수 / total_watch_count,
+,new_movie_in_180d_ratio,float,신규 영화 시청 비율 (2020년 09월 이후),ott_release_month ≥ 202009인 세션 수 / total_watch_count,
+,new_movie_in_365d_ratio,float,신규 영화 시청 비율 (2020년 03월 이후),ott_release_month ≥202003인 세션 수 / total_watch_count,
+,old_movie_ratio(5y),float,5년 이상 된 작품 시청 비중,"
+groupby(""USER_NUM"").mean(is_old_catalog_5y)
+","조건 : to_datetime(reg_date) <= to_datetime(watch_day) <= to_datetime(end_date)
+release_date = to_datetime( zfill6(ott_release_month) + ""01"" ) 
+watch_date = to_datetime(watch_day, format=""%Y%m%d"") 
+is_old_catalog_5y = int((watch_date - release_date).days >= 1825)"
+,avg_ott_release_year,float,평균 시청 영화 출시연도,"((view[""ott_release_month""] // 100) * view[""watch_time(min)""]).sum() / view[""watch_time(min)""].sum()",시청한 콘텐츠의 OTT 공개연도를 시청시간으로 가중 평균한 값. 값이 클수록 최근 OTT에 공개된 콘텐츠를 많이 시청한 사용자로 해석.
+장르 다양성,genre_diversity_count,int,시청한 고유 장르 수,"df.groupby(""USER_NUM"")[""genre""].nunique()",
+장르 비중,action_adventure_ratio,float,액션/어드벤처 장르 비중,"한 USER_NUM의 (category == ""Action/Adventure""의 watch_time(min) 합 / 전체 watch_time(min) 합)","예) drama_ratio =
+1명의 USER_NUM가 시청한 drama 장르의 시청시간(분)의 sum
+/ 1명의 USER_NUM가 시청한 전체 장르의 시청시간(분)의 sum
+
+한 USER_NUM의 모든 11개의 genre_ratio의 합은 1이 되어야 함.
+각 개별 genre_ratio의 값은 0~1 사이여야 함."
+,family_animation_ratio,float,패밀리/애니메이션 장르 비중,"한 USER_NUM의 (category == ""Animation/Family""의 watch_time(min) 합 / 전체 watch_time(min) 합)",
+,drama_ratio,float,드라마 장르 비중,"한 USER_NUM의 (category == ""Drama""의 watch_time(min) 합 / 전체 watch_time(min) 합)",
+,thriller_crime_ratio,float,스릴러/범죄 장르 비중,"한 USER_NUM의 (category == ""Thriller/Crime""의 watch_time(min) 합 / 전체 watch_time(min) 합)",
+,sf_fantasy_ratio,float,SF/판타지 장르 비중,"한 USER_NUM의 (category == ""SF/Fantasy""의 watch_time(min) 합 / 전체 watch_time(min) 합)",
+,comedy_ratio,float,코미디 장르 비중,"한 USER_NUM의 (category == ""Comedy""의 watch_time(min) 합 / 전체 watch_time(min) 합)",
+,romance_ratio,float,로맨스 장르 비중,"한 USER_NUM의 (category == ""Romance""의 watch_time(min) 합 / 전체 watch_time(min) 합)",
+,horror_ratio,float,공포 장르 비중,"한 USER_NUM의 (category == ""Horror""의 watch_time(min) 합 / 전체 watch_time(min) 합)",
+,documentary_ratio,float,다큐멘터리 장르 비중,"한 USER_NUM의 (category == ""Documentary""의 watch_time(min) 합 / 전체 watch_time(min) 합)",
+,historical_war_ratio,float,역사/전쟁 장르 비중,"한 USER_NUM의 (category == ""Historical/War""의 watch_time(min) 합 / 전체 watch_time(min) 합)",
+,other_ratio,float,그 외 장르 비중,"한 USER_NUM의 (category == ""Other""의 watch_time(min) 합 / 전체 watch_time(min) 합)",
