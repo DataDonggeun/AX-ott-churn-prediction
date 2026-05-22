@@ -1,5 +1,6 @@
 """파이프라인 아티팩트 캐시 — 모델/결과 저장·로드·상태 관리"""
 import json
+import math
 import joblib
 import pandas as pd
 from datetime import datetime
@@ -7,6 +8,22 @@ from pathlib import Path
 from typing import Any, Optional
 
 from config import CACHE_DIR, RETRAIN_MONTHS
+
+
+def _json_safe(obj: Any) -> Any:
+    """
+    float inf / nan → None 으로 재귀 변환.
+    JSON은 inf/nan을 지원하지 않아 json.dumps가 ValueError를 냄.
+    """
+    if isinstance(obj, float):
+        if math.isinf(obj) or math.isnan(obj):
+            return None
+        return obj
+    if isinstance(obj, dict):
+        return {k: _json_safe(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_json_safe(v) for v in obj]
+    return obj
 
 STATE_FILE = CACHE_DIR / "pipeline_state.json"
 
@@ -63,11 +80,28 @@ def reset_pipeline():
         STATE_FILE.unlink()
 
 
+def _step_num(key: str) -> Optional[int]:
+    """'step11' → 11 변환. 파싱 실패 시 None 반환."""
+    try:
+        return int(key.replace("step", ""))
+    except ValueError:
+        return None
+
+
 def reset_step(step: str):
-    """특정 단계부터 다시 실행되도록 해당 단계 이후 상태 삭제"""
+    """
+    특정 단계부터 다시 실행되도록 해당 단계 이후 상태 삭제.
+    'stepXX' 형식이 아닌 키는 건드리지 않음.
+    """
+    target = _step_num(step)
+    if target is None:
+        return
+
     state = load_state()
-    step_num = int(step.replace("step", ""))
-    keys_to_remove = [k for k in state if int(k.replace("step", "")) >= step_num]
+    keys_to_remove = [
+        k for k in state
+        if _step_num(k) is not None and _step_num(k) >= target
+    ]
     for k in keys_to_remove:
         del state[k]
     save_state(state)
@@ -104,7 +138,7 @@ def load_df(name: str) -> Optional[pd.DataFrame]:
 def save_json(name: str, data: Any):
     path = CACHE_DIR / f"{name}.json"
     path.write_text(
-        json.dumps(data, default=str, indent=2, ensure_ascii=False),
+        json.dumps(_json_safe(data), default=str, indent=2, ensure_ascii=False),
         encoding="utf-8"
     )
 

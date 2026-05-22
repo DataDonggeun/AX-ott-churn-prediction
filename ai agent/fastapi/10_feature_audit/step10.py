@@ -47,11 +47,21 @@ def _vif_for(X: pd.DataFrame) -> pd.DataFrame:
         except Exception:
             vif_vals[col] = np.nan
 
+    def _safe_vif(v):
+        """inf/nan → JSON 직렬화 가능한 값으로 변환."""
+        if pd.isna(v) or (isinstance(v, float) and np.isnan(v)):
+            return None
+        if np.isinf(v):
+            return "inf"   # float inf는 JSON 불가 → 문자열로
+        return round(float(v), 2)
+
     df = pd.DataFrame([
-        {"feature": k, "vif": round(v, 2) if pd.notna(v) and not np.isinf(v) else v}
+        {"feature": k, "vif": _safe_vif(v)}
         for k, v in vif_vals.items()
     ])
-    return df.sort_values("vif", ascending=False)
+    return df.sort_values("vif", ascending=False, key=lambda s: s.apply(
+        lambda x: float("inf") if x == "inf" else (x or 0)
+    ))
 
 
 def run_feature_audit(df: pd.DataFrame) -> dict:
@@ -99,22 +109,23 @@ def run_feature_audit(df: pd.DataFrame) -> dict:
             zero_inf.append({"feature": col, "zero_rate": round(zero_rate, 4)})
     zero_inf.sort(key=lambda x: x["zero_rate"], reverse=True)
 
+    inf_count = sum(1 for r in top_vif if r["vif"] == "inf" or (isinstance(r["vif"], (int, float)) and (r["vif"] or 0) >= 20))
     return {
         "status":               "PASS",
         "vif_top10":            top_vif,
         "high_corr_pairs":      high_pairs[:20],
         "high_corr_pair_count": len(high_pairs),
         "zero_inflation_features": zero_inf,
-        "note": "피처 제거 없음. 경고 리스트만 기록.",
+        "note": "피처 제거 없음. 경고 리스트만 기록. vif='inf'는 완전 다중공선성.",
         "summary": (
-            f"VIF 극단값 피처 {sum(1 for r in top_vif if r['vif'] == float('inf') or (r['vif'] or 0) >= 20)}개 | "
+            f"VIF 극단값 피처 {inf_count}개 | "
             f"고상관 쌍 {len(high_pairs)}개 | "
             f"zero-inflation >= 50% 피처 {len(zero_inf)}개."
         ),
     }
 
 
-@router.get("/feature-audit")
+@router.post("/feature-audit")
 def feature_audit(force: bool = False):
     """Step 10: VIF·상관계수·zero-inflation 감사."""
     if not force and is_done("step10"):

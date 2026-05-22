@@ -47,11 +47,9 @@ def run_segmentation(exp_df: pd.DataFrame, oof_df: pd.DataFrame) -> dict:
     oof_scope = oof_scope.sort_values("USER_KEY").reset_index(drop=True)
     base = exp_df.copy().reset_index(drop=True)
 
-    # 점수 병합
-    score_map = oof_scope.set_index("USER_KEY")[["repurchase_score", "churn_risk"]].to_dict("index")
-    base["repurchase_score"] = base["USER_KEY"].map(
-        lambda k: score_map.get(k, {}).get("repurchase_score", 0.5)
-    )
+    # 점수 병합 — dict map으로 직접 매핑 (lambda보다 빠름)
+    score_lookup = oof_scope.set_index("USER_KEY")["repurchase_score"]
+    base["repurchase_score"] = base["USER_KEY"].map(score_lookup).fillna(0.5)
     base["churn_risk"] = 1 - base["repurchase_score"]
 
     # 위험도 백분위

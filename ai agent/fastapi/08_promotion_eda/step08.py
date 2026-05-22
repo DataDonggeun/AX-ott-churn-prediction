@@ -83,7 +83,7 @@ def run_promotion_eda(df: pd.DataFrame) -> dict:
     }
 
 
-@router.get("/promotion-eda")
+@router.post("/promotion-eda")
 def promotion_eda(force: bool = False):
     """Step 08: 프로모션 vs 비프로모션 EDA."""
     if not force and is_done("step08"):
@@ -96,11 +96,14 @@ def promotion_eda(force: bool = False):
     if df is None:
         return {"status": "FAIL", "reason": "Step 06 먼저 실행 필요 (conservative_dataset 없음)"}
 
-    # is_promotion은 conservative에 없을 수 있으므로 expanded에서 보완
+    # is_promotion이 없으면 expanded_dataset에서 USER_KEY 기준 merge로 보완
     if "is_promotion" not in df.columns:
         exp = load_df("expanded_dataset")
         if exp is not None and "is_promotion" in exp.columns:
-            df["is_promotion"] = exp["is_promotion"].values
+            df = df.merge(
+                exp[["USER_KEY", "is_promotion"]].drop_duplicates("USER_KEY"),
+                on="USER_KEY", how="left",
+            )
 
     result = run_promotion_eda(df)
 

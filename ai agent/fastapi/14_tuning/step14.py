@@ -72,11 +72,19 @@ def _search_space(trial, model_name: str) -> dict:
             "colsample_bytree": trial.suggest_float("colsample_bytree", 0.6, 1.0),
             "reg_lambda":    trial.suggest_float("reg_lambda", 1e-8, 20.0, log=True),
         }
-    if model_name in ("HistGradientBoosting", "CatBoost"):
+    if model_name == "HistGradientBoosting":
         return {
             "max_iter":       trial.suggest_int("max_iter", 100, 500),
             "learning_rate":  trial.suggest_float("learning_rate", 0.01, 0.20, log=True),
             "max_leaf_nodes": trial.suggest_int("max_leaf_nodes", 15, 63),
+        }
+    if model_name == "CatBoost":
+        # CatBoost는 max_iter/max_leaf_nodes 아님 — iterations/max_leaves 사용
+        return {
+            "iterations":    trial.suggest_int("iterations", 100, 500),
+            "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.20, log=True),
+            "depth":         trial.suggest_int("depth", 3, 8),
+            "l2_leaf_reg":   trial.suggest_float("l2_leaf_reg", 1.0, 10.0),
         }
     if model_name == "RandomForest":
         return {

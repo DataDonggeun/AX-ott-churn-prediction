@@ -111,7 +111,7 @@ def run_data_contract(df: pd.DataFrame) -> dict:
     }
 
 
-@router.get("/data-contract")
+@router.post("/data-contract")
 def data_contract(force: bool = False):
     """
     Step 01: 데이터 계약 감사.

@@ -54,11 +54,10 @@ SCOPES = {
 
 
 def _features_for(df: pd.DataFrame, include_promotion: bool) -> list:
-    exclude = {"USER_KEY", "is_repurchase", "is_promotion"}
-    feats = [c for c in df.columns if c not in exclude]
-    if not include_promotion and "is_promotion" in feats:
-        feats.remove("is_promotion")
-    return feats
+    exclude = {"USER_KEY", "is_repurchase"}
+    if not include_promotion:
+        exclude.add("is_promotion")
+    return [c for c in df.columns if c not in exclude]
 
 
 def _cv_auc(df_scope: pd.DataFrame, features: list, model) -> dict:
@@ -111,9 +110,12 @@ def run_baseline_comparison(cons_df: pd.DataFrame, exp_df: pd.DataFrame) -> dict
     }
 
     for fs_name, df in datasets.items():
+        # conservative_dataset에 is_promotion이 없을 경우 USER_KEY 기준 merge로 보완
         if "is_promotion" not in df.columns and "is_promotion" in exp_df.columns:
-            df = df.copy()
-            df["is_promotion"] = exp_df["is_promotion"].values
+            df = df.merge(
+                exp_df[["USER_KEY", "is_promotion"]].drop_duplicates("USER_KEY"),
+                on="USER_KEY", how="left",
+            )
 
         for scope_name, scope_fn in SCOPES.items():
             df_scope, inc_promo = scope_fn(df)

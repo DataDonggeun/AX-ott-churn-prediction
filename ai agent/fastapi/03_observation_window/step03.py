@@ -89,7 +89,7 @@ def run_observation_window(df: pd.DataFrame) -> dict:
     }
 
 
-@router.get("/observation-window")
+@router.post("/observation-window")
 def observation_window(force: bool = False):
     """
     Step 03: 관측창 정책 적용 결과 반환.

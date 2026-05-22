@@ -135,14 +135,19 @@ def run_dataset_generation(df_raw: pd.DataFrame) -> dict:
         df["is_basic"] = 0
 
     # ── conservative 데이터셋 ──────────────────────────────────────────────────
+    # is_promotion은 feature가 아니라 scope 필터링용 구조 컬럼으로 항상 포함
     cons_features = [f for f in CONSERVATIVE_FEATURES if f in df.columns]
-    cons_df = df[["USER_KEY", "is_repurchase"] + cons_features].copy()
+    cons_struct = ["USER_KEY", "is_repurchase"] + (
+        ["is_promotion"] if "is_promotion" in df.columns else []
+    )
+    cons_df = df[cons_struct + cons_features].copy()
 
     # ── expanded 데이터셋 (payment_is_* 제거 15x 결과 반영) ────────────────────
     exp_features = [
         f for f in EXPANDED_FEATURES_NO_PAYMENT
         if f in df.columns and f not in PAYMENT_FEATURES
     ]
+    # is_promotion은 EXPANDED_FEATURES_NO_PAYMENT에 포함되어 있어 자동으로 들어옴
     exp_df = df[["USER_KEY", "is_repurchase"] + exp_features].copy()
 
     # ── 캐시 저장 ──────────────────────────────────────────────────────────────

@@ -1,4 +1,5 @@
 """파이프라인 공통 설정 — 경로, 상수, 피처 계약"""
+import os
 from pathlib import Path
 
 # ── 경로 ──────────────────────────────────────────────────────────────────────
@@ -11,6 +12,11 @@ CACHE_DIR.mkdir(parents=True, exist_ok=True)
 MEM_PATH  = DATA_DIR / "02_interim" / "260513 feature" / "Membership_v3.csv"
 VIEW_PATH = DATA_DIR / "01_raw" / "Views_train.csv"
 
+# ── 인증 ───────────────────────────────────────────────────────────────────────
+# 빈 문자열(기본값)이면 인증 비활성화 — 로컬/개발 환경 전용
+# 운영 시: export PIPELINE_API_KEY=your-secret-key
+API_KEY = os.getenv("PIPELINE_API_KEY", "")
+
 # ── 파이프라인 상수 ────────────────────────────────────────────────────────────
 COHORT_MIN_DAYS  = 21    # 관측창 완료 기준 (day0~20)
 N_SPLITS         = 5     # StratifiedGroupKFold
@@ -20,7 +26,9 @@ RETRAIN_MONTHS   = 6     # 모델 재학습 주기 (개월)
 
 # ── 피처 계약 (05y/06x/15x 기준) ──────────────────────────────────────────────
 
-# conservative_safe_22: 주차별 행동 중심 (cold_start_fixed 적용)
+# conservative_safe_22: 주차별 행동 중심 (cold_start_fixed 적용) — 정확히 22개
+# is_promotion은 scope 조건부이므로 이 목록에 포함하지 않음.
+# overall_with_promotion scope에서만 feature로 추가됨 (step 코드에서 처리).
 CONSERVATIVE_FEATURES = [
     "watch_time(min)_w1", "watch_time(min)_w2", "watch_time(min)_w3",
     "watch_session_w1",   "watch_session_w2",   "watch_session_w3",
@@ -30,8 +38,11 @@ CONSERVATIVE_FEATURES = [
     "diff_between_w3_w2", "diff_between_w3_w1", "diff_between_w2_w1",
     "recency",            "max_inactive_gap_days",
     "active_ratio",       "watch_per_day",
-    "age_group",          "is_promotion",
+    "age_group",          "is_user_verified",    "is_churn_prevented",
 ]
+
+# is_promotion — split key. overall_with_promotion 모델에서만 feature로 사용.
+PROMOTION_FEATURE = "is_promotion"
 
 # expanded — 15x payment 제거 후 최종
 PAYMENT_FEATURES = [
@@ -74,11 +85,13 @@ EXPANDED_FEATURES_NO_PAYMENT = [
     "historical_war_ratio",   "other_ratio",
     "new_movie_in_90d_ratio", "new_movie_in_180d_ratio", "new_movie_in_365d_ratio",
     "old_movie_ratio(5y)",    "avg_ott_release_year",
-    # scope conditional (overall_with_promotion에서만)
+    # scope 조건부: overall_with_promotion에서만 모델 feature로 사용.
+    # 데이터셋에는 포함해 scope 필터링(df[df["is_promotion"]==1])에 활용하고,
+    # 각 step의 exclude 집합에서 제거 여부를 결정함.
     "is_promotion",
 ]
 
-# 제외 컬럼 (타겟·식별자·원본 cold_start)
+# 제외 컬럼 (타겟·식별자·원본 cold_start·결제기기 proxy)
 EXCLUDED_COLS = [
     "USER_KEY", "is_repurchase", "reg_date", "end_date",
     "product_code", "billing_method", "payment_device",
