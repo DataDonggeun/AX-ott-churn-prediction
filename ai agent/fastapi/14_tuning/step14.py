@@ -12,7 +12,8 @@ import sys, importlib
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from fastapi import APIRouter
+import uuid
+from fastapi import APIRouter, BackgroundTasks
 import pandas as pd
 import numpy as np
 from sklearn.base import clone
@@ -25,6 +26,31 @@ from cache import is_done, mark_done, save_json, load_json, load_df, save_artifa
 
 router = APIRouter(prefix="/14", tags=["14. Optuna Tuning"])
 
+_jobs: dict = {}
+
+
+def _bg_tuning(job_id: str, force: bool):
+    _jobs[job_id]["status"] = "RUNNING"
+    try:
+        exp_df     = load_df("expanded_dataset")
+        candidates = load_json("step12_candidates")
+        if exp_df is None:
+            _jobs[job_id] = {"status": "FAIL", "reason": "Step 06 먼저 실행 필요"}
+            return
+        if candidates is None:
+            _jobs[job_id] = {"status": "FAIL", "reason": "Step 12 먼저 실행 필요"}
+            return
+
+        result = run_tuning(exp_df, candidates, job_id=job_id)
+        save_json("step14_result",      result)
+        save_json("step14_best_params", result.get("by_scope", {}))
+        mark_done("step14", {"scopes_tuned": len(result.get("by_scope", {}))})
+        _jobs[job_id]["status"] = "DONE"
+        _jobs[job_id]["result"] = result
+    except Exception as exc:
+        _jobs[job_id]["status"] = "ERROR"
+        _jobs[job_id]["error"]  = str(exc)
+
 SCOPES = {
     "overall_without_promotion": lambda df: (df, False),
     "overall_with_promotion":    lambda df: (df, True),
@@ -36,10 +62,10 @@ SCOPES = {
 def _make_model(model_name: str, params: dict):
     if model_name == "LightGBM":
         cls = importlib.import_module("lightgbm").LGBMClassifier
-        return cls(**params, random_state=RANDOM_STATE, n_jobs=-1, verbose=-1)
+        return cls(**params, random_state=RANDOM_STATE, n_jobs=1, num_threads=1, verbose=-1)
     if model_name == "XGBoost":
         cls = importlib.import_module("xgboost").XGBClassifier
-        return cls(**params, eval_metric="logloss", n_jobs=-1,
+        return cls(**params, eval_metric="logloss", n_jobs=1,
                    random_state=RANDOM_STATE, tree_method="hist")
     if model_name == "CatBoost":
         cls = importlib.import_module("catboost").CatBoostClassifier
@@ -107,20 +133,30 @@ def _cv_mean_auc(X, y, groups, model) -> float:
     return float(np.nanmean(aucs))
 
 
-def run_tuning(exp_df: pd.DataFrame, candidates: dict) -> dict:
+def run_tuning(exp_df: pd.DataFrame, candidates: dict, job_id: str = None) -> dict:
     try:
         import optuna
         optuna.logging.set_verbosity(optuna.logging.WARNING)
     except ImportError:
         return {"status": "FAIL", "reason": "optuna 미설치. pip install optuna"}
 
+    scope_list = list(SCOPES.keys())
+    total_scopes = len(scope_list)
     best_params_all = {}
     summary = []
 
-    for scope_name, scope_fn in SCOPES.items():
+    for scope_idx, (scope_name, scope_fn) in enumerate(SCOPES.items()):
         model_name = candidates.get(scope_name, {}).get("model")
         if not model_name:
             continue
+
+        if job_id and job_id in _jobs:
+            _jobs[job_id]["progress"] = {
+                "scope": scope_name,
+                "scope_step": f"{scope_idx+1}/{total_scopes}",
+                "trial": 0,
+                "total_trials": N_OPTUNA_TRIALS,
+            }
 
         df_scope, inc_promo = scope_fn(exp_df)
         exclude  = {"USER_KEY", "is_repurchase"} | (set() if inc_promo else {"is_promotion"})
@@ -132,12 +168,20 @@ def run_tuning(exp_df: pd.DataFrame, candidates: dict) -> dict:
         y      = df_scope["is_repurchase"].astype(int).to_numpy()
         groups = df_scope["USER_KEY"].astype(str).to_numpy()
 
-        # baseline AUC (파라미터 없이)
-        try:
-            baseline_model = _make_model(model_name, {})
-            baseline_auc   = round(_cv_mean_auc(X, y, groups, baseline_model), 4)
-        except Exception:
-            baseline_auc = None
+        # baseline AUC
+        def _set_progress(step, trial_num=0, best=None):
+            if job_id and job_id in _jobs:
+                _jobs[job_id]["progress"] = {
+                    "scope": scope_name,
+                    "scope_step": f"{scope_idx+1}/{total_scopes}",
+                    "step": step,
+                    "trial": trial_num,
+                    "total_trials": N_OPTUNA_TRIALS,
+                    "best_auc_so_far": best,
+                }
+
+        baseline_auc = None
+        _set_progress("optuna 튜닝 시작", 0)
 
         # Optuna 최적화
         def objective(trial):
@@ -148,11 +192,15 @@ def run_tuning(exp_df: pd.DataFrame, candidates: dict) -> dict:
             except Exception:
                 return 0.0
 
+        def _progress_callback(study, trial):
+            best = round(study.best_value, 4) if study.trials else None
+            _set_progress("optuna 튜닝 중", trial.number + 1, best)
+
         study = optuna.create_study(
             direction="maximize",
             sampler=optuna.samplers.TPESampler(seed=RANDOM_STATE),
         )
-        study.optimize(objective, n_trials=N_OPTUNA_TRIALS, timeout=900)
+        study.optimize(objective, n_trials=N_OPTUNA_TRIALS, timeout=900, callbacks=[_progress_callback])
 
         best_params = study.best_params if study.trials else {}
         best_auc    = round(study.best_value, 4) if study.trials else None
@@ -184,10 +232,12 @@ def run_tuning(exp_df: pd.DataFrame, candidates: dict) -> dict:
 
 
 @router.post("/tuning")
-def tuning(force: bool = False):
+def tuning(background_tasks: BackgroundTasks, force: bool = False):
     """
     Step 14: Optuna 경량 튜닝 (30 trial × scope별).
-    처음 실행 시 15~30분 소요. 6개월마다 force=true로 재실행.
+    - 즉시 job_id 반환, 백그라운드에서 실행 (15~30분 소요).
+    - GET /14/tuning/job/{job_id} 로 진행 상황 확인.
+    - 6개월마다 force=true로 재실행.
     """
     if not force and is_done("step14"):
         cached = load_json("step14_result")
@@ -195,18 +245,20 @@ def tuning(force: bool = False):
             cached["from_cache"] = True
             return cached
 
-    exp_df     = load_df("expanded_dataset")
-    candidates = load_json("step12_candidates")
-    if exp_df is None:
-        return {"status": "FAIL", "reason": "Step 06 먼저 실행 필요"}
-    if candidates is None:
-        return {"status": "FAIL", "reason": "Step 12 먼저 실행 필요"}
+    job_id = str(uuid.uuid4())[:8]
+    _jobs[job_id] = {"status": "QUEUED"}
+    background_tasks.add_task(_bg_tuning, job_id, force)
+    return {
+        "job_id":    job_id,
+        "status":    "QUEUED",
+        "check_url": f"/14/tuning/job/{job_id}",
+        "message":   "튜닝이 백그라운드에서 시작됩니다. 15~30분 소요.",
+    }
 
-    result = run_tuning(exp_df, candidates)
 
-    save_json("step14_result",      result)
-    save_json("step14_best_params", result.get("by_scope", {}))
-    mark_done("step14", {"scopes_tuned": len(result.get("by_scope", {}))})
-
-    result["from_cache"] = False
-    return result
+@router.get("/tuning/job/{job_id}")
+def tuning_job_status(job_id: str):
+    """Step 14 튜닝 잡 상태 확인."""
+    if job_id not in _jobs:
+        return {"status": "NOT_FOUND"}
+    return _jobs[job_id]

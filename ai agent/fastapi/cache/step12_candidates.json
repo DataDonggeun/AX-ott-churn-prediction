@@ -1,0 +1,18 @@
+{
+  "overall_without_promotion": {
+    "model": "LightGBM",
+    "oof_auc": 0.8717
+  },
+  "overall_with_promotion": {
+    "model": "LightGBM",
+    "oof_auc": 0.8771
+  },
+  "promotion_only": {
+    "model": "LightGBM",
+    "oof_auc": 0.8635
+  },
+  "nonpromotion_only": {
+    "model": "LightGBM",
+    "oof_auc": 0.8838
+  }
+}

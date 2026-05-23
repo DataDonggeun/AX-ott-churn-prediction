@@ -1,9 +1,88 @@
 {
   "step00": {
-    "completed_at": "2026-05-22T18:19:05.534496",
+    "completed_at": "2026-05-22T22:59:34.844326",
     "meta": {
       "final_rows": 23345,
       "final_cols": 91
+    }
+  },
+  "step01": {
+    "completed_at": "2026-05-22T22:59:46.445936",
+    "meta": {
+      "row_count": 23345,
+      "cohort_eligible": 23107,
+      "status": "PASS"
+    }
+  },
+  "step03": {
+    "completed_at": "2026-05-22T23:01:57.519938",
+    "meta": {
+      "cohort_rows": 23081,
+      "dup_removed": 26
+    }
+  },
+  "step06": {
+    "completed_at": "2026-05-22T23:04:20.742935",
+    "meta": {
+      "cohort_rows": 23081,
+      "cons_features": 22,
+      "exp_features": 74
+    }
+  },
+  "step08": {
+    "completed_at": "2026-05-22T23:08:39.662393",
+    "meta": {
+      "promo_rows": 11904,
+      "nonpromo_rows": 11177,
+      "rate_diff": -0.0871
+    }
+  },
+  "step09": {
+    "completed_at": "2026-05-22T23:09:47.832046",
+    "meta": {
+      "total_rows": 23081
+    }
+  },
+  "step10": {
+    "completed_at": "2026-05-22T23:12:30.827079",
+    "meta": {
+      "high_corr_pairs": 3,
+      "zero_inf_count": 33
+    }
+  },
+  "step11": {
+    "completed_at": "2026-05-22T23:32:53.867037",
+    "meta": {
+      "model_runs": 32
+    }
+  },
+  "step12": {
+    "completed_at": "2026-05-22T23:46:48.862186",
+    "meta": {
+      "candidates": {
+        "overall_without_promotion": {
+          "model": "LightGBM",
+          "oof_auc": 0.8717
+        },
+        "overall_with_promotion": {
+          "model": "LightGBM",
+          "oof_auc": 0.8771
+        },
+        "promotion_only": {
+          "model": "LightGBM",
+          "oof_auc": 0.8635
+        },
+        "nonpromotion_only": {
+          "model": "LightGBM",
+          "oof_auc": 0.8838
+        }
+      }
+    }
+  },
+  "step14": {
+    "completed_at": "2026-05-23T09:03:39.564693",
+    "meta": {
+      "scopes_tuned": 4
     }
   }
 }

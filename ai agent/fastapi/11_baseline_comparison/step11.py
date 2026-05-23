@@ -4,7 +4,7 @@ Step 11: 베이스라인 성장 비교 (Baseline Growth Comparison)
 역할: FastAPI
 목적: conservative(22개) vs expanded(75개) 피처셋으로
       StratifiedGroupKFold 5-fold CV를 돌려 OOF AUC를 비교한다.
-      모델: DummyClassifier, LogisticRegression, HistGradientBoosting, RandomForest
+      모델: DummyClassifier, LogisticRegression, XGBoost, RandomForest
 출력: 피처셋×모델×scope별 OOF AUC 요약
 캐시: step11_result.json, step11_oof.csv
 """
@@ -17,12 +17,13 @@ import pandas as pd
 import numpy as np
 
 from sklearn.dummy import DummyClassifier
-from sklearn.ensemble import HistGradientBoostingClassifier, RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score, average_precision_score
 from sklearn.model_selection import StratifiedGroupKFold
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
+from xgboost import XGBClassifier
 
 from config import N_SPLITS, RANDOM_STATE
 from cache import is_done, mark_done, save_json, load_json, load_df, save_df
@@ -35,9 +36,11 @@ MODELS = {
         ("scaler", StandardScaler()),
         ("model", LogisticRegression(max_iter=1000, solver="lbfgs")),
     ]),
-    "HistGradientBoosting": HistGradientBoostingClassifier(
-        max_iter=120, learning_rate=0.06, max_leaf_nodes=31,
-        random_state=RANDOM_STATE,
+    "XGBoost": XGBClassifier(
+        n_estimators=120, max_depth=4, learning_rate=0.06,
+        subsample=0.9, colsample_bytree=0.9,
+        eval_metric="logloss", tree_method="hist",
+        n_jobs=-1, random_state=RANDOM_STATE, verbosity=0,
     ),
     "RandomForest": RandomForestClassifier(
         n_estimators=120, min_samples_leaf=20,

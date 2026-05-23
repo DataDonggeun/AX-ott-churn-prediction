@@ -1,0 +1,199 @@
+{
+  "status": "PASS",
+  "vif_top10": [
+    {
+      "feature": "watch_time(min)_w1",
+      "vif": "inf"
+    },
+    {
+      "feature": "watch_time(min)_w2",
+      "vif": "inf"
+    },
+    {
+      "feature": "watch_time(min)_w3",
+      "vif": "inf"
+    },
+    {
+      "feature": "watch_session_w1",
+      "vif": "inf"
+    },
+    {
+      "feature": "watch_session_w2",
+      "vif": "inf"
+    },
+    {
+      "feature": "watch_session_w3",
+      "vif": "inf"
+    },
+    {
+      "feature": "active_ratio",
+      "vif": "inf"
+    },
+    {
+      "feature": "diff_between_w2_w1",
+      "vif": "inf"
+    },
+    {
+      "feature": "watch_days",
+      "vif": "inf"
+    },
+    {
+      "feature": "total_watch_count",
+      "vif": "inf"
+    }
+  ],
+  "high_corr_pairs": [
+    {
+      "feature_a": "active_ratio",
+      "feature_b": "watch_days",
+      "pearson": 1.0
+    },
+    {
+      "feature_a": "avg_watch_time(min)",
+      "feature_b": "median_watch_time(min)",
+      "pearson": 0.9297
+    },
+    {
+      "feature_a": "total_watch_count",
+      "feature_b": "unique_movie",
+      "pearson": 0.9059
+    }
+  ],
+  "high_corr_pair_count": 3,
+  "zero_inflation_features": [
+    {
+      "feature": "is_only_w1",
+      "zero_rate": 0.9013
+    },
+    {
+      "feature": "documentary_ratio",
+      "zero_rate": 0.8994
+    },
+    {
+      "feature": "other_ratio",
+      "zero_rate": 0.894
+    },
+    {
+      "feature": "horror_ratio",
+      "zero_rate": 0.8812
+    },
+    {
+      "feature": "is_premium",
+      "zero_rate": 0.8364
+    },
+    {
+      "feature": "is_churn_prevented",
+      "zero_rate": 0.8201
+    },
+    {
+      "feature": "reg_hour_night",
+      "zero_rate": 0.8186
+    },
+    {
+      "feature": "reg_hour_morning",
+      "zero_rate": 0.8081
+    },
+    {
+      "feature": "is_standard",
+      "zero_rate": 0.7934
+    },
+    {
+      "feature": "historical_war_ratio",
+      "zero_rate": 0.7832
+    },
+    {
+      "feature": "reg_hour_afternoon",
+      "zero_rate": 0.76
+    },
+    {
+      "feature": "family_animation_ratio",
+      "zero_rate": 0.7542
+    },
+    {
+      "feature": "is_w2_over_50pct",
+      "zero_rate": 0.7365
+    },
+    {
+      "feature": "is_w3_over_50pct",
+      "zero_rate": 0.7163
+    },
+    {
+      "feature": "is_w1_over_50pct",
+      "zero_rate": 0.7085
+    },
+    {
+      "feature": "sf_fantasy_ratio",
+      "zero_rate": 0.6926
+    },
+    {
+      "feature": "romance_ratio",
+      "zero_rate": 0.6889
+    },
+    {
+      "feature": "comedy_ratio",
+      "zero_rate": 0.6884
+    },
+    {
+      "feature": "is_male",
+      "zero_rate": 0.6865
+    },
+    {
+      "feature": "avg_gap_w1_watch_days",
+      "zero_rate": 0.6764
+    },
+    {
+      "feature": "avg_gap_w2_watch_days",
+      "zero_rate": 0.6742
+    },
+    {
+      "feature": "avg_gap_w3_watch_days",
+      "zero_rate": 0.6709
+    },
+    {
+      "feature": "action_adventure_ratio",
+      "zero_rate": 0.6542
+    },
+    {
+      "feature": "reg_is_weekend",
+      "zero_rate": 0.6403
+    },
+    {
+      "feature": "new_movie_in_90d_ratio",
+      "zero_rate": 0.6368
+    },
+    {
+      "feature": "thriller_crime_ratio",
+      "zero_rate": 0.6259
+    },
+    {
+      "feature": "reg_hour_evening",
+      "zero_rate": 0.6134
+    },
+    {
+      "feature": "new_movie_in_180d_ratio",
+      "zero_rate": 0.5917
+    },
+    {
+      "feature": "day_count_over_3times",
+      "zero_rate": 0.5696
+    },
+    {
+      "feature": "is_cold_start_3d_fixed",
+      "zero_rate": 0.5366
+    },
+    {
+      "feature": "old_movie_ratio(5y)",
+      "zero_rate": 0.5337
+    },
+    {
+      "feature": "drama_ratio",
+      "zero_rate": 0.5258
+    },
+    {
+      "feature": "new_movie_in_365d_ratio",
+      "zero_rate": 0.5157
+    }
+  ],
+  "note": "피처 제거 없음. 경고 리스트만 기록. vif='inf'는 완전 다중공선성.",
+  "summary": "VIF 극단값 피처 10개 | 고상관 쌍 3개 | zero-inflation >= 50% 피처 33개."
+}

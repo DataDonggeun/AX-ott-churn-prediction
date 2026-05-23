@@ -9,7 +9,7 @@ CACHE_DIR = Path(__file__).parent / "cache"
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 # 원본 데이터
-MEM_PATH  = DATA_DIR / "02_interim" / "260513 feature" / "Membership_v3.csv"
+MEM_PATH  = DATA_DIR / "02_interim" / "260513 feature" / "Membership_v5.csv"
 VIEW_PATH = DATA_DIR / "01_raw" / "Views_train.csv"
 
 # ── 인증 ───────────────────────────────────────────────────────────────────────

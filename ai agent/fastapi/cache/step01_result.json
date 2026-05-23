@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "row_count": 23345,
+  "col_count": 91,
+  "missing_total": 0,
+  "dup_full_rows": 48,
+  "dup_user_key": 210,
+  "missing_cols": [],
+  "high_missing": {},
+  "dur_lt21": 238,
+  "dur_eq0": 90,
+  "cohort_eligible": 23107,
+  "target_dist": {
+    "1": 16702,
+    "0": 6643
+  },
+  "promo_dist": {
+    "1": 11955,
+    "0": 11390
+  },
+  "summary": "총 23,345행 91열. 21일 코호트 예상 23,107행. 중복행 48개. 누락 필수 컬럼 0개. 상태: PASS."
+}

@@ -1,0 +1,322 @@
+{
+  "status": "PASS",
+  "available_models": [
+    "LogisticRegression",
+    "HistGradientBoosting",
+    "RandomForest",
+    "GradientBoosting",
+    "ExtraTrees",
+    "LightGBM",
+    "XGBoost",
+    "CatBoost"
+  ],
+  "summary": [
+    {
+      "scope": "overall_without_promotion",
+      "model": "LogisticRegression",
+      "rows": 23081,
+      "features": 73,
+      "oof_auc": 0.8469,
+      "mean_valid_auc": 0.8469,
+      "fold_auc_std": 0.0056
+    },
+    {
+      "scope": "overall_without_promotion",
+      "model": "HistGradientBoosting",
+      "rows": 23081,
+      "features": 73,
+      "oof_auc": 0.8699,
+      "mean_valid_auc": 0.87,
+      "fold_auc_std": 0.0029
+    },
+    {
+      "scope": "overall_without_promotion",
+      "model": "RandomForest",
+      "rows": 23081,
+      "features": 73,
+      "oof_auc": 0.8544,
+      "mean_valid_auc": 0.8546,
+      "fold_auc_std": 0.0064
+    },
+    {
+      "scope": "overall_without_promotion",
+      "model": "GradientBoosting",
+      "rows": 23081,
+      "features": 73,
+      "oof_auc": 0.8614,
+      "mean_valid_auc": 0.8615,
+      "fold_auc_std": 0.0054
+    },
+    {
+      "scope": "overall_without_promotion",
+      "model": "ExtraTrees",
+      "rows": 23081,
+      "features": 73,
+      "oof_auc": 0.8504,
+      "mean_valid_auc": 0.8506,
+      "fold_auc_std": 0.0079
+    },
+    {
+      "scope": "overall_without_promotion",
+      "model": "LightGBM",
+      "rows": 23081,
+      "features": 73,
+      "oof_auc": 0.8717,
+      "mean_valid_auc": 0.8718,
+      "fold_auc_std": 0.0032
+    },
+    {
+      "scope": "overall_without_promotion",
+      "model": "XGBoost",
+      "rows": 23081,
+      "features": 73,
+      "oof_auc": 0.8605,
+      "mean_valid_auc": 0.8606,
+      "fold_auc_std": 0.0051
+    },
+    {
+      "scope": "overall_without_promotion",
+      "model": "CatBoost",
+      "rows": 23081,
+      "features": 73,
+      "oof_auc": 0.864,
+      "mean_valid_auc": 0.8641,
+      "fold_auc_std": 0.004
+    },
+    {
+      "scope": "overall_with_promotion",
+      "model": "LogisticRegression",
+      "rows": 23081,
+      "features": 74,
+      "oof_auc": 0.8512,
+      "mean_valid_auc": 0.8512,
+      "fold_auc_std": 0.0048
+    },
+    {
+      "scope": "overall_with_promotion",
+      "model": "HistGradientBoosting",
+      "rows": 23081,
+      "features": 74,
+      "oof_auc": 0.8763,
+      "mean_valid_auc": 0.8763,
+      "fold_auc_std": 0.0026
+    },
+    {
+      "scope": "overall_with_promotion",
+      "model": "RandomForest",
+      "rows": 23081,
+      "features": 74,
+      "oof_auc": 0.8572,
+      "mean_valid_auc": 0.8573,
+      "fold_auc_std": 0.0064
+    },
+    {
+      "scope": "overall_with_promotion",
+      "model": "GradientBoosting",
+      "rows": 23081,
+      "features": 74,
+      "oof_auc": 0.866,
+      "mean_valid_auc": 0.8661,
+      "fold_auc_std": 0.0051
+    },
+    {
+      "scope": "overall_with_promotion",
+      "model": "ExtraTrees",
+      "rows": 23081,
+      "features": 74,
+      "oof_auc": 0.8529,
+      "mean_valid_auc": 0.853,
+      "fold_auc_std": 0.0073
+    },
+    {
+      "scope": "overall_with_promotion",
+      "model": "LightGBM",
+      "rows": 23081,
+      "features": 74,
+      "oof_auc": 0.8771,
+      "mean_valid_auc": 0.8771,
+      "fold_auc_std": 0.0028
+    },
+    {
+      "scope": "overall_with_promotion",
+      "model": "XGBoost",
+      "rows": 23081,
+      "features": 74,
+      "oof_auc": 0.865,
+      "mean_valid_auc": 0.8651,
+      "fold_auc_std": 0.0052
+    },
+    {
+      "scope": "overall_with_promotion",
+      "model": "CatBoost",
+      "rows": 23081,
+      "features": 74,
+      "oof_auc": 0.8683,
+      "mean_valid_auc": 0.8684,
+      "fold_auc_std": 0.0041
+    },
+    {
+      "scope": "promotion_only",
+      "model": "LogisticRegression",
+      "rows": 11904,
+      "features": 73,
+      "oof_auc": 0.8374,
+      "mean_valid_auc": 0.8373,
+      "fold_auc_std": 0.0031
+    },
+    {
+      "scope": "promotion_only",
+      "model": "HistGradientBoosting",
+      "rows": 11904,
+      "features": 73,
+      "oof_auc": 0.8626,
+      "mean_valid_auc": 0.8627,
+      "fold_auc_std": 0.0069
+    },
+    {
+      "scope": "promotion_only",
+      "model": "RandomForest",
+      "rows": 11904,
+      "features": 73,
+      "oof_auc": 0.8399,
+      "mean_valid_auc": 0.8401,
+      "fold_auc_std": 0.0042
+    },
+    {
+      "scope": "promotion_only",
+      "model": "GradientBoosting",
+      "rows": 11904,
+      "features": 73,
+      "oof_auc": 0.8532,
+      "mean_valid_auc": 0.8535,
+      "fold_auc_std": 0.0062
+    },
+    {
+      "scope": "promotion_only",
+      "model": "ExtraTrees",
+      "rows": 11904,
+      "features": 73,
+      "oof_auc": 0.8365,
+      "mean_valid_auc": 0.8367,
+      "fold_auc_std": 0.0028
+    },
+    {
+      "scope": "promotion_only",
+      "model": "LightGBM",
+      "rows": 11904,
+      "features": 73,
+      "oof_auc": 0.8635,
+      "mean_valid_auc": 0.8637,
+      "fold_auc_std": 0.0056
+    },
+    {
+      "scope": "promotion_only",
+      "model": "XGBoost",
+      "rows": 11904,
+      "features": 73,
+      "oof_auc": 0.8526,
+      "mean_valid_auc": 0.8529,
+      "fold_auc_std": 0.0067
+    },
+    {
+      "scope": "promotion_only",
+      "model": "CatBoost",
+      "rows": 11904,
+      "features": 73,
+      "oof_auc": 0.8535,
+      "mean_valid_auc": 0.8538,
+      "fold_auc_std": 0.0046
+    },
+    {
+      "scope": "nonpromotion_only",
+      "model": "LogisticRegression",
+      "rows": 11177,
+      "features": 73,
+      "oof_auc": 0.8614,
+      "mean_valid_auc": 0.8615,
+      "fold_auc_std": 0.0048
+    },
+    {
+      "scope": "nonpromotion_only",
+      "model": "HistGradientBoosting",
+      "rows": 11177,
+      "features": 73,
+      "oof_auc": 0.8828,
+      "mean_valid_auc": 0.883,
+      "fold_auc_std": 0.0041
+    },
+    {
+      "scope": "nonpromotion_only",
+      "model": "RandomForest",
+      "rows": 11177,
+      "features": 73,
+      "oof_auc": 0.8657,
+      "mean_valid_auc": 0.866,
+      "fold_auc_std": 0.0076
+    },
+    {
+      "scope": "nonpromotion_only",
+      "model": "GradientBoosting",
+      "rows": 11177,
+      "features": 73,
+      "oof_auc": 0.8772,
+      "mean_valid_auc": 0.8774,
+      "fold_auc_std": 0.0042
+    },
+    {
+      "scope": "nonpromotion_only",
+      "model": "ExtraTrees",
+      "rows": 11177,
+      "features": 73,
+      "oof_auc": 0.8618,
+      "mean_valid_auc": 0.8619,
+      "fold_auc_std": 0.0078
+    },
+    {
+      "scope": "nonpromotion_only",
+      "model": "LightGBM",
+      "rows": 11177,
+      "features": 73,
+      "oof_auc": 0.8838,
+      "mean_valid_auc": 0.884,
+      "fold_auc_std": 0.0032
+    },
+    {
+      "scope": "nonpromotion_only",
+      "model": "XGBoost",
+      "rows": 11177,
+      "features": 73,
+      "oof_auc": 0.8771,
+      "mean_valid_auc": 0.8774,
+      "fold_auc_std": 0.0048
+    },
+    {
+      "scope": "nonpromotion_only",
+      "model": "CatBoost",
+      "rows": 11177,
+      "features": 73,
+      "oof_auc": 0.878,
+      "mean_valid_auc": 0.8782,
+      "fold_auc_std": 0.0047
+    }
+  ],
+  "candidates": {
+    "overall_without_promotion": {
+      "model": "LightGBM",
+      "oof_auc": 0.8717
+    },
+    "overall_with_promotion": {
+      "model": "LightGBM",
+      "oof_auc": 0.8771
+    },
+    "promotion_only": {
+      "model": "LightGBM",
+      "oof_auc": 0.8635
+    },
+    "nonpromotion_only": {
+      "model": "LightGBM",
+      "oof_auc": 0.8838
+    }
+  },
+  "note": "후보 선정만. 최종 모델 확정 아님."
+}

@@ -169,12 +169,9 @@ def _engineer_features(mem: pd.DataFrame,
     df = mem.copy()
 
     # ── 멤버십 기본 파생 ──────────────────────────────────────────────────────
-    df["duration_days"] = (df["end_date"] - df["reg_date"]).dt.days
-    df["price_per_day"] = np.where(df["duration_days"] > 0,
-                                    df["price"] / df["duration_days"], 0)
+    # duration_days / is_basic / is_cold_start_*_fixed 는 step06에서 생성
     df["is_standard"] = (df["max_screen"] == 2).astype(int)
     df["is_premium"]  = (df["max_screen"] == 4).astype(int)
-    df["is_basic"]    = (df["max_screen"] == 1).astype(int)
 
     # ── 인구통계 ──────────────────────────────────────────────────────────────
     if "age" in df.columns:
@@ -213,6 +210,9 @@ def _engineer_features(mem: pd.DataFrame,
     if "watch_day" not in vh.columns:
         return df
 
+    # 완전 중복 행 제거 (동일 USER+MOVIE+DAY+SEQ+DURATION)
+    vh = vh.drop_duplicates()
+
     vh["watch_date"] = pd.to_datetime(
         vh["watch_day"].astype(str).str.zfill(8), format="%Y%m%d", errors="coerce"
     )
@@ -223,12 +223,13 @@ def _engineer_features(mem: pd.DataFrame,
     if "USER_NUM" in vh.columns and "USER_KEY" not in vh.columns:
         vh = vh.merge(umap[["USER_NUM", "USER_KEY"]], on="USER_NUM", how="left")
 
-    # reg_date 조인 후 watch_rel_day 계산 (1-based: 가입일=1)
-    vh = vh.merge(df[["USER_KEY", "reg_date"]], on="USER_KEY", how="left")
-    vh["watch_rel_day"] = (vh["watch_date"] - vh["reg_date"]).dt.days + 1
+    # reg_date 조인 — USER_KEY 중복 방지 (중복 시 vh 행이 불어남)
+    vh = vh.merge(df[["USER_KEY", "reg_date"]].drop_duplicates("USER_KEY"), on="USER_KEY", how="left")
+    vh["obs_day"]      = (vh["watch_date"] - vh["reg_date"]).dt.days
+    vh["watch_rel_day"] = vh["obs_day"] + 1
 
-    # 관측창 필터: watch_rel_day 1~21
-    vh = vh[(vh["watch_rel_day"] >= 1) & (vh["watch_rel_day"] <= 21)].copy()
+    # 관측창 필터: obs_day 0~20 (watch_rel_day 1~21)
+    vh = vh[(vh["obs_day"] >= 0) & (vh["obs_day"] <= 20)].copy()
     vh["is_weekend"]   = vh["watch_date"].dt.weekday >= 5
     vh["watch_date_d"] = vh["watch_date"].dt.date
 
@@ -264,7 +265,7 @@ def _engineer_features(mem: pd.DataFrame,
     tdist = grp[wc].agg(
         **{"avg_watch_time(min)":    "mean",
            "median_watch_time(min)": "median",
-           "std_watch_time(min)":    lambda x: x.std(ddof=0),
+           "std_watch_time(min)":    lambda x: x.std(ddof=1),
            "max_watch_time(min)":    "max"},
     ).reset_index()
     df = df.merge(tdist, on="USER_KEY", how="left")
@@ -280,34 +281,33 @@ def _engineer_features(mem: pd.DataFrame,
     ).reset_index()
     df = df.merge(dagg, on="USER_KEY", how="left")
 
-    # ── 리콜런시: 20 - (last_watch_rel_day - 1) = 21 - last_watch_rel_day ────
-    rec = grp["watch_rel_day"].max().reset_index()
-    rec["recency"] = 21 - rec["watch_rel_day"]
+    # ── 리콜런시: 20 - last_obs_day (원본 make_features_v3.py 기준) ──────────
+    rec = grp["obs_day"].max().reset_index()
+    rec["recency"] = 20 - rec["obs_day"]
     df = df.merge(rec[["USER_KEY", "recency"]], on="USER_KEY", how="left")
+    df["recency"] = df["recency"].fillna(21)  # 미시청자: 관측창 전체 미시청 = 21
 
     # ── 갭 계산 ───────────────────────────────────────────────────────────────
-    def _to_ord(v):
-        return v.toordinal() if hasattr(v, "toordinal") else int(v)
-
+    # obs_day 정수 기반 갭 계산 (원본 make_features_v3.py 동일)
     def _avg_gap(x):
-        d = sorted([_to_ord(v) for v in x.unique()])
+        d = sorted(x.unique())
         return float(np.mean(np.diff(d))) if len(d) >= 2 else np.nan
 
     def _max_gap(x):
-        d = sorted([_to_ord(v) for v in x.unique()])
-        return float(max(np.diff(d))) if len(d) >= 2 else float(21)
+        d = sorted(x.unique())
+        return float(max(np.diff(d))) if len(d) >= 2 else np.nan
 
-    tmp = grp["watch_date_d"].apply(_avg_gap).reset_index()
+    tmp = grp["obs_day"].apply(_avg_gap).reset_index()
     tmp.columns = ["USER_KEY", "avg_gap_between_watch_days"]
     df = df.merge(tmp, on="USER_KEY", how="left")
 
-    tmp = grp["watch_date_d"].apply(_max_gap).reset_index()
+    tmp = grp["obs_day"].apply(_max_gap).reset_index()
     tmp.columns = ["USER_KEY", "max_inactive_gap_days"]
     df = df.merge(tmp, on="USER_KEY", how="left")
 
-    for w, (lo, hi) in enumerate([(1,7),(8,14),(15,21)], 1):
-        wvh = vh[(vh["watch_rel_day"] >= lo) & (vh["watch_rel_day"] <= hi)]
-        tmp = wvh.groupby("USER_KEY")["watch_date_d"].apply(_avg_gap).reset_index()
+    for w, (lo, hi) in enumerate([(0,6),(7,13),(14,20)], 1):
+        wvh = vh[(vh["obs_day"] >= lo) & (vh["obs_day"] <= hi)]
+        tmp = wvh.groupby("USER_KEY")["obs_day"].apply(_avg_gap).reset_index()
         tmp.columns = ["USER_KEY", f"avg_gap_w{w}_watch_days"]
         df = df.merge(tmp, on="USER_KEY", how="left")
 
@@ -323,17 +323,18 @@ def _engineer_features(mem: pd.DataFrame,
     df = df.merge(grp["is_weekend"].mean().reset_index(name="weekend_watch_ratio"), on="USER_KEY", how="left")
 
     for mins, col in [(1,"watch_ratio_under_1m"),(5,"watch_ratio_under_5m")]:
-        tmp = vh.groupby("USER_KEY")[wc].apply(lambda x: (x < mins).mean()).reset_index(name=col)
+        tmp = vh.groupby("USER_KEY")[wc].apply(lambda x: (x <= mins).mean()).reset_index(name=col)
         df = df.merge(tmp, on="USER_KEY", how="left")
 
     # ── 온보딩 cold_start (watch_rel_day 1-based 기준) ────────────────────────
     first = grp["watch_rel_day"].min().reset_index(name="first_watch_rel_day")
     df = df.merge(first, on="USER_KEY", how="left")
     # days = first_watch_rel_day - 1, is_cold_start_3d: days <= 2 (3일 이내)
-    df["is_cold_start_3d"]       = ((df["first_watch_rel_day"] - 1) <= 2).astype(int)
-    df["is_cold_start_7d"]       = ((df["first_watch_rel_day"] - 1) <= 6).astype(int)
-    df["is_cold_start_3d_fixed"] = df["is_cold_start_3d"]
-    df["is_cold_start_7d_fixed"] = df["is_cold_start_7d"]
+    # is_cold_start_3d / 7d 원본만 생성 (_fixed 버전은 step06에서 생성)
+    # CSV 기준: days = (first_watch_date - reg_date).days, is_cold_start_3d: days<=3, 7d: days<=7
+    df["is_cold_start_3d"] = ((df["first_watch_rel_day"] - 1) <= 3).astype(int)
+    df["is_cold_start_7d"] = ((df["first_watch_rel_day"] - 1) <= 7).astype(int)
+    df = df.drop(columns=["first_watch_rel_day"], errors="ignore")
 
     # ── 시청 강도 ─────────────────────────────────────────────────────────────
     df["movie_per_active_day"] = np.where(

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>OTT 이탈 방지 파이프라인 결과 보고서</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; color: #222; }
+  header { background: linear-gradient(135deg, #1a1a2e, #16213e); color: white; padding: 40px; text-align: center; }
+  header h1 { font-size: 2rem; margin-bottom: 8px; }
+  header p { color: #aaa; font-size: 0.95rem; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 30px 20px; }
+  .section { background: white; border-radius: 12px; padding: 28px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .section h2 { font-size: 1.2rem; color: #1a1a2e; border-left: 4px solid #4f8ef7; padding-left: 12px; margin-bottom: 18px; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; margin-left: 8px; }
+  .badge-pass { background: #d4f7e0; color: #1a7a3f; }
+  .badge-running { background: #fff3cd; color: #856404; }
+  .badge-done { background: #cce5ff; color: #004085; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  th { background: #f0f4ff; color: #333; padding: 10px 12px; text-align: left; border-bottom: 2px solid #dde3f0; }
+  td { padding: 9px 12px; border-bottom: 1px solid #f0f0f0; }
+  tr:hover td { background: #fafbff; }
+  .highlight { color: #4f8ef7; font-weight: 700; }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 16px; }
+  .stat-card { background: #f8f9ff; border-radius: 8px; padding: 16px; text-align: center; border: 1px solid #e8ecf8; }
+  .stat-card .val { font-size: 1.6rem; font-weight: 700; color: #4f8ef7; }
+  .stat-card .label { font-size: 0.78rem; color: #888; margin-top: 4px; }
+  .insight { background: #fffbea; border-left: 4px solid #f5c518; padding: 12px 16px; border-radius: 6px; margin-top: 14px; font-size: 0.88rem; color: #555; }
+  .flow { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin: 10px 0; font-size: 0.85rem; }
+  .flow-step { background: #eef2ff; padding: 5px 12px; border-radius: 20px; color: #3a5bd9; font-weight: 600; }
+  .flow-arrow { color: #999; }
+  .best { background: #edfff4 !important; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>OTT 이탈 방지 파이프라인 결과 보고서</h1>
+  <p>100원 프로모션 구독자 대상 이탈 예측 ML 파이프라인 · 2026-05-23</p>
+</header>
+
+<div class="container">
+
+  <!-- 파이프라인 흐름 -->
+  <div class="section">
+    <h2>파이프라인 흐름</h2>
+    <div class="flow">
+      <span class="flow-step">00 피처생성</span><span class="flow-arrow">→</span>
+      <span class="flow-step">01 데이터검증</span><span class="flow-arrow">→</span>
+      <span class="flow-step">03 관측창</span><span class="flow-arrow">→</span>
+      <span class="flow-step">06 데이터셋생성</span><span class="flow-arrow">→</span>
+      <span class="flow-step">08 프로모션EDA</span><span class="flow-arrow">→</span>
+      <span class="flow-step">09 2x2 EDA</span><span class="flow-arrow">→</span>
+      <span class="flow-step">10 피처감사</span><span class="flow-arrow">→</span>
+      <span class="flow-step">11 베이스라인</span><span class="flow-arrow">→</span>
+      <span class="flow-step">12 모델비교</span><span class="flow-arrow">→</span>
+      <span class="flow-step">14 튜닝🔄</span><span class="flow-arrow">→</span>
+      <span class="flow-step">15 점수생성</span><span class="flow-arrow">→</span>
+      <span class="flow-step">16 SHAP</span><span class="flow-arrow">→</span>
+      <span class="flow-step">17 세그먼트</span>
+    </div>
+  </div>
+
+  <!-- Step 00 -->
+  <div class="section">
+    <h2>Step 00 · 피처 엔지니어링 <span class="badge badge-pass">PASS</span></h2>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="val">23,345</div><div class="label">생성 행수</div></div>
+      <div class="stat-card"><div class="val">91</div><div class="label">생성 컬럼수</div></div>
+      <div class="stat-card"><div class="val">4개</div><div class="label">원본 입력 파일</div></div>
+      <div class="stat-card"><div class="val">Membership_v5</div><div class="label">출력 파일</div></div>
+    </div>
+    <table>
+      <tr><th>항목</th><th>내용</th></tr>
+      <tr><td>입력</td><td>Membership_train, Views_train, Movies, mapping (raw 4개)</td></tr>
+      <tr><td>전처리 제거</td><td>age &lt; 10 (213행), Z-score (64행), max_screen 이상 (88행), reg=end (364행) → 총 729행 제거</td></tr>
+      <tr><td>주요 피처</td><td>주차별 시청 (w1/w2/w3), retention ratio, recency, gap, 장르 비율(시청시간 가중), cold_start 등</td></tr>
+      <tr><td>v3 대비 차이</td><td>recency 완전 일치 ✅ · max_inactive_gap 완전 일치 ✅ · watch_time 계열 ~2% 차이 (멤버십 2행 차이)</td></tr>
+    </table>
+  </div>
+
+  <!-- Step 01 -->
+  <div class="section">
+    <h2>Step 01 · 데이터 계약 감사 <span class="badge badge-pass">PASS</span></h2>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="val">23,345</div><div class="label">총 행수</div></div>
+      <div class="stat-card"><div class="val">91</div><div class="label">총 컬럼수</div></div>
+      <div class="stat-card"><div class="val">0</div><div class="label">결측값</div></div>
+      <div class="stat-card"><div class="val">28.4%</div><div class="label">이탈률</div></div>
+    </div>
+    <table>
+      <tr><th>항목</th><th>값</th></tr>
+      <tr><td>필수 컬럼 누락</td><td>0개 ✅</td></tr>
+      <tr><td>duration &lt; 21 (코호트 제외)</td><td>238행</td></tr>
+      <tr><td>코호트 예상 (duration ≥ 21)</td><td>23,107행</td></tr>
+      <tr><td>이탈(0) / 잔존(1)</td><td>6,643 / 16,702</td></tr>
+      <tr><td>프로모션 / 비프로모션</td><td>11,955 / 11,390 (약 51:49)</td></tr>
+    </table>
+  </div>
+
+  <!-- Step 03 -->
+  <div class="section">
+    <h2>Step 03 · 관측창 정책 <span class="badge badge-pass">PASS</span></h2>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="val">23,345</div><div class="label">입력</div></div>
+      <div class="stat-card"><div class="val">-238</div><div class="label">duration &lt; 21 제거</div></div>
+      <div class="stat-card"><div class="val">-26</div><div class="label">완전중복 제거</div></div>
+      <div class="stat-card"><div class="val">23,081</div><div class="label">최종 코호트</div></div>
+    </div>
+    <div class="insight">전체 유저가 31일(19,261명) 또는 32일(3,820명) 구독 — 100원 프로모션 30일 고정 상품 특성.</div>
+  </div>
+
+  <!-- Step 06 -->
+  <div class="section">
+    <h2>Step 06 · 데이터셋 생성 <span class="badge badge-pass">PASS</span></h2>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="val">23,081</div><div class="label">코호트 행수</div></div>
+      <div class="stat-card"><div class="val">22개</div><div class="label">conservative 피처</div></div>
+      <div class="stat-card"><div class="val">74개</div><div class="label">expanded 피처</div></div>
+      <div class="stat-card"><div class="val">0</div><div class="label">cold_start 보정</div></div>
+    </div>
+    <table>
+      <tr><th>데이터셋</th><th>피처 구성</th></tr>
+      <tr><td>conservative_safe_22</td><td>주차별 행동 중심 (누수 없는 안전 피처 22개)</td></tr>
+      <tr><td>expanded_feature_set</td><td>전체 피처 (장르·콘텐츠·인구통계 포함 74개)</td></tr>
+    </table>
+  </div>
+
+  <!-- Step 08 -->
+  <div class="section">
+    <h2>Step 08 · 프로모션 EDA <span class="badge badge-pass">PASS</span></h2>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="val">67.5%</div><div class="label">프로모션 재구매율</div></div>
+      <div class="stat-card"><div class="val">76.2%</div><div class="label">비프로모션 재구매율</div></div>
+      <div class="stat-card"><div class="val">-8.7%p</div><div class="label">재구매율 격차</div></div>
+      <div class="stat-card"><div class="val">1.32</div><div class="label">is_user_verified SMD</div></div>
+    </div>
+    <div class="insight">프로모션 유저가 비프로모션보다 이탈률이 8.7%p 높음. is_user_verified SMD 1.32로 두 그룹 간 가장 큰 차이 — step00에서 price=100 유저를 인증으로 보정했기 때문.</div>
+  </div>
+
+  <!-- Step 09 -->
+  <div class="section">
+    <h2>Step 09 · 2×2 코호트 EDA <span class="badge badge-pass">PASS</span></h2>
+    <table>
+      <tr><th>코호트</th><th>행수</th><th>비율</th><th>watch_time w1</th><th>watch_time w2</th><th>watch_time w3</th><th>is_only_w1</th><th>recency</th></tr>
+      <tr class="best"><td>프로모션 잔존</td><td>8,037</td><td>34.8%</td><td>102분</td><td>116분</td><td>127분</td><td>3.9%</td><td>5.0일</td></tr>
+      <tr><td>프로모션 이탈</td><td>3,867</td><td>16.8%</td><td>93분</td><td>57분</td><td>37분</td><td>21.6%</td><td>8.7일</td></tr>
+      <tr class="best"><td>비프로모션 잔존</td><td>8,520</td><td>36.9%</td><td>101분</td><td>111분</td><td>119분</td><td>4.5%</td><td>5.3일</td></tr>
+      <tr><td>비프로모션 이탈</td><td>2,657</td><td>11.5%</td><td>89분</td><td>46분</td><td>23분</td><td>27.9%</td><td>9.9일</td></tr>
+    </table>
+    <div class="insight">이탈 패턴: 1주차 시청량은 잔존과 비슷하지만 2~3주차에 급감. is_only_w1 (1주차만 시청) 비율이 이탈 유저에서 5~7배 높음.</div>
+  </div>
+
+  <!-- Step 10 -->
+  <div class="section">
+    <h2>Step 10 · 피처 감사 <span class="badge badge-pass">PASS</span></h2>
+    <table>
+      <tr><th>항목</th><th>결과</th><th>조치</th></tr>
+      <tr><td>VIF 극단값 (inf)</td><td>watch_time, watch_session, active_ratio 등 10개</td><td>트리모델은 영향 없음 — 유지</td></tr>
+      <tr><td>고상관 쌍</td><td>active_ratio ↔ watch_days (r=1.0), avg/median_watch_time (r=0.93)</td><td>active_ratio = watch_days/21 수식적 동일 — 유지</td></tr>
+      <tr><td>zero-inflation ≥ 50%</td><td>33개 피처</td><td>트리모델 처리 가능 — 유지</td></tr>
+    </table>
+    <div class="insight">피처 제거 없음. 경고 리스트만 기록. 트리 계열 모델(LightGBM/XGBoost)은 다중공선성·zero-inflation에 강건함.</div>
+  </div>
+
+  <!-- Step 11 -->
+  <div class="section">
+    <h2>Step 11 · 베이스라인 비교 <span class="badge badge-pass">PASS</span></h2>
+    <table>
+      <tr><th>피처셋</th><th>스코프</th><th>모델</th><th>OOF AUC</th><th>train-valid gap</th></tr>
+      <tr><td>conservative 22</td><td>overall_with_promo</td><td>XGBoost</td><td>0.8232</td><td>1.9%</td></tr>
+      <tr><td>conservative 22</td><td>nonpromotion_only</td><td>XGBoost</td><td>0.8370</td><td>3.2%</td></tr>
+      <tr class="best"><td>expanded 74</td><td>overall_with_promo</td><td>XGBoost</td><td class="highlight">0.8736</td><td>2.4%</td></tr>
+      <tr class="best"><td>expanded 74</td><td>nonpromotion_only</td><td>XGBoost</td><td class="highlight">0.8837</td><td>3.9%</td></tr>
+    </table>
+    <div class="insight">expanded 피처셋이 conservative 대비 전 구간에서 +5~6% AUC 향상. XGBoost가 RandomForest 대비 낮은 train-valid gap (과적합 적음).</div>
+  </div>
+
+  <!-- Step 12 -->
+  <div class="section">
+    <h2>Step 12 · 모델 패밀리 비교 <span class="badge badge-pass">PASS</span></h2>
+    <table>
+      <tr><th>스코프</th><th>1위</th><th>AUC</th><th>2위</th><th>AUC</th></tr>
+      <tr class="best"><td>nonpromotion_only</td><td class="highlight">LightGBM</td><td class="highlight">0.8838</td><td>HistGBM</td><td>0.8828</td></tr>
+      <tr class="best"><td>overall_with_promo</td><td class="highlight">LightGBM</td><td class="highlight">0.8771</td><td>HistGBM</td><td>0.8763</td></tr>
+      <tr class="best"><td>overall_without_promo</td><td class="highlight">LightGBM</td><td class="highlight">0.8717</td><td>HistGBM</td><td>0.8699</td></tr>
+      <tr class="best"><td>promotion_only</td><td class="highlight">LightGBM</td><td class="highlight">0.8635</td><td>HistGBM</td><td>0.8626</td></tr>
+    </table>
+    <table style="margin-top:12px">
+      <tr><th>비교 모델</th><th>overall AUC</th><th>특징</th></tr>
+      <tr><td>LightGBM</td><td>0.8717~0.8838</td><td>전 스코프 1위 → step14 튜닝 대상</td></tr>
+      <tr><td>HistGradientBoosting</td><td>0.8699~0.8828</td><td>LightGBM과 근소한 차이</td></tr>
+      <tr><td>CatBoost</td><td>0.8640~0.8780</td><td>3위권</td></tr>
+      <tr><td>XGBoost</td><td>0.8605~0.8771</td><td>중간권</td></tr>
+      <tr><td>GradientBoosting</td><td>0.8532~0.8772</td><td>중간권</td></tr>
+      <tr><td>RandomForest</td><td>0.8399~0.8657</td><td>하위권, 과적합 큼</td></tr>
+      <tr><td>ExtraTrees</td><td>0.8365~0.8618</td><td>하위권</td></tr>
+      <tr><td>LogisticRegression</td><td>0.8374~0.8614</td><td>과적합 없음, AUC 낮음</td></tr>
+    </table>
+    <div class="insight">LightGBM이 전 스코프 1위 → Step 14 Optuna 튜닝 대상 확정.</div>
+  </div>
+
+  <!-- Step 14 -->
+  <div class="section">
+    <h2>Step 14 · Optuna 튜닝 <span class="badge badge-running">RUNNING</span></h2>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="val">LightGBM</div><div class="label">튜닝 모델</div></div>
+      <div class="stat-card"><div class="val">30 trial</div><div class="label">스코프당 trial 수</div></div>
+      <div class="stat-card"><div class="val">4 스코프</div><div class="label">총 스코프</div></div>
+      <div class="stat-card"><div class="val">~60분</div><div class="label">예상 소요시간</div></div>
+    </div>
+    <div class="insight">현재 진행 중. 완료 후 최적 하이퍼파라미터 및 tuned_model_{scope}.pkl 저장.</div>
+  </div>
+
+  <!-- 다음 단계 -->
+  <div class="section">
+    <h2>다음 단계</h2>
+    <table>
+      <tr><th>단계</th><th>내용</th><th>상태</th></tr>
+      <tr><td>Step 15</td><td>튜닝된 모델로 OOF 점수 생성 / 결제 디바이스 민감도 분석</td><td>대기</td></tr>
+      <tr><td>Step 16</td><td>SHAP 피처 중요도 해석</td><td>대기</td></tr>
+      <tr><td>Step 17</td><td>7개 세그먼트 배정</td><td>대기</td></tr>
+      <tr><td>배포</td><td>ngrok으로 로컬 서버 외부 노출</td><td>대기</td></tr>
+      <tr><td>Dify 연결</td><td>Gemini API 연결 + step18 LLM 비즈니스 제언 워크플로우</td><td>대기</td></tr>
+    </table>
+  </div>
+
+</div>
+</body>
+</html>
