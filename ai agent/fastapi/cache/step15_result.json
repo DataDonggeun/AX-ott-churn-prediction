@@ -1,0 +1,36 @@
+{
+  "status": "PASS",
+  "mode": "full_sensitivity",
+  "by_scope": [
+    {
+      "scope": "overall_without_promotion",
+      "auc_with_payment": 0.8729,
+      "auc_without_payment": 0.8729,
+      "delta_auc": 0.0,
+      "recommendation": "제거 권장 (proxy 오염)"
+    },
+    {
+      "scope": "overall_with_promotion",
+      "auc_with_payment": 0.8786,
+      "auc_without_payment": 0.8786,
+      "delta_auc": 0.0,
+      "recommendation": "제거 권장 (proxy 오염)"
+    },
+    {
+      "scope": "promotion_only",
+      "auc_with_payment": 0.8649,
+      "auc_without_payment": 0.8649,
+      "delta_auc": 0.0,
+      "recommendation": "제거 권장 (proxy 오염)"
+    },
+    {
+      "scope": "nonpromotion_only",
+      "auc_with_payment": 0.886,
+      "auc_without_payment": 0.886,
+      "delta_auc": 0.0,
+      "recommendation": "제거 권장 (proxy 오염)"
+    }
+  ],
+  "oof_saved": true,
+  "summary": "overall_without_promotion: Δ+0.0000; overall_with_promotion: Δ+0.0000; promotion_only: Δ+0.0000; nonpromotion_only: Δ+0.0000"
+}

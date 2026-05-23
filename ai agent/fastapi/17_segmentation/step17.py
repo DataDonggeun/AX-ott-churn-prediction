@@ -48,7 +48,7 @@ def run_segmentation(exp_df: pd.DataFrame, oof_df: pd.DataFrame) -> dict:
     base = exp_df.copy().reset_index(drop=True)
 
     # 점수 병합 — dict map으로 직접 매핑 (lambda보다 빠름)
-    score_lookup = oof_scope.set_index("USER_KEY")["repurchase_score"]
+    score_lookup = oof_scope.drop_duplicates("USER_KEY").set_index("USER_KEY")["repurchase_score"]
     base["repurchase_score"] = base["USER_KEY"].map(score_lookup).fillna(0.5)
     base["churn_risk"] = 1 - base["repurchase_score"]
 
@@ -123,9 +123,9 @@ def run_segmentation(exp_df: pd.DataFrame, oof_df: pd.DataFrame) -> dict:
             "row_count":      int(len(sub)),
             "row_share":      round(len(sub) / max(len(base), 1), 4),
             "repurchase_rate": round(float(sub["is_repurchase"].mean()), 4)
-                               if "is_repurchase" in sub.columns and len(sub) else None,
+                               if "is_repurchase" in sub.columns and len(sub) and not pd.isna(sub["is_repurchase"].mean()) else None,
             "mean_churn_risk": round(float(sub["churn_risk"].mean()), 4)
-                               if len(sub) else None,
+                               if len(sub) and not pd.isna(sub["churn_risk"].mean()) else None,
         })
 
     # 배정 결과 저장

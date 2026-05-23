@@ -2,65 +2,65 @@
   "overall_without_promotion": {
     "model": "LightGBM",
     "best_params": {
-      "n_estimators": 790,
-      "learning_rate": 0.0170486731618142,
-      "num_leaves": 16,
-      "min_child_samples": 88,
-      "subsample": 0.8280849214859881,
-      "colsample_bytree": 0.7555076779145544,
-      "reg_lambda": 0.32880030855797204
+      "n_estimators": 250,
+      "learning_rate": 0.029619453117990514,
+      "num_leaves": 27,
+      "min_child_samples": 54,
+      "subsample": 0.8009894805454081,
+      "colsample_bytree": 0.8813636850289911,
+      "reg_lambda": 0.0001817906934901926
     },
-    "baseline_auc": 0.8717,
-    "tuned_auc": 0.8736,
-    "delta_auc": 0.0019,
-    "n_trials": 21
+    "baseline_auc": null,
+    "tuned_auc": 0.873,
+    "delta_auc": 0.873,
+    "n_trials": 30
   },
   "overall_with_promotion": {
     "model": "LightGBM",
     "best_params": {
-      "n_estimators": 494,
-      "learning_rate": 0.015288203101948932,
-      "num_leaves": 39,
-      "min_child_samples": 100,
-      "subsample": 0.8170051977252389,
-      "colsample_bytree": 0.7631983493792123,
-      "reg_lambda": 0.15024206131870835
+      "n_estimators": 277,
+      "learning_rate": 0.028523875009363927,
+      "num_leaves": 60,
+      "min_child_samples": 28,
+      "subsample": 0.6675678543850839,
+      "colsample_bytree": 0.7708106992330166,
+      "reg_lambda": 0.0332365197837386
     },
-    "baseline_auc": 0.8769,
-    "tuned_auc": 0.8791,
-    "delta_auc": 0.0022,
-    "n_trials": 19
+    "baseline_auc": null,
+    "tuned_auc": 0.8787,
+    "delta_auc": 0.8787,
+    "n_trials": 30
   },
   "promotion_only": {
     "model": "LightGBM",
     "best_params": {
-      "n_estimators": 546,
-      "learning_rate": 0.013724015317098114,
-      "num_leaves": 26,
-      "min_child_samples": 89,
-      "subsample": 0.8727051754482548,
-      "colsample_bytree": 0.6351855536382569,
-      "reg_lambda": 2.7215607407948386e-06
+      "n_estimators": 197,
+      "learning_rate": 0.044136434154605414,
+      "num_leaves": 22,
+      "min_child_samples": 43,
+      "subsample": 0.8027587909642728,
+      "colsample_bytree": 0.8260327451052318,
+      "reg_lambda": 0.5420891000075501
     },
-    "baseline_auc": 0.8623,
-    "tuned_auc": 0.8661,
-    "delta_auc": 0.0038,
+    "baseline_auc": null,
+    "tuned_auc": 0.8651,
+    "delta_auc": 0.8651,
     "n_trials": 30
   },
   "nonpromotion_only": {
     "model": "LightGBM",
     "best_params": {
-      "n_estimators": 350,
-      "learning_rate": 0.023200867504756827,
-      "num_leaves": 77,
-      "min_child_samples": 22,
-      "subsample": 0.9208787923016158,
-      "colsample_bytree": 0.6298202574719083,
-      "reg_lambda": 15.103061805857253
+      "n_estimators": 266,
+      "learning_rate": 0.030076206892814913,
+      "num_leaves": 22,
+      "min_child_samples": 63,
+      "subsample": 0.733987255743777,
+      "colsample_bytree": 0.679899190959694,
+      "reg_lambda": 0.0026502033474753955
     },
-    "baseline_auc": 0.8811,
-    "tuned_auc": 0.8849,
-    "delta_auc": 0.0038,
-    "n_trials": 11
+    "baseline_auc": null,
+    "tuned_auc": 0.8862,
+    "delta_auc": 0.8862,
+    "n_trials": 30
   }
 }

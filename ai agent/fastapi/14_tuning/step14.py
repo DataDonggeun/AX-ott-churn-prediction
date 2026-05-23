@@ -136,7 +136,7 @@ def _cv_mean_auc(X, y, groups, model) -> float:
 def run_tuning(exp_df: pd.DataFrame, candidates: dict, job_id: str = None) -> dict:
     try:
         import optuna
-        optuna.logging.set_verbosity(optuna.logging.WARNING)
+        optuna.logging.set_verbosity(optuna.logging.INFO)
     except ImportError:
         return {"status": "FAIL", "reason": "optuna 미설치. pip install optuna"}
 
@@ -232,12 +232,11 @@ def run_tuning(exp_df: pd.DataFrame, candidates: dict, job_id: str = None) -> di
 
 
 @router.post("/tuning")
-def tuning(background_tasks: BackgroundTasks, force: bool = False):
+def tuning(force: bool = False):
     """
     Step 14: Optuna 경량 튜닝 (30 trial × scope별).
-    - 즉시 job_id 반환, 백그라운드에서 실행 (15~30분 소요).
-    - GET /14/tuning/job/{job_id} 로 진행 상황 확인.
-    - 6개월마다 force=true로 재실행.
+    완료까지 시간이 걸림. 브라우저 타임아웃 나도 서버는 계속 실행됨.
+    완료 후 cache/step14_result.json 생성됨.
     """
     if not force and is_done("step14"):
         cached = load_json("step14_result")
@@ -245,20 +244,17 @@ def tuning(background_tasks: BackgroundTasks, force: bool = False):
             cached["from_cache"] = True
             return cached
 
-    job_id = str(uuid.uuid4())[:8]
-    _jobs[job_id] = {"status": "QUEUED"}
-    background_tasks.add_task(_bg_tuning, job_id, force)
-    return {
-        "job_id":    job_id,
-        "status":    "QUEUED",
-        "check_url": f"/14/tuning/job/{job_id}",
-        "message":   "튜닝이 백그라운드에서 시작됩니다. 15~30분 소요.",
-    }
+    exp_df     = load_df("expanded_dataset")
+    candidates = load_json("step12_candidates")
+    if exp_df is None:
+        return {"status": "FAIL", "reason": "Step 06 먼저 실행 필요"}
+    if candidates is None:
+        return {"status": "FAIL", "reason": "Step 12 먼저 실행 필요"}
 
+    result = run_tuning(exp_df, candidates)
+    save_json("step14_result",      result)
+    save_json("step14_best_params", result.get("by_scope", {}))
+    mark_done("step14", {"scopes_tuned": len(result.get("by_scope", {}))})
 
-@router.get("/tuning/job/{job_id}")
-def tuning_job_status(job_id: str):
-    """Step 14 튜닝 잡 상태 확인."""
-    if job_id not in _jobs:
-        return {"status": "NOT_FOUND"}
-    return _jobs[job_id]
+    result["from_cache"] = False
+    return result

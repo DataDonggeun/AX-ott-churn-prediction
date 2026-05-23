@@ -1,0 +1,458 @@
+{
+  "status": "PASS",
+  "by_scope": {
+    "overall_with_promotion": {
+      "status": "PASS",
+      "top20": [
+        {
+          "feature": "watch_time(min)_w3",
+          "mean_abs_shap": 0.418762,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "is_promotion",
+          "mean_abs_shap": 0.337998,
+          "family": "acquisition_split"
+        },
+        {
+          "feature": "retention_w2_ratio",
+          "mean_abs_shap": 0.333454,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "retention_w3_ratio",
+          "mean_abs_shap": 0.287892,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "drama_ratio",
+          "mean_abs_shap": 0.287503,
+          "family": "content_preference"
+        },
+        {
+          "feature": "family_animation_ratio",
+          "mean_abs_shap": 0.26153,
+          "family": "content_preference"
+        },
+        {
+          "feature": "romance_ratio",
+          "mean_abs_shap": 0.25449,
+          "family": "content_preference"
+        },
+        {
+          "feature": "diff_between_w2_w1",
+          "mean_abs_shap": 0.252593,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "is_cold_start_3d_fixed",
+          "mean_abs_shap": 0.245308,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "thriller_crime_ratio",
+          "mean_abs_shap": 0.239018,
+          "family": "content_preference"
+        },
+        {
+          "feature": "action_adventure_ratio",
+          "mean_abs_shap": 0.188976,
+          "family": "content_preference"
+        },
+        {
+          "feature": "diff_between_w3_w2",
+          "mean_abs_shap": 0.173756,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "median_watch_time(min)",
+          "mean_abs_shap": 0.118752,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "is_basic",
+          "mean_abs_shap": 0.113763,
+          "family": "membership_context"
+        },
+        {
+          "feature": "max_watch_time(min)",
+          "mean_abs_shap": 0.108964,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "watch_session_w3",
+          "mean_abs_shap": 0.107567,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "is_churn_prevented",
+          "mean_abs_shap": 0.102383,
+          "family": "membership_context"
+        },
+        {
+          "feature": "diff_between_w3_w1",
+          "mean_abs_shap": 0.101858,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "genre_diversity_count",
+          "mean_abs_shap": 0.090714,
+          "family": "content_preference"
+        },
+        {
+          "feature": "max_day_share",
+          "mean_abs_shap": 0.07449,
+          "family": "other"
+        }
+      ],
+      "family_sum": {
+        "usage_retention_behavior": 2.607104,
+        "content_preference": 1.622732,
+        "acquisition_split": 0.337998,
+        "membership_context": 0.33287,
+        "other": 0.138493
+      },
+      "sample_size": 5000,
+      "note": "SHAP은 모델 설명이며 인과 주장이 아님."
+    },
+    "overall_without_promotion": {
+      "status": "PASS",
+      "top20": [
+        {
+          "feature": "watch_time(min)_w3",
+          "mean_abs_shap": 0.437264,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "retention_w2_ratio",
+          "mean_abs_shap": 0.336548,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "retention_w3_ratio",
+          "mean_abs_shap": 0.28704,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "drama_ratio",
+          "mean_abs_shap": 0.266948,
+          "family": "content_preference"
+        },
+        {
+          "feature": "family_animation_ratio",
+          "mean_abs_shap": 0.248495,
+          "family": "content_preference"
+        },
+        {
+          "feature": "is_cold_start_3d_fixed",
+          "mean_abs_shap": 0.243966,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "romance_ratio",
+          "mean_abs_shap": 0.240961,
+          "family": "content_preference"
+        },
+        {
+          "feature": "thriller_crime_ratio",
+          "mean_abs_shap": 0.228297,
+          "family": "content_preference"
+        },
+        {
+          "feature": "diff_between_w2_w1",
+          "mean_abs_shap": 0.214817,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "action_adventure_ratio",
+          "mean_abs_shap": 0.179681,
+          "family": "content_preference"
+        },
+        {
+          "feature": "diff_between_w3_w2",
+          "mean_abs_shap": 0.151061,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "max_watch_time(min)",
+          "mean_abs_shap": 0.13445,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "is_user_verified",
+          "mean_abs_shap": 0.130998,
+          "family": "membership_context"
+        },
+        {
+          "feature": "median_watch_time(min)",
+          "mean_abs_shap": 0.115917,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "max_day_share",
+          "mean_abs_shap": 0.09636,
+          "family": "other"
+        },
+        {
+          "feature": "is_basic",
+          "mean_abs_shap": 0.092303,
+          "family": "membership_context"
+        },
+        {
+          "feature": "genre_diversity_count",
+          "mean_abs_shap": 0.09204,
+          "family": "content_preference"
+        },
+        {
+          "feature": "diff_between_w3_w1",
+          "mean_abs_shap": 0.090967,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "is_churn_prevented",
+          "mean_abs_shap": 0.06553,
+          "family": "membership_context"
+        },
+        {
+          "feature": "horror_ratio",
+          "mean_abs_shap": 0.056749,
+          "family": "content_preference"
+        }
+      ],
+      "family_sum": {
+        "usage_retention_behavior": 2.365583,
+        "content_preference": 1.499456,
+        "membership_context": 0.413667,
+        "other": 0.135784
+      },
+      "sample_size": 5000,
+      "note": "SHAP은 모델 설명이며 인과 주장이 아님."
+    },
+    "promotion_only": {
+      "status": "PASS",
+      "top20": [
+        {
+          "feature": "retention_w2_ratio",
+          "mean_abs_shap": 0.35722,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "is_cold_start_3d_fixed",
+          "mean_abs_shap": 0.304884,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "retention_w3_ratio",
+          "mean_abs_shap": 0.285027,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "drama_ratio",
+          "mean_abs_shap": 0.275929,
+          "family": "content_preference"
+        },
+        {
+          "feature": "watch_time(min)_w3",
+          "mean_abs_shap": 0.273609,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "romance_ratio",
+          "mean_abs_shap": 0.267275,
+          "family": "content_preference"
+        },
+        {
+          "feature": "family_animation_ratio",
+          "mean_abs_shap": 0.262543,
+          "family": "content_preference"
+        },
+        {
+          "feature": "thriller_crime_ratio",
+          "mean_abs_shap": 0.261177,
+          "family": "content_preference"
+        },
+        {
+          "feature": "diff_between_w3_w2",
+          "mean_abs_shap": 0.232787,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "action_adventure_ratio",
+          "mean_abs_shap": 0.191948,
+          "family": "content_preference"
+        },
+        {
+          "feature": "is_basic",
+          "mean_abs_shap": 0.170522,
+          "family": "membership_context"
+        },
+        {
+          "feature": "diff_between_w2_w1",
+          "mean_abs_shap": 0.167563,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "max_watch_time(min)",
+          "mean_abs_shap": 0.128739,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "diff_between_w3_w1",
+          "mean_abs_shap": 0.112562,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "is_churn_prevented",
+          "mean_abs_shap": 0.107446,
+          "family": "membership_context"
+        },
+        {
+          "feature": "genre_diversity_count",
+          "mean_abs_shap": 0.102927,
+          "family": "content_preference"
+        },
+        {
+          "feature": "watch_session_w3",
+          "mean_abs_shap": 0.082339,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "median_watch_time(min)",
+          "mean_abs_shap": 0.080079,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "max_day_share",
+          "mean_abs_shap": 0.069713,
+          "family": "other"
+        },
+        {
+          "feature": "avg_watch_time(min)",
+          "mean_abs_shap": 0.059477,
+          "family": "usage_retention_behavior"
+        }
+      ],
+      "family_sum": {
+        "usage_retention_behavior": 2.494351,
+        "content_preference": 1.648362,
+        "membership_context": 0.331167,
+        "other": 0.159759
+      },
+      "sample_size": 5000,
+      "note": "SHAP은 모델 설명이며 인과 주장이 아님."
+    },
+    "nonpromotion_only": {
+      "status": "PASS",
+      "top20": [
+        {
+          "feature": "watch_time(min)_w3",
+          "mean_abs_shap": 0.436101,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "diff_between_w2_w1",
+          "mean_abs_shap": 0.338299,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "retention_w3_ratio",
+          "mean_abs_shap": 0.320508,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "drama_ratio",
+          "mean_abs_shap": 0.315738,
+          "family": "content_preference"
+        },
+        {
+          "feature": "retention_w2_ratio",
+          "mean_abs_shap": 0.261145,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "family_animation_ratio",
+          "mean_abs_shap": 0.245733,
+          "family": "content_preference"
+        },
+        {
+          "feature": "romance_ratio",
+          "mean_abs_shap": 0.225248,
+          "family": "content_preference"
+        },
+        {
+          "feature": "thriller_crime_ratio",
+          "mean_abs_shap": 0.196305,
+          "family": "content_preference"
+        },
+        {
+          "feature": "action_adventure_ratio",
+          "mean_abs_shap": 0.184203,
+          "family": "content_preference"
+        },
+        {
+          "feature": "is_cold_start_3d_fixed",
+          "mean_abs_shap": 0.170911,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "diff_between_w3_w2",
+          "mean_abs_shap": 0.160484,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "median_watch_time(min)",
+          "mean_abs_shap": 0.157284,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "diff_between_w3_w1",
+          "mean_abs_shap": 0.104148,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "max_day_share",
+          "mean_abs_shap": 0.094801,
+          "family": "other"
+        },
+        {
+          "feature": "is_churn_prevented",
+          "mean_abs_shap": 0.085403,
+          "family": "membership_context"
+        },
+        {
+          "feature": "horror_ratio",
+          "mean_abs_shap": 0.068565,
+          "family": "content_preference"
+        },
+        {
+          "feature": "age_group",
+          "mean_abs_shap": 0.068525,
+          "family": "membership_context"
+        },
+        {
+          "feature": "watch_session_w3",
+          "mean_abs_shap": 0.068369,
+          "family": "usage_retention_behavior"
+        },
+        {
+          "feature": "genre_diversity_count",
+          "mean_abs_shap": 0.06236,
+          "family": "content_preference"
+        },
+        {
+          "feature": "is_basic",
+          "mean_abs_shap": 0.056886,
+          "family": "membership_context"
+        }
+      ],
+      "family_sum": {
+        "usage_retention_behavior": 2.560882,
+        "content_preference": 1.506157,
+        "membership_context": 0.255431,
+        "other": 0.178636
+      },
+      "sample_size": 5000,
+      "note": "SHAP은 모델 설명이며 인과 주장이 아님."
+    }
+  }
+}

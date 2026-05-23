@@ -80,9 +80,38 @@
     }
   },
   "step14": {
-    "completed_at": "2026-05-23T09:03:39.564693",
+    "completed_at": "2026-05-23T11:59:29.434457",
     "meta": {
       "scopes_tuned": 4
+    }
+  },
+  "step15": {
+    "completed_at": "2026-05-23T12:06:59.248685",
+    "meta": {
+      "scopes": 4
+    }
+  },
+  "step16": {
+    "completed_at": "2026-05-23T12:19:43.281803",
+    "meta": {
+      "scopes": [
+        "overall_with_promotion",
+        "overall_without_promotion",
+        "promotion_only",
+        "nonpromotion_only"
+      ]
+    }
+  },
+  "step17": {
+    "completed_at": "2026-05-23T12:24:25.992363",
+    "meta": {
+      "high_risk_week3_inactive_or_drop": 3787,
+      "high_risk_only_w1_or_cold_start_weak": 258,
+      "high_risk_low_activity": 516,
+      "medium_risk_retention_decay": 3205,
+      "content_preference_target_candidate": 6242,
+      "stable_retained_user": 1181,
+      "general_observation": 7892
     }
   }
 }
