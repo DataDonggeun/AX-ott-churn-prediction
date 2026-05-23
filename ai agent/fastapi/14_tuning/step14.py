@@ -81,9 +81,9 @@ def _make_model(model_name: str, params: dict):
 def _search_space(trial, model_name: str) -> dict:
     if model_name == "LightGBM":
         return {
-            "n_estimators":    trial.suggest_int("n_estimators", 100, 800),
+            "n_estimators":    trial.suggest_int("n_estimators", 100, 300),
             "learning_rate":   trial.suggest_float("learning_rate", 0.01, 0.20, log=True),
-            "num_leaves":      trial.suggest_int("num_leaves", 16, 128),
+            "num_leaves":      trial.suggest_int("num_leaves", 16, 64),
             "min_child_samples": trial.suggest_int("min_child_samples", 10, 100),
             "subsample":       trial.suggest_float("subsample", 0.6, 1.0),
             "colsample_bytree": trial.suggest_float("colsample_bytree", 0.6, 1.0),
