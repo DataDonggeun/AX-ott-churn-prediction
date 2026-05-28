@@ -194,7 +194,7 @@ def _engineer_features(mem: pd.DataFrame,
     df["reg_hour_morning"]   = ((h >= 6)  & (h <= 11)).astype(int)
     df["reg_hour_afternoon"] = ((h >= 12) & (h <= 17)).astype(int)
     df["reg_hour_evening"]   = ((h >= 18) & (h <= 23)).astype(int)
-    df["reg_hour_night"]     = ((h >= 0)  & (h <= 5)).astype(int)
+    # reg_hour_night 제거 (VIF=inf, 나머지 3개로 유추 가능)
 
     # ── View_History 전처리 ────────────────────────────────────────────────────
     vh = vh_raw.copy()
@@ -257,7 +257,7 @@ def _engineer_features(mem: pd.DataFrame,
         watch_days=("watch_date_d", "nunique"),
         **{"total_watch_time(min)": (wc, "sum")},
     ).reset_index()
-    basic["active_ratio"]  = basic["watch_days"] / 21
+    # active_ratio 제거 (VIF=inf, watch_days/21과 동일)
     basic["watch_per_day"] = basic["total_watch_count"] / basic["watch_days"].clip(lower=1)
     df = df.merge(basic, on="USER_KEY", how="left")
 
@@ -364,8 +364,8 @@ def _engineer_features(mem: pd.DataFrame,
 
     # ── diff ──────────────────────────────────────────────────────────────────
     df["diff_between_w2_w1"] = df["watch_time(min)_w2"] - df["watch_time(min)_w1"]
-    df["diff_between_w3_w1"] = df["watch_time(min)_w3"] - df["watch_time(min)_w1"]
     df["diff_between_w3_w2"] = df["watch_time(min)_w3"] - df["watch_time(min)_w2"]
+    # diff_between_w3_w1 제거 (VIF=inf, diff_w2_w1 + diff_w3_w2로 계산 가능)
 
     # ── is_w*_over_50pct (분모: w1+w2+w3 합) ─────────────────────────────────
     total_3w = df["watch_time(min)_w1"] + df["watch_time(min)_w2"] + df["watch_time(min)_w3"]
@@ -427,7 +427,7 @@ def _engineer_features(mem: pd.DataFrame,
             ("horror_ratio",           "Horror"),
             ("documentary_ratio",      "Documentary"),
             ("historical_war_ratio",   "Historical/War"),
-            ("other_ratio",            "Other"),
+            # other_ratio 제거 (VIF=inf, 나머지 장르 합으로 계산 가능)
         ]:
             sub = vh[vh["genre"] == genre_val].groupby("USER_KEY")[wc].sum().reset_index(name="gwt")
             tmp = total_wt.merge(sub, on="USER_KEY", how="left").fillna(0)
@@ -462,26 +462,36 @@ def _align_column_names(df: pd.DataFrame) -> pd.DataFrame:
 # 전체 실행
 # ══════════════════════════════════════════════════════════════════════════════
 
-def run_feature_engineering() -> dict:
+def run_feature_engineering(
+    mem_file: str = None,
+    vh_file: str = None,
+    movie_file: str = None,
+    mapping_file: str = None,
+) -> dict:
+    mem_path   = RAW_DIR / mem_file     if mem_file     else MEM_RAW
+    vh_path    = RAW_DIR / vh_file      if vh_file      else VH_RAW
+    movie_path = RAW_DIR / movie_file   if movie_file   else MOVIE_RAW
+    umap_path  = RAW_DIR / mapping_file if mapping_file else UMAP_RAW
+
     # ── 파일 존재 확인 ─────────────────────────────────────────────────────────
-    missing = [str(p) for p in [MEM_RAW, VH_RAW, MOVIE_RAW, UMAP_RAW] if not p.exists()]
+    missing = [str(p) for p in [mem_path, vh_path, movie_path, umap_path] if not p.exists()]
     if missing:
         return {
             "status": "FAIL",
             "reason": f"입력 파일 없음: {missing}",
             "expected_paths": {
-                "membership":    str(MEM_RAW),
-                "view_history":  str(VH_RAW),
-                "movie_master":  str(MOVIE_RAW),
-                "user_mapping":  str(UMAP_RAW),
+                "membership":    str(mem_path),
+                "view_history":  str(vh_path),
+                "movie_master":  str(movie_path),
+                "user_mapping":  str(umap_path),
             },
         }
 
     # ── 로드 ──────────────────────────────────────────────────────────────────
-    mem_raw = pd.read_csv(MEM_RAW,   encoding="utf-8-sig")
-    vh_raw  = pd.read_csv(VH_RAW,    encoding="utf-8-sig")
-    movie   = pd.read_csv(MOVIE_RAW, encoding="utf-8-sig")
-    umap    = pd.read_csv(UMAP_RAW,  encoding="utf-8-sig")
+    mem_raw = pd.read_csv(mem_path,   encoding="utf-8-sig")
+    vh_raw  = pd.read_csv(vh_path,    encoding="utf-8-sig")
+    movie   = pd.read_csv(movie_path, encoding="utf-8-sig")
+    umap    = pd.read_csv(umap_path,  encoding="utf-8-sig")
 
     raw_rows = len(mem_raw)
 
@@ -499,6 +509,23 @@ def run_feature_engineering() -> dict:
     num_cols = df.select_dtypes(include="number").columns
     df[num_cols] = df[num_cols].fillna(0)
 
+    # ── max_screen 드롭 (is_standard/is_premium으로 대체, VIF=inf) ────────────
+    df = df.drop(columns=["max_screen"], errors="ignore")
+
+    # ── duration < 21일 제거 (구 step03 로직) ────────────────────────────────
+    before_dur = len(df)
+    df["_dur"] = (
+        pd.to_datetime(df["end_date"], errors="coerce") -
+        pd.to_datetime(df["reg_date"], errors="coerce")
+    ).dt.days
+    df = df[df["_dur"] >= 21].drop(columns=["_dur"]).copy()
+    dur_removed = before_dur - len(df)
+
+    # ── 완전 중복 제거 ────────────────────────────────────────────────────────
+    before_dup = len(df)
+    df = df.drop_duplicates().reset_index(drop=True)
+    dup_removed = before_dup - len(df)
+
     # ── 저장 ─────────────────────────────────────────────────────────────────
     df.to_csv(OUTPUT_PATH, index=False, encoding="utf-8-sig")
 
@@ -506,12 +533,15 @@ def run_feature_engineering() -> dict:
         "status":        "PASS",
         "raw_rows":      raw_rows,
         "cleaned_rows":  cleaned_rows,
+        "dur_removed":   dur_removed,
+        "dup_removed":   dup_removed,
         "final_rows":    len(df),
         "final_cols":    len(df.columns),
         "output_path":   str(OUTPUT_PATH),
         "summary": (
-            f"원본 {raw_rows:,}행 → 정제 후 {cleaned_rows:,}행 → "
-            f"피처 엔지니어링 완료 {len(df):,}행 × {len(df.columns)}컬럼. "
+            f"원본 {raw_rows:,}행 → 정제 {cleaned_rows:,}행 → "
+            f"duration<21 {dur_removed}행 제거 → 중복 {dup_removed}행 제거 → "
+            f"최종 {len(df):,}행 × {len(df.columns)}컬럼. "
             f"저장: {OUTPUT_PATH.name}"
         ),
     }
@@ -520,26 +550,19 @@ def run_feature_engineering() -> dict:
 # ── 엔드포인트 ─────────────────────────────────────────────────────────────────
 
 @router.post("/feature-engineering")
-def feature_engineering(force: bool = False):
+def feature_engineering(
+    mem_file: str = None,
+    vh_file: str = None,
+    movie_file: str = None,
+    mapping_file: str = None,
+):
     """
-    Step 00: 원본 4개 파일 → Membership_v5.csv 생성.
+    Step 00: 원본 4개 파일 → Membership_v5.csv 생성. 항상 재실행.
 
-    입력 파일 위치 (_data/01_raw/):
-      - Membership_train.csv
-      - Views_train.csv
-      - Movies.csv
-      - mapping.csv
-
-    force=false: 이미 Membership_v5.csv가 있으면 건너뜀.
-    force=true:  항상 재생성.
+    파일명을 지정하지 않으면 기본값(Membership_train.csv 등) 사용.
+    파일명만 입력 — 경로는 _data/01_raw/ 고정.
     """
-    if not force and is_done("step00") and MEM_PATH.exists():
-        cached = load_json("step00_result")
-        if cached:
-            cached["from_cache"] = True
-            return cached
-
-    result = run_feature_engineering()
+    result = run_feature_engineering(mem_file, vh_file, movie_file, mapping_file)
 
     if result["status"] == "PASS":
         save_json("step00_result", result)

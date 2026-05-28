@@ -101,12 +101,4 @@ EXCLUDED_COLS = [
 ] + PAYMENT_FEATURES
 
 # ── 17x 세그먼트 순서 ──────────────────────────────────────────────────────────
-SEGMENT_ORDER = [
-    "high_risk_week3_inactive_or_drop",
-    "high_risk_only_w1_or_cold_start_weak",
-    "high_risk_low_activity",
-    "medium_risk_retention_decay",
-    "content_preference_target_candidate",
-    "stable_retained_user",
-    "general_observation",
-]
+SEGMENT_ORDER = ["S1", "S2", "S3", "S4", "S5", "S6"]

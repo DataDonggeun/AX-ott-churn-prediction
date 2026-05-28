@@ -87,13 +87,8 @@ def run_2x2_eda(df: pd.DataFrame) -> dict:
 
 
 @router.post("/2x2-eda")
-def eda_2x2(force: bool = False):
-    """Step 09: 프로모션×재구매 2×2 EDA."""
-    if not force and is_done("step09"):
-        cached = load_json("step09_result")
-        if cached:
-            cached["from_cache"] = True
-            return cached
+def eda_2x2():
+    """Step 09: 프로모션×재구매 2×2 EDA. 항상 재실행."""
 
     df = load_df("expanded_dataset")
     if df is None:

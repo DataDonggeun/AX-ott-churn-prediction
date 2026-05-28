@@ -84,13 +84,8 @@ def run_promotion_eda(df: pd.DataFrame) -> dict:
 
 
 @router.post("/promotion-eda")
-def promotion_eda(force: bool = False):
-    """Step 08: 프로모션 vs 비프로모션 EDA."""
-    if not force and is_done("step08"):
-        cached = load_json("step08_result")
-        if cached:
-            cached["from_cache"] = True
-            return cached
+def promotion_eda():
+    """Step 08: 프로모션 vs 비프로모션 EDA. 항상 재실행."""
 
     df = load_df("conservative_dataset")
     if df is None:

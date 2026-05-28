@@ -112,19 +112,8 @@ def run_data_contract(df: pd.DataFrame) -> dict:
 
 
 @router.post("/data-contract")
-def data_contract(force: bool = False):
-    """
-    Step 01: 데이터 계약 감사.
-
-    - force=false(기본): 이미 완료된 경우 캐시 결과 반환
-    - force=true: 캐시 무시하고 재실행
-    """
-    if not force and is_done("step01"):
-        cached = load_json("step01_result")
-        if cached:
-            cached["from_cache"] = True
-            return cached
-
+def data_contract():
+    """Step 01: 데이터 계약 감사. 항상 재실행."""
     if not MEM_PATH.exists():
         return {"status": "FAIL", "reason": "데이터 파일 없음", "path": str(MEM_PATH)}
 

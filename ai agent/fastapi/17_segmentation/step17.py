@@ -24,123 +24,117 @@ router = APIRouter(prefix="/17", tags=["17. Segmentation"])
 
 def run_segmentation(exp_df: pd.DataFrame, oof_df: pd.DataFrame) -> dict:
     """
-    17x 7-세그먼트 배정.
+    S1~S6 세그먼트 배정.
 
-    입력:
-      exp_df  — expanded_dataset (행동 피처 포함)
-      oof_df  — step15_oof (overall_with_promotion scope, churn_risk)
-
-    우선순위 규칙:
-    1. top20% risk & (week3 inactive | drop | retention decay)
-    2. top20% risk & (only_w1 | cold_start_weak)
-    3. top20% risk & low_activity
-    4. 20~50% risk & retention decay
-    5. content proxy
-    6. stable (하위 20% risk & stable retention)
-    7. general_observation (나머지)
+    기준:
+      w1+w2 합계 >= 119분 → 상위군 (S1/S2/S3)
+      w1+w2 합계 <  119분 → 하위군 (S4/S5/S6)
+      w3 >= 141분          → S1 (상위) / S4 (하위)
+      0 < w3 < 141분       → S2 (상위) / S5 (하위)
+      w3 = 0               → S3 (상위) / S6 (하위)
     """
-    # OOF 점수 (overall_with_promotion, LightGBM 또는 사용 가능한 것)
     oof_scope = oof_df[oof_df["scope"] == "overall_with_promotion"].copy()
     if oof_scope.empty:
         oof_scope = oof_df.drop_duplicates("USER_KEY").copy()
 
-    oof_scope = oof_scope.sort_values("USER_KEY").reset_index(drop=True)
     base = exp_df.copy().reset_index(drop=True)
 
-    # 점수 병합 — dict map으로 직접 매핑 (lambda보다 빠름)
     score_lookup = oof_scope.drop_duplicates("USER_KEY").set_index("USER_KEY")["repurchase_score"]
     base["repurchase_score"] = base["USER_KEY"].map(score_lookup).fillna(0.5)
     base["churn_risk"] = 1 - base["repurchase_score"]
 
-    # 위험도 백분위
-    base["_rank"] = base["churn_risk"].rank(method="first", ascending=False)
-    base["_pct"]  = base["_rank"] / len(base) * 100
-
     def col(name, default=0):
         return base[name] if name in base.columns else pd.Series(default, index=base.index)
 
-    # ── 행동 플래그 ────────────────────────────────────────────────────────────
-    w3t = col("watch_time(min)_w3"); w3s = col("watch_session_w3")
-    w2t = col("watch_time(min)_w2"); d32 = col("diff_between_w3_w2")
-    rw2 = col("retention_w2_ratio"); rw3 = col("retention_w3_ratio")
-    cs3 = "is_cold_start_3d_fixed" if "is_cold_start_3d_fixed" in base.columns else "is_cold_start_3d"
-    cs7 = "is_cold_start_7d_fixed" if "is_cold_start_7d_fixed" in base.columns else "is_cold_start_7d"
+    w1 = col("watch_time(min)_w1")
+    w2 = col("watch_time(min)_w2")
+    w3 = col("watch_time(min)_w3")
 
-    top20  = base["_pct"] <= 20
-    f_w3i  = (w3t <= 0) | (w3s <= 0)
-    f_w3d  = (d32 < 0) & (w3t < w2t)
-    f_rdec = (rw3 < rw2) | (rw3 < 0.5)
-    f_ow1  = col("is_only_w1") == 1
-    f_cs   = (col(cs3) == 1) | (col(cs7) == 1)
-    f_low  = (
-        (col("total_watch_time(min)") <= col("total_watch_time(min)").quantile(0.25)) |
-        (col("total_watch_count")     <= col("total_watch_count").quantile(0.25))
-    )
-    f_stab = (base["_pct"] >= 80) & (rw3 >= rw2.fillna(0))
+    w1w2 = w1 + w2
+    thresh_w1   = w1.median()         # Day 7 기준: w1 중앙값
+    thresh_w1w2 = w1w2.median()       # Day 14 기준: w1+w2 중앙값 (약 118분)
+    thresh_w3   = w3.quantile(0.75)   # Day 21 기준: w3 75th percentile (약 140분)
 
-    # 콘텐츠 proxy 플래그
-    genre_cols = [
-        c for c in base.columns
-        if c.endswith("_ratio") and c not in
-        {"active_ratio","retention_w2_ratio","retention_w3_ratio",
-         "watch_ratio_under_1m","watch_ratio_under_5m"}
-    ]
-    if genre_cols:
-        max_g   = base[genre_cols].max(axis=1)
-        f_cont  = max_g >= max_g.quantile(0.75)
-    else:
-        f_cont = pd.Series(False, index=base.index)
-    for nm in ["new_movie_in_365d_ratio","old_movie_ratio(5y)"]:
-        if nm in base.columns:
-            f_cont = f_cont | (base[nm] >= base[nm].quantile(0.75))
+    # ── Day 7 개입 플래그 ──────────────────────────────────────────────────────
+    base["day7_flag"] = np.where(w1 < thresh_w1, "개입필요", "정상")
 
-    # ── 우선순위 배정 ──────────────────────────────────────────────────────────
+    # ── Day 14 개입 플래그 ─────────────────────────────────────────────────────
+    base["day14_flag"] = np.where(w1w2 < thresh_w1w2, "개입필요", "정상")
+
+    # ── Day 21 S1~S6 확정 배정 ────────────────────────────────────────────────
+    high = w1w2 >= thresh_w1w2
+    low  = w1w2 <  thresh_w1w2
+    w3_high = w3 >= thresh_w3
+    w3_mid  = (w3 > 0) & (w3 < thresh_w3)
+    w3_zero = w3 <= 0
+
     conditions = [
-        top20 & (f_w3i | f_w3d | f_rdec),
-        top20 & (f_ow1 | f_cs),
-        top20 & f_low,
-        ~top20 & (base["_pct"] > 20) & (base["_pct"] <= 50) & f_rdec,
-        ~top20 & ~f_low & f_cont,
-        f_stab,
+        high & w3_high,   # S1
+        high & w3_mid,    # S2
+        high & w3_zero,   # S3
+        low  & w3_high,   # S4
+        low  & w3_mid,    # S5
+        low  & w3_zero,   # S6
     ]
-    labels = [
-        "high_risk_week3_inactive_or_drop",
-        "high_risk_only_w1_or_cold_start_weak",
-        "high_risk_low_activity",
-        "medium_risk_retention_decay",
-        "content_preference_target_candidate",
-        "stable_retained_user",
-    ]
-    base["segment"] = np.select(conditions, labels, default="general_observation")
-    base = base.drop(columns=["_rank", "_pct"], errors="ignore")
+    labels = ["S1", "S2", "S3", "S4", "S5", "S6"]
+    base["segment"] = np.select(conditions, labels, default="S6")
 
     # ── 세그먼트 요약 ──────────────────────────────────────────────────────────
-    summary = []
-    for seg in SEGMENT_ORDER:
-        sub = base[base["segment"] == seg]
-        summary.append({
-            "segment":        seg,
+    def _seg_stats(sub):
+        return {
             "row_count":      int(len(sub)),
             "row_share":      round(len(sub) / max(len(base), 1), 4),
             "repurchase_rate": round(float(sub["is_repurchase"].mean()), 4)
                                if "is_repurchase" in sub.columns and len(sub) and not pd.isna(sub["is_repurchase"].mean()) else None,
             "mean_churn_risk": round(float(sub["churn_risk"].mean()), 4)
                                if len(sub) and not pd.isna(sub["churn_risk"].mean()) else None,
-        })
+        }
+
+    has_promo = "is_promotion" in base.columns
+    summary = []
+    for seg in SEGMENT_ORDER:
+        sub = base[base["segment"] == seg]
+        row = {"segment": seg, **_seg_stats(sub)}
+        if has_promo:
+            sub_promo    = sub[sub["is_promotion"] == 1]
+            sub_nonpromo = sub[sub["is_promotion"] == 0]
+            row["promotion"]    = _seg_stats(sub_promo)
+            row["nonpromotion"] = _seg_stats(sub_nonpromo)
+        summary.append(row)
 
     # 배정 결과 저장
     out_cols = [
         "USER_KEY", "is_repurchase", "is_promotion",
-        "repurchase_score", "churn_risk", "segment",
+        "repurchase_score", "churn_risk",
+        "day7_flag", "day14_flag", "segment",
     ]
     save_df("step17_segment_assignment",
             base[[c for c in out_cols if c in base.columns]])
+
+    # 주차별 개입 대상 요약
+    early_intervention = {
+        "day7": {
+            "threshold_w1": round(float(thresh_w1), 1),
+            "개입필요": int((base["day7_flag"] == "개입필요").sum()),
+            "정상":     int((base["day7_flag"] == "정상").sum()),
+        },
+        "day14": {
+            "threshold_w1w2": round(float(thresh_w1w2), 1),
+            "개입필요": int((base["day14_flag"] == "개입필요").sum()),
+            "정상":     int((base["day14_flag"] == "정상").sum()),
+        },
+        "day21": {
+            "threshold_w3": round(float(thresh_w3), 1),
+            "note": "S1~S6 확정 배정",
+        },
+    }
 
     return {
         "status":   "PASS",
         "total_rows": int(len(base)),
         "segments": summary,
-        "note": "payment/auth/demographic proxy는 규칙에 미사용. 행동 변수 기반.",
+        "early_intervention": early_intervention,
+        "note": f"S1~S6: w1+w2 중앙값({thresh_w1w2:.0f}분) × w3 75th percentile({thresh_w3:.0f}분) 기준 6분할.",
         "summary": " | ".join(
             f"{r['segment'].replace('_',' ')}:{r['row_count']:,}" for r in summary
         ),
@@ -148,13 +142,8 @@ def run_segmentation(exp_df: pd.DataFrame, oof_df: pd.DataFrame) -> dict:
 
 
 @router.post("/segmentation")
-def segmentation(force: bool = False):
-    """Step 17: 7-세그먼트 배정 (payment-removed OOF + 행동 규칙)."""
-    if not force and is_done("step17"):
-        cached = load_json("step17_segment_summary")
-        if cached:
-            cached["from_cache"] = True
-            return cached
+def segmentation():
+    """Step 17: 세그먼트 배정. 항상 재실행."""
 
     exp_df = load_df("expanded_dataset")
     oof_df = load_df("step15_oof")

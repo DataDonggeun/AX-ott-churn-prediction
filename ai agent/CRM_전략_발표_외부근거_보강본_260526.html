@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wavve OTT CRM 전략 — 데이터 기반 실험 설계</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+<style>
+:root {
+  --blue:#378ADD; --pink:#D4537E; --green:#1D9E75;
+  --orange:#E8743B; --red:#c0392b; --yellow:#f59e0b;
+  --bg:#f0f2f8; --card:#fff; --text:#1a1a2e; --sub:#6b7280;
+  --border:#e5e7eb; --grid:rgba(0,0,0,0.06);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;background:rgba(26,26,46,0.97);
+  display:flex;gap:4px;padding:0 20px;height:48px;align-items:center;overflow-x:auto;flex-shrink:0;}
+nav a{color:#aaa;text-decoration:none;font-size:12px;font-weight:500;
+  padding:5px 12px;border-radius:6px;white-space:nowrap;transition:all .2s;}
+nav a:hover{color:#fff;background:rgba(255,255,255,0.1);}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);
+  color:#fff;padding:56px 24px 40px;text-align:center;}
+.hero h1{font-size:26px;font-weight:900;margin-bottom:10px;letter-spacing:-.5px;}
+.hero p{font-size:14px;color:#94a3b8;max-width:600px;margin:0 auto 20px;line-height:1.8;}
+.tags{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.tag{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
+  border-radius:20px;padding:5px 14px;font-size:12px;font-weight:700;}
+
+/* SECTION */
+section{padding:40px 20px;max-width:1060px;margin:0 auto;}
+.sec-title{font-size:18px;font-weight:900;margin-bottom:20px;
+  display:flex;align-items:center;gap:8px;}
+.sec-title::before{content:'';width:4px;height:20px;background:var(--blue);
+  border-radius:2px;display:inline-block;}
+
+/* CARD */
+.card{background:var(--card);border-radius:14px;
+  box-shadow:0 2px 10px rgba(0,0,0,0.06);padding:22px;margin-bottom:14px;}
+.card-title{font-size:12px;font-weight:700;color:var(--sub);
+  text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;}
+
+/* GRID */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+@media(max-width:680px){.g2,.g3{grid-template-columns:1fr;}}
+
+/* INSIGHT BOX */
+.insight{border-left:4px solid var(--blue);background:linear-gradient(135deg,#f0f4ff,#e8f0fe);
+  border-radius:0 10px 10px 0;padding:12px 16px;font-size:13px;line-height:1.7;margin:10px 0;}
+.insight.warn{border-color:var(--orange);background:linear-gradient(135deg,#fff7ed,#fef3c7);}
+.insight.danger{border-color:var(--red);background:linear-gradient(135deg,#fff0f0,#ffe4e4);}
+.insight.green{border-color:var(--green);background:linear-gradient(135deg,#f0fff8,#d1fae5);}
+.insight strong{color:inherit;}
+
+/* KPI */
+.kpi-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+.kpi{flex:1;min-width:120px;background:var(--bg);border-radius:10px;padding:14px;text-align:center;}
+.kpi .val{font-size:24px;font-weight:900;}
+.kpi .lbl{font-size:11px;color:var(--sub);margin-top:2px;}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:13px;}
+.tbl th{background:var(--bg);padding:9px 12px;text-align:left;font-weight:700;
+  font-size:11px;color:var(--sub);border-bottom:2px solid var(--border);}
+.tbl td{padding:9px 12px;border-bottom:1px solid var(--border);}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:#f8f9ff;}
+
+/* CROSS TABLE */
+.cross{width:100%;border-collapse:collapse;font-size:13px;text-align:center;}
+.cross th,.cross td{padding:10px 8px;border:1px solid var(--border);}
+.cross th{background:var(--bg);font-weight:700;font-size:12px;color:var(--sub);}
+.cross .c-best{background:#f0fff8;color:var(--green);font-weight:900;font-size:15px;}
+.cross .c-bad{background:#fff0f0;color:var(--red);font-weight:900;font-size:15px;}
+.cross .c-mid{background:#fff8f0;color:var(--orange);font-weight:700;}
+.cross .c-ok{background:#f0f8ff;color:var(--blue);font-weight:700;}
+
+/* TIMELINE */
+.timeline{display:flex;gap:0;margin:16px 0;overflow-x:auto;}
+.tl-item{flex:1;min-width:140px;padding:14px 12px;border-left:3px solid var(--border);position:relative;}
+.tl-item:first-child{border-color:var(--blue);}
+.tl-item.active{border-color:var(--orange);}
+.tl-item.peak{border-color:var(--green);}
+.tl-day{font-size:11px;font-weight:700;color:var(--sub);margin-bottom:4px;}
+.tl-title{font-size:13px;font-weight:700;margin-bottom:6px;}
+.tl-items{font-size:12px;color:var(--sub);line-height:1.7;}
+
+/* BADGE */
+.badge{display:inline-block;padding:3px 10px;border-radius:12px;
+  font-size:11px;font-weight:700;}
+.bd-red{background:#fee2e2;color:var(--red);}
+.bd-green{background:#d1fae5;color:var(--green);}
+.bd-blue{background:#dbeafe;color:var(--blue);}
+.bd-orange{background:#fef3c7;color:#b45309;}
+
+/* BENCH TABLE */
+.bench{width:100%;border-collapse:collapse;font-size:13px;}
+.bench th{background:#1a1a2e;color:#fff;padding:10px 14px;
+  text-align:left;font-weight:700;font-size:12px;}
+.bench td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:top;}
+.bench .icon{font-size:20px;text-align:center;}
+.bench tr:hover td{background:#f8f9ff;}
+
+/* CHART WRAP */
+.cw{position:relative;height:260px;}
+.cw-sm{position:relative;height:200px;}
+
+/* THRESHOLD BOX */
+.thresh{background:linear-gradient(135deg,#1a1a2e,#0f3460);color:#fff;
+  border-radius:14px;padding:18px 22px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:12px;}
+.thresh-num{font-size:40px;font-weight:900;color:#fbbf24;}
+.thresh-text h4{font-size:15px;font-weight:700;margin-bottom:4px;}
+.thresh-text p{font-size:12px;opacity:.8;line-height:1.6;}
+
+/* LIST */
+.item-list{list-style:none;}
+.item-list li{font-size:13px;line-height:1.7;padding:5px 0;
+  border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:flex-start;}
+.item-list li:last-child{border-bottom:none;}
+.item-list li::before{content:'▸';color:var(--blue);flex-shrink:0;font-size:11px;margin-top:3px;}
+.item-list.x li::before{content:'✕';color:var(--red);}
+
+
+/* 서술형 설명 단락 */
+.desc{font-size:14px;line-height:1.9;color:#2d3748;margin:0 0 16px 0;padding:18px 22px;
+  background:#fafbff;border-radius:10px;border-left:3px solid #e5e7eb;}
+.desc strong{color:#1a1a2e;}
+.desc em{color:var(--orange);font-style:normal;font-weight:700;}
+.desc .note{display:block;margin-top:10px;font-size:12px;color:var(--sub);
+  background:#f0f2f8;border-radius:6px;padding:8px 12px;}
+
+
+/* SOURCE / EVIDENCE */
+.source-line{font-size:11px;color:var(--sub);line-height:1.7;margin-top:8px;}
+.source-line a{color:var(--blue);text-decoration:none;font-weight:700;}
+.source-line a:hover{text-decoration:underline;}
+.audit{background:#fffdf3;border:1px solid #fde68a;border-radius:10px;padding:11px 14px;
+  color:#795400;font-size:12px;line-height:1.75;margin:10px 0 14px;}
+.status{display:inline-block;padding:3px 9px;border-radius:11px;font-size:10px;font-weight:900;margin-right:5px;}
+.st-ok{background:#d1fae5;color:#047857;}
+.st-use{background:#dbeafe;color:#2563eb;}
+.st-limit{background:#fef3c7;color:#b45309;}
+.st-drop{background:#fee2e2;color:#b91c1c;}
+.evidence-row td:first-child{font-weight:700;white-space:nowrap;}
+.evidence-row td:last-child{font-size:12px;color:#374151;line-height:1.7;}
+.ref-list{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.ref-item{background:var(--bg);border-radius:9px;padding:11px 13px;font-size:12px;line-height:1.65;}
+.ref-item a{font-weight:700;color:var(--blue);text-decoration:none;}
+@media(max-width:680px){.ref-list{grid-template-columns:1fr;}}
+
+footer{background:#1a1a2e;color:#64748b;text-align:center;
+  padding:20px;font-size:12px;margin-top:40px;}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="#intro">개요</a>
+  <a href="#evidence">근거 검증</a>
+  <a href="#timing">대응 타이밍</a>
+  <a href="#msg">메시지 후킹</a>
+  <a href="#winback">복귀 보상</a>
+  <a href="#checkpoint">체크포인트</a>
+  <a href="#referral">레퍼럴</a>
+  <a href="#gemini">Gemini</a>
+  <a href="#bench">벤치마킹</a>
+</nav>
+
+<div class="hero">
+  <h1>Wavve OTT — 데이터 기반 CRM 전략 설계</h1>
+  <p>프로모션(100원딜) 유입 구독자 행동 분석 기반<br>
+  외부 근거 검증을 반영한 세그먼트별 CRM 실험 설계 제안</p>
+  <div class="tags">
+    <span class="tag">기존 HTML 기재: 모집단 23,097건</span>
+    <span class="tag">기존 HTML 기재: 프로모션 11,904건</span>
+    <span class="tag">w1~w4 실측 분석</span>
+    <span class="tag">효과 입증 ✕ · 실험 설계 ○</span>
+  </div>
+</div>
+
+
+<!-- ===================== 개요 ===================== -->
+
+<section style="padding:28px 20px 0;max-width:1060px;margin:0 auto;">
+  <div class="desc">
+    <strong>CRM(Customer Relationship Management)</strong>은 이미 유입된 고객이 서비스의 가치를 경험하고 이용을 이어가도록 설계하는 활동임. 
+    Harvard Business Review는 신규 고객 획득 비용이 기존 고객 유지 비용보다 <strong>산업과 연구에 따라 5~25배</strong> 높을 수 있다고 정리함. 
+    단, 이 수치는 Wavve 또는 100원딜의 비용을 직접 측정한 값이 아니라, <em>가입 이후 유지까지 보아야 하는 이유를 설명하는 외부 경영 근거</em>로만 사용함.
+    <div class="source-line">출처: <a href="https://hbr.org/2014/10/the-value-of-keeping-the-right-customers" target="_blank" rel="noopener noreferrer">Harvard Business Review, The Value of Keeping the Right Customers, 2014.10.29</a></div><br>
+    이번 분석에서 <strong>프로모션(100원딜) 유입 고객</strong>은 가격 정책이 다른 acquisition cohort임. 
+    따라서 정가 유입 고객과 같은 평균 안에 섞기보다, 가입 이후 첫 시청, 주차별 이용 유지, 복귀 및 이탈 패턴을 분리해 보아야 함. 
+    여기서 말할 수 있는 것은 <em>행동 패턴의 차이</em>와 <em>실험 대상의 우선순위</em>이며, “가격 때문에 이탈한다”는 인과 결론은 아님.<br><br>
+    Amplitude는 마케팅이 획득에, 제품팀이 유지에만 각각 집중하는 단절을 줄이고 고객 여정 전체를 연결해 분석해야 한다고 설명함. 
+    본 발표 역시 <strong>100원딜 유입 → 초기 시청 경험 → 주차별 유지 행동 → 재구매/이탈</strong>을 하나의 퍼널로 해석함.
+    <div class="source-line">출처: <a href="https://amplitude.com/blog/funnel-analysis" target="_blank" rel="noopener noreferrer">Amplitude, What Is Funnel Analysis?, 2025.04.01</a></div>
+    <span class="note">※ 이 발표에서 외부 사례는 전략의 설계 근거이며, 우리 서비스에서의 효과 입증은 아님. 실제 효과는 대조군을 둔 실험으로 확인해야 함.</span>
+  </div>
+</section>
+
+<section id="intro">
+  <div class="sec-title">데이터로 무엇을 알 수 있고, 무엇을 알 수 없는가</div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">✅ 현재 분석 데이터로 관찰하는 것</div>
+      <ul class="item-list">
+        <li>프로모션 고객 여부 (is_promotion = 1)</li>
+        <li>1~4주차 시청량 변화 (w1, w2, w3, w4)</li>
+        <li>실제로 시청한 작품 및 콘텐츠 행동 (View_History)</li>
+        <li>3주차 활성·약화·휴면 여부</li>
+        <li>요금제, 연령, 성별 (Membership)</li>
+        <li>4주차 시청 여부 및 시청량 구간</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title">❌ 현재 관찰자료만으로 입증할 수 없는 것</div>
+      <ul class="item-list x">
+        <li>100원 가격 자체가 이탈을 유발했는가</li>
+        <li>알림을 받으면 실제 재구매율이 높아지는가</li>
+        <li>보상을 받고 돌아온 것인지, 원래 돌아올 고객이었는가</li>
+        <li>추천 문구 또는 레퍼럴이 전환을 높이는가</li>
+        <li>31분 시청을 유도하면 이탈률이 낮아지는가</li>
+      </ul>
+      <div class="insight warn" style="margin-top:12px;">
+        <strong>판정:</strong> 행동 데이터는 <strong>누구에게 무엇을 시험할지</strong>를 정한다. 
+        개입 효과는 무작위 배정 또는 홀드아웃이 있는 A/B 테스트로 검증한다.
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">세그먼트별 전체 이탈률</div>
+    <div class="audit">
+      검증 범위: 아래 차트의 수치는 업로드된 기존 HTML 내부 데이터 배열을 유지한 것임. 이번 외부근거 보강본에서는 원 CSV·review ZIP을 다시 열어 재계산하지 않았으므로, 내부 실측 수치의 재현 검증 완료를 의미하지 않음.
+    </div>
+    <div class="desc">
+      기존 HTML은 프로모션 유입 11,904건을 <strong>1~2주차 시청량(w1+w2)</strong>과 <strong>3주차 활성 여부(w3)</strong>를 기준으로 S1~S6 여섯 집단으로 분류하고 있음. 
+      기재된 이탈률은 S1 10.0%, S4 11.5%로 낮고, S3 43.5%, S6 52.3%로 높음. 
+      따라서 S3·S6은 개입 후보 우선순위가 높은 집단으로 해석할 수 있지만, 세그먼트가 곧 이탈의 원인이라는 뜻은 아님.
+      <span class="note">※ 기존 HTML 기재 기준: hard gate = w1+w2 ≥ 119분 AND watch_ratio_under_5m ≤ 0.25.</span>
+    </div>
+    <div class="cw"><canvas id="chartSeg"></canvas></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">CRM 수단 세 가지</div>
+    <div class="g3">
+      <div style="background:var(--bg);border-radius:10px;padding:16px;">
+        <div style="font-size:20px;margin-bottom:8px;">📩</div>
+        <div style="font-weight:700;margin-bottom:6px;">메시지 개입</div>
+        <div style="font-size:12px;color:var(--sub);line-height:1.7;">시청 이력과 행동 시점에 맞춘 앱 푸시·이메일 실험</div>
+      </div>
+      <div style="background:var(--bg);border-radius:10px;padding:16px;">
+        <div style="font-size:20px;margin-bottom:8px;">🎬</div>
+        <div style="font-weight:700;margin-bottom:6px;">콘텐츠 큐레이션</div>
+        <div style="font-size:12px;color:var(--sub);line-height:1.7;">실제 개인 시청 이력 기반 재진입 콘텐츠 추천</div>
+      </div>
+      <div style="background:var(--bg);border-radius:10px;padding:16px;">
+        <div style="font-size:20px;margin-bottom:8px;">🎁</div>
+        <div style="font-weight:700;margin-bottom:6px;">행동 보상</div>
+        <div style="font-size:12px;color:var(--sub);line-height:1.7;">시청 미션·복귀 혜택의 효과 검증 실험</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 외부 근거 검증 ===================== -->
+<section id="evidence">
+  <div class="sec-title">외부 근거 검증 — 넣는 주장과 버리는 주장</div>
+  <div class="desc">
+    외부 자료는 세 종류로 나누어 반영함. <strong>공식·학술 근거로 수치가 확인된 주장</strong>은 수치와 출처를 함께 제시하고, 
+    <strong>다른 산업의 사례</strong>는 전략 후보의 근거로만 사용하며, <strong>원출처가 고정되지 않은 기존 문구</strong>는 삭제하거나 표현을 낮춤.
+  </div>
+
+  <div class="card">
+    <div class="card-title">이번 보강본에 실제 반영한 근거</div>
+    <table class="tbl">
+      <tr><th>근거</th><th>확인된 내용</th><th>우리 분석에서의 사용 범위</th></tr>
+      <tr class="evidence-row">
+        <td><span class="status st-ok">확인</span> HBR</td>
+        <td>획득 비용은 유지 비용보다 산업·연구에 따라 5~25배 높을 수 있음.</td>
+        <td>CRM 필요성의 배경 근거. Wavve CAC/CRC의 실측값으로 사용 금지.</td>
+      </tr>
+      <tr class="evidence-row">
+        <td><span class="status st-use">방법론</span> Amplitude</td>
+        <td>획득 코호트는 이탈 시점을, 행동 코호트는 유지와 연관된 행동을 탐색함. 인과는 A/B 테스트로 검증해야 함.</td>
+        <td>100원딜 cohort 분리와 행동 세그먼트 CRM 실험 설계의 논리.</td>
+      </tr>
+      <tr class="evidence-row">
+        <td><span class="status st-ok">공식 연구</span> Spotify</td>
+        <td>활동량을 통제했을 때, 다양한 청취 사용자는 덜 다양한 사용자보다 이탈 가능성이 10~20%p 낮게 연관됨.</td>
+        <td>콘텐츠 다양성 패턴의 외부 병행 근거. 음악→OTT 인과 일반화 금지.</td>
+      </tr>
+      <tr class="evidence-row">
+        <td><span class="status st-ok">공식 실험</span> Duolingo</td>
+        <td>Streak Wager A/B 테스트에서 Day-1·7·14 retention이 유의하게 증가했고, Day-7 개선 폭은 +14%.</td>
+        <td>체크포인트/미션형 개입의 실험 선례. OTT 효과 수치로 전용 금지.</td>
+      </tr>
+      <tr class="evidence-row">
+        <td><span class="status st-ok">공식 운영</span> Sling TV</td>
+        <td>하루 30분 시청 시 Spin & Win 1회와 $5,000 sweepstakes entry를 제공.</td>
+        <td>시청량 기반 보상이 OTT에서 구현 가능하다는 사례. retention 효과는 미공개.</td>
+      </tr>
+      <tr class="evidence-row">
+        <td><span class="status st-ok">학술</span> Referral</td>
+        <td>독일 은행 약 10,000명, 약 3년 자료에서 추천 유입 고객 가치가 비교 고객보다 최소 16% 높았음.</td>
+        <td>레퍼럴 실험 후보 근거. 금융서비스 결과를 OTT에 동일 적용 금지.</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">기존 문구 교정 내역</div>
+    <table class="tbl">
+      <tr><th>기존 주장</th><th>이번 보강본 처리</th><th>이유</th></tr>
+      <tr><td>CAC가 통상 5배 이상 높다</td><td><span class="status st-use">교정</span> HBR의 “산업·연구에 따라 5~25배”로 한정</td><td>Wavve 자체 비용 수치가 아님.</td></tr>
+      <tr><td>100원딜 고객은 자연 이탈 가능성이 높다</td><td><span class="status st-use">교정</span> 별도 유입 코호트로 비교할 가설</td><td>가격 인과는 현재 데이터로 확정 불가.</td></tr>
+      <tr><td>Duolingo는 3일 무반응 후 알림 중단</td><td><span class="status st-drop">삭제</span> 공식 A/B 실험 수치로 교체</td><td>3일 기준의 공식 원출처를 확인하지 못함.</td></tr>
+      <tr><td>Sling 30분 = 우리 31분 임계점과 정확히 일치</td><td><span class="status st-use">교정</span> 근접한 운영 사례</td><td>30분 정책과 31분 관찰 분기는 동일한 효과 검증이 아님.</td></tr>
+      <tr><td>Disney+ 주 1회 공개가 이탈률 18~22% 감소</td><td><span class="status st-drop">삭제</span></td><td>Disney+에 귀속되는 신뢰 가능한 원출처를 확인하지 못함.</td></tr>
+      <tr><td>Headspace의 Endowed Progress 사례</td><td><span class="status st-use">교정</span> Nunes &amp; Drèze 학술 이론만 유지</td><td>Headspace 사례 원출처 미고정.</td></tr>
+      <tr><td>30일 무반응 이후가 최적 복귀 시점</td><td><span class="status st-drop">삭제</span> 14일은 내부 실험 가설로만 표시</td><td>본 프로젝트에 적용 가능한 신뢰 근거를 고정하지 못함.</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ===================== 대응 타이밍 ===================== -->
+<section id="timing">
+  <div class="sec-title">대응 타이밍 레이어 설계</div>
+  <div class="desc">
+    Amplitude의 cohort 방법론에 따르면, acquisition cohort는 <strong>언제 이탈이 집중되는지</strong>를 보여주지만, 
+    <strong>왜 이탈하는지</strong>까지 설명하지는 못함. 그래서 100원딜 유입군 안에서도 첫 시청, w2 유지, w4 복귀 같은 행동 코호트를 비교해야 함. 
+    다만 특정 행동을 유도하면 재구매가 증가한다고 말하려면 A/B 테스트가 필요함.
+    <div class="source-line">출처: <a href="https://amplitude.com/blog/cohorts-to-improve-your-retention" target="_blank" rel="noopener noreferrer">Amplitude, Cohort Retention Analysis, 2024.08.01</a></div><br>
+    기존 HTML의 프로젝트 수치 기준으로 세그먼트 확정 시점은 Day 20, 재구매 결정 관찰 구간은 Day 27까지로 설명되어 있음. 
+    따라서 4주차만 기다렸다가 대응하기보다, <strong>초기에는 가치 경험 여부를 확인하고, 후반에는 위험 행동군에 정밀 실험을 배치하는 레이어 방식</strong>이 더 타당한 설계임. 
+    S3에서 기존 HTML에 기재된 w2 평균은 재구매자 182분, 이탈자 98분으로, w2 유지 여부는 조기 개입 후보를 고르는 관찰 신호가 됨.
+    <span class="note">※ “w2 감소가 이탈을 유발한다”가 아니라 “기존 분석표에서 w2 감소와 이탈이 함께 나타났다”는 수준으로 해석함.</span>
+  </div>
+
+  <div class="card">
+    <div class="card-title">관망형 대응 → 단계형 실험 설계</div>
+    <div class="insight danger">
+      <strong>피해야 할 구조:</strong> 1~3주차에 아무 신호도 사용하지 않고 4주차에만 대응. 후기 위험군에게 개입할 시간이 짧아짐.
+    </div>
+    <div class="insight green" style="margin-top:8px;">
+      <strong>제안 구조:</strong> 첫 시청 미발생과 w2 약화를 조기 신호로 관찰하고, Day 20 이후 확정된 세그먼트별로 후반 실험을 달리 배치.
+    </div>
+    <div class="timeline" style="margin-top:16px;">
+      <div class="tl-item">
+        <div class="tl-day">Day 0~6</div>
+        <div class="tl-title">Activation 관찰</div>
+        <div class="tl-items">첫 시청 미발생 고객<br>인기작·진입 메시지 후보<br><span style="color:var(--blue);font-weight:700;">약한 실험</span></div>
+      </div>
+      <div class="tl-item active">
+        <div class="tl-day">Day 7~14</div>
+        <div class="tl-title">🔍 Early retention</div>
+        <div class="tl-items">w2 유지·감소 관찰<br>단발 메시지 후보<br><span style="color:var(--orange);font-weight:700;">CP1</span></div>
+      </div>
+      <div class="tl-item active">
+        <div class="tl-day">Day 14~20</div>
+        <div class="tl-title">⚡ 행동군 확정</div>
+        <div class="tl-items">S1~S6 규칙 적용<br>메시지·보상 분기<br><span style="color:var(--orange);font-weight:700;">정밀 타깃</span></div>
+      </div>
+      <div class="tl-item peak">
+        <div class="tl-day">Day 21~27</div>
+        <div class="tl-title">★ 후기 시청 실험</div>
+        <div class="tl-items">w4 시청량 관찰<br>31분 구간 후보<br><span style="color:var(--green);font-weight:700;">CP2</span></div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-day">재구매 후</div>
+        <div class="tl-title">Referral 후보</div>
+        <div class="tl-items">안정 이용자 우선<br>추천 실험 배치<br>별도 검증</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">조기 개입 후보 신호 — S3의 w2 시청량 차이</div>
+    <div class="audit">아래 177·182·230·98분은 기존 HTML에 포함된 값이며, 이번 보강에서 원자료 재집계는 수행하지 않았음.</div>
+    <div class="g2">
+      <div><div class="cw-sm"><canvas id="chartW2"></canvas></div></div>
+      <div>
+        <div class="insight" style="margin-bottom:10px;">
+          <strong>기존 HTML의 S3 비교</strong><br>
+          이탈자는 w1 230분, 재구매자는 w1 177분으로 기재됨.<br>
+          반면 w2는 재구매자 182분, 이탈자 98분으로 기재됨.<br>
+          → 초기 고시청만으로 유지 고객을 식별하기 어렵고, <strong>w2 지속 여부를 실험 타깃 기준으로 검토</strong>할 수 있음.
+        </div>
+        <div class="insight danger">
+          <strong>금지 해석:</strong> “몰아보고 단물만 뽑아 나갔다”는 심리 단정은 관찰 데이터로 확인되지 않음. 발표에서는 “초기 고시청 후 이용 약화 패턴”으로만 표현.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== w4 핵심 데이터 ===================== -->
+<section>
+  <div class="sec-title">4주차(w4) 시청 여부와 이탈률 — 후기 개입 후보 신호</div>
+  <div class="desc">
+    기존 HTML에 기재된 수치에서는, 만료 직전 구간인 4주차에 시청 기록이 있는 구독자의 이탈률이 없는 구독자보다 낮게 나타남. 
+    <strong>S3는 w4 시청 있음 7.5%, 없음 50.5%로 43.0%p 차이</strong>, 
+    <strong>S6는 30.3% 대 61.7%로 31.4%p 차이</strong>가 기재되어 있음.<br><br>
+    이 차이는 <em>후기 시청을 유도하는 실험의 타깃 근거</em>로는 강하지만, 곧바로 “시청을 만들면 재구매한다”는 효과 입증이 되지는 않음. 
+    원래 재구매 의향이 높은 고객이 4주차에도 시청했을 가능성을 제거하지 못했기 때문임.
+    <span class="note">※ Peak-End Rule은 경험의 마지막 순간이 회고 평가에 영향을 줄 수 있다는 심리학 연구에서 출발한 가설 프레임이다. OTT 구독 갱신에 대한 직접 효과 증거로 사용하지 않음.</span>
+    <div class="source-line">이론 출처: <a href="https://doi.org/10.1111/j.1467-9280.1993.tb00589.x" target="_blank" rel="noopener noreferrer">Kahneman et al., Psychological Science, 1993</a></div>
+  </div>
+
+  <div class="card">
+    <div class="audit">아래 세그먼트별 w4 수치는 기존 HTML 차트 배열을 유지한 값이며, 원 데이터 재현 검증은 이번 외부근거 수정 범위 밖임.</div>
+    <div class="card-title">세그먼트별 w4 유무에 따른 이탈률</div>
+    <div class="cw"><canvas id="chartW4Gap"></canvas></div>
+    <div class="insight green" style="margin-top:10px;">
+      관찰된 차이가 큰 집단은 S3 <strong>43.0%p</strong>, S6 <strong>31.4%p</strong>임. 
+      따라서 후기 복귀/시청 개입 실험은 전 집단 무차별 발송보다 이 두 집단을 우선 대상으로 삼는 설계가 데이터에 부합함.
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">S3: w2 변화 × w4 유무 교차 이탈률</div>
+      <table class="cross">
+        <tr><th></th><th>w4 있음</th><th>w4 없음</th></tr>
+        <tr><td style="font-weight:700;">w2 증가</td><td class="c-best">9.0%<br><small>89명</small></td><td class="c-mid">28.4%<br><small>341명</small></td></tr>
+        <tr><td style="font-weight:700;">w2 감소</td><td class="c-ok">6.0%<br><small>84명</small></td><td class="c-bad">64.4%<br><small>540명</small></td></tr>
+      </table>
+      <div style="margin-top:10px;font-size:12px;color:var(--sub);">기존 HTML 기재 기준: 최저 6.0%, 최고 64.4%.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">S6: w2 변화 × w4 유무 교차 이탈률</div>
+      <table class="cross">
+        <tr><th></th><th>w4 있음</th><th>w4 없음</th></tr>
+        <tr><td style="font-weight:700;">w2 증가</td><td class="c-best">11.6%<br><small>121명</small></td><td class="c-mid">44.2%<br><small>999명</small></td></tr>
+        <tr><td style="font-weight:700;">w2 감소</td><td class="c-ok">33.0%<br><small>834명</small></td><td class="c-bad">75.7%<br><small>1,247명</small></td></tr>
+      </table>
+      <div style="margin-top:10px;font-size:12px;color:var(--sub);">기존 HTML 기재 기준: 최저 11.6%, 최고 75.7%.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">w4 시청량 구간별 이탈률 — 운영 임계값 후보</div>
+    <div class="cw"><canvas id="chartW4Vol"></canvas></div>
+    <div class="g2" style="margin-top:12px;">
+      <div class="thresh">
+        <div class="thresh-num">31분</div>
+        <div class="thresh-text">
+          <h4>S3·S6 실험 조건 후보</h4>
+          <p>기존 HTML에서 31~100분 구간부터 S3 4.3%, S6 24.1%로 낮아지는 관찰 패턴.</p>
+        </div>
+      </div>
+      <div class="thresh">
+        <div class="thresh-num">101분</div>
+        <div class="thresh-text">
+          <h4>S5 별도 후보</h4>
+          <p>기존 HTML에서 S5는 101~300분 구간에서 7.5%로 낮게 기재됨.</p>
+        </div>
+      </div>
+    </div>
+    <div class="insight warn" style="margin-top:10px;">
+      <strong>사후 기준 주의:</strong> 31분과 101분은 기존 관찰값을 본 뒤 선택된 후보 기준임. 
+      운영 KPI로 확정하기 전에 홀드아웃 데이터 또는 사전 등록된 A/B 테스트에서 재확인해야 함.
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 메시지 후킹 ===================== -->
+<section id="msg">
+  <div class="sec-title">1. 메시지 후킹 — 가치 경험을 다시 여는 실험</div>
+  <div class="desc">
+    메시지 후킹은 구독자가 앱을 다시 열 이유를 제공하는 개입임. Mixpanel은 최종 전환 이전의 작은 행동을 micro-conversion으로 구분하라고 제안함. 
+    이 프로젝트에서는 재구매를 최종 결과로 두되, <strong>첫 시청·w2 유지·w4 복귀 시청</strong>을 그 이전의 행동 신호로 볼 수 있음.
+    <div class="source-line">출처: <a href="https://mixpanel.com/blog/conversion-analysis/" target="_blank" rel="noopener noreferrer">Mixpanel, Conversion Analysis</a></div><br>
+    Netflix는 공식적으로 출시 예정 타이틀에 대해 <strong>Remind Me</strong> 알림을 제공하고, 추천 연구 페이지에서는 홈 화면부터 메시지·앱 알림까지 개인화가 확장된다고 설명함. 
+    이는 콘텐츠 기반 재진입 메시지가 OTT에서 구현 가능한 기능 범주라는 근거이지, 우리 서비스의 재구매율 개선 수치가 아님.
+    <div class="source-line">출처: <a href="https://about.netflix.com/news/coming-soon-feature" target="_blank" rel="noopener noreferrer">Netflix, Reminders for Your Favorite Titles, 2019</a> · <a href="https://research.netflix.com/research-area/recommendations" target="_blank" rel="noopener noreferrer">Netflix Research, Recommendations</a></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">세그먼트별 메시지 방향</div>
+    <table class="tbl">
+      <tr><th>세그먼트</th><th>관찰 상태</th><th>실험 문구 방향</th></tr>
+      <tr><td>S1·S4</td><td>상대적으로 낮은 이탈률 기재</td><td>무리한 리마인드보다 신작·이어보기 중심의 최소 개입</td></tr>
+      <tr><td>S2</td><td>이용 약화</td><td>보던 작품의 다음 편 또는 최근 시청작 연계 콘텐츠</td></tr>
+      <tr><td>S3</td><td>초기 이용 후 휴면</td><td>과거 시청작 기반 후기 복귀 메시지 A/B 테스트</td></tr>
+      <tr><td>S5</td><td>저관여</td><td>선택 부담을 낮춘 한두 편 제안</td></tr>
+      <tr><td>S6 시청경험형</td><td>휴면이나 이력 존재</td><td>실제 시청 콘텐츠 기반 복귀 메시지</td></tr>
+      <tr><td>S6 무시청형</td><td>초기 가치 경험 미확인</td><td>인기작·장르 선택형 온보딩 실험</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">알림 운영 원칙 — 근거 수준을 분리</div>
+    <div class="g2">
+      <div class="insight green">
+        <strong>유지하는 근거:</strong><br>
+        Duolingo 공식 블로그의 Streak Wager A/B 테스트는 Day-7 retention을 <strong>+14%</strong> 개선했다고 보고함. 
+        따라서 “행동 목표와 보상을 묶어 실험할 수 있다”는 선례는 존재함.
+        <div class="source-line"><a href="https://blog.duolingo.com/how-streaks-keep-duolingo-learners-committed-to-their-language-goals/" target="_blank" rel="noopener noreferrer">Duolingo Blog, 2017</a></div>
+      </div>
+      <div class="insight warn">
+        <strong>삭제한 근거:</strong><br>
+        기존의 “Duolingo는 3일 무반응 후 알림 중단”은 공식 원출처를 확인하지 못했으므로 운영 기준으로 쓰지 않음. 
+        Wavve의 suppression 기간은 피로도·재방문·차단률을 함께 보는 별도 실험으로 정해야 함.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 복귀 보상 ===================== -->
+<section id="winback">
+  <div class="sec-title">2. 복귀 보상 — 대상은 데이터로, 효과는 실험으로</div>
+  <div class="desc">
+    복귀 보상은 일정 기간 시청이 없었던 고객에게 다시 콘텐츠를 경험할 이유를 제시하는 실험임. 
+    기존 HTML 기재값에서 S3와 S6은 w4 시청 유무에 따른 이탈률 차이가 크게 나타나므로, 이 두 집단은 후기 복귀 실험의 우선 후보가 됨.<br><br>
+    다만 <strong>14일 미시청</strong>은 외부 업계 표준으로 입증된 숫자가 아니라, 현재 주차 구조에 맞춘 <em>운영 가설</em>임. 
+    보상군과 무보상군을 비교하지 않는 한 “복귀 보상이 재구매를 만들었다”는 결론은 내릴 수 없음.
+  </div>
+
+  <div class="card">
+    <div class="card-title">실험 설계 후보</div>
+    <div class="g2">
+      <table class="tbl">
+        <tr><th>항목</th><th>내용</th></tr>
+        <tr><td>후보 대상</td><td><strong>S3, S6</strong> 후기 미시청·휴면 행동군</td></tr>
+        <tr><td>발송 조건</td><td>14일 미시청 또는 Day 20 이후 미시청 <span class="badge bd-orange">가설</span></td></tr>
+        <tr><td>행동 KPI</td><td>w4 재시청 여부, w4 31분 이상 도달 여부</td></tr>
+        <tr><td>결과 KPI</td><td>재구매율, 이탈률, 메시지 피로·차단 지표</td></tr>
+        <tr><td>보상 후보</td><td>할인 / 화질 체험 / 비용 없는 개인화 큐레이션</td></tr>
+      </table>
+      <div>
+        <div class="insight green">
+          <strong>실험 가치의 내부 관찰 근거:</strong><br>
+          기존 HTML 기재 기준 S3: w4 있음 7.5% vs 없음 50.5%.<br>
+          S6: w4 있음 30.3% vs 없음 61.7%.
+        </div>
+        <div class="insight danger" style="margin-top:10px;">
+          <strong>금지 문장:</strong> “14일이 업계 최적 타이밍이다”, “보상을 주면 재구매한다.” 
+          현재 근거로는 실험 조건과 가설까지만 제시 가능.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 체크포인트 ===================== -->
+<section id="checkpoint">
+  <div class="sec-title">3. 체크포인트 보상 — 실제 OTT 운영 사례와 내부 후보치 연결</div>
+  <div class="desc">
+    체크포인트는 특정 행동을 달성했을 때 보상을 부여하는 미션 구조임. 
+    <strong>Sling TV는 공식적으로 하루 30분 시청 시 Spin &amp; Win 1회와 $5,000 sweepstakes entry를 제공</strong>하고 있음. 
+    따라서 OTT에서 “시청 행동 기반 보상”은 상상 단계가 아니라 실제 운영 중인 구조임.<br><br>
+    우리 HTML의 관찰 구간은 S3·S6에서 <strong>31분 이상</strong>을 후보 분기로 제시하고 있음. 
+    Sling의 30분과 수치가 근접하다는 점은 실험 설명의 직관성을 높이지만, <em>우리 31분 조건의 효과를 Sling이 검증했다는 뜻은 아님</em>.
+    <div class="source-line">출처: <a href="https://www.sling.com/whatson/announcements/spin-and-win-rewards" target="_blank" rel="noopener noreferrer">Sling TV, Earn Rewards and Prizes Every Day With Spin &amp; Win, 2025.01.03</a></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">데이터 기반 CP 후보</div>
+    <table class="tbl">
+      <tr><th>체크포인트</th><th>조건 후보</th><th>시점</th><th>근거 수준</th></tr>
+      <tr>
+        <td><strong>CP1</strong></td>
+        <td>w2 시청량 유지 또는 증가</td>
+        <td>Day 10~14</td>
+        <td>기존 HTML: S3 재구매자 w2 182분 vs 이탈자 98분</td>
+      </tr>
+      <tr style="background:#fffbeb;">
+        <td><strong>CP2 ★★★</strong></td>
+        <td><strong>Day 21~24 사이 31분 이상 시청</strong></td>
+        <td><strong>Day 21~24</strong></td>
+        <td>기존 HTML: S3 4.3%, S6 24.1% + Sling 30분 운영 사례</td>
+      </tr>
+    </table>
+    <div class="insight warn" style="margin-top:12px;">
+      <strong>이론은 보조 근거로만 사용:</strong> Nunes &amp; Drèze(2006)는 목표 달성 과정에 초기 진행감을 부여하면 완료 가능성과 완료 속도가 높아질 수 있음을 보고함. 
+      이는 CP UI 설계의 가설 근거이며, OTT 재구매 효과의 직접 증거는 아님.
+      <div class="source-line"><a href="https://doi.org/10.1086/500480" target="_blank" rel="noopener noreferrer">Journal of Consumer Research, The Endowed Progress Effect, 2006</a></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Sling TV 공식 운영 구조</div>
+    <div class="g3">
+      <div style="background:#f0fff8;border-radius:10px;padding:14px;">
+        <p style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:6px;">행동 조건</p>
+        <p style="font-size:12px;color:var(--sub);line-height:1.7;">로그인 상태로 하루 최소 30분 시청</p>
+      </div>
+      <div style="background:#eff6ff;border-radius:10px;padding:14px;">
+        <p style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:6px;">즉시 보상 구조</p>
+        <p style="font-size:12px;color:var(--sub);line-height:1.7;">Spin &amp; Win wheel 1회, $5/$10 할인 또는 무료 1년 등</p>
+      </div>
+      <div style="background:#fff7ed;border-radius:10px;padding:14px;">
+        <p style="font-size:12px;font-weight:700;color:var(--orange);margin-bottom:6px;">검증 한계</p>
+        <p style="font-size:12px;color:var(--sub);line-height:1.7;">운영 사실은 확인됨. 이 프로그램의 churn 개선 효과 수치는 공식 페이지에 제시되지 않음.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 레퍼럴 ===================== -->
+<section id="referral">
+  <div class="sec-title">4. 레퍼럴 전략 — 검증된 외부 수치는 금융 맥락으로 제한</div>
+  <div class="desc">
+    레퍼럴은 만족 또는 이용 지속성이 확인된 고객에게만 시험하는 것이 합리적임. 
+    Journal of Marketing 연구는 독일 은행 고객 약 10,000명을 약 3년간 추적하여, 추천 유입 고객의 평균 가치가 유사한 인구통계와 가입 시점의 비추천 고객보다 <strong>최소 16% 높았다</strong>고 보고함. 
+    또한 가치 차이는 세그먼트에 따라 달라 선택적 접근이 필요하다고 설명함.<br><br>
+    이 수치는 <em>금융 서비스의 연구 결과</em>이므로 Wavve의 레퍼럴 기대효과로 그대로 전용할 수 없음. 
+    본 프로젝트에서는 상대적으로 안정적인 행동군을 대상으로 추천 실험을 먼저 설계하고, 추천 가입률·추천 가입자의 재구매율을 별도로 검증하는 근거로만 사용함.
+    <div class="source-line">출처: <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2476354" target="_blank" rel="noopener noreferrer">Schmitt, Skiera &amp; Van den Bulte, Journal of Marketing, 2011</a></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Wavve 적용 시 실험 설계</div>
+    <table class="tbl">
+      <tr><th>항목</th><th>제안</th><th>근거와 제한</th></tr>
+      <tr><td>타깃</td><td>S1·S4 또는 w2 유지·증가 고객</td><td>기존 HTML상 상대적으로 안정 행동군. 원자료 재검산 필요.</td></tr>
+      <tr><td>혜택</td><td>추천인·피추천인 양측 혜택 후보</td><td>설계 후보이며, Airbnb A/B 효과 문장은 원출처 미고정으로 삭제.</td></tr>
+      <tr><td>1차 KPI</td><td>공유율, 링크 가입률</td><td>Referral funnel의 직접 관찰 지표.</td></tr>
+      <tr><td>2차 KPI</td><td>추천 가입자의 시청 activation·재구매율</td><td>가입 수가 아니라 acquisition quality 평가.</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ===================== GEMINI ===================== -->
+<section id="gemini">
+  <div class="sec-title">5. Gemini API — 문구 생성기가 아니라 통제된 실험 파이프라인</div>
+  <div class="desc">
+    Gemini API는 <strong>개인 시청 이력 + 세그먼트 + 실험 유형</strong>을 입력해 메시지 변형을 만드는 도구로 사용할 수 있음. 
+    그러나 모델이 자유롭게 설득 문구를 만들게 하면 메시지별 차이가 통제되지 않아 A/B 테스트의 해석 가능성이 낮아짐. 
+    따라서 구조가 고정된 템플릿에 작품명·장르·추천 이유만 채우고, 다크패턴·요금제 강요·근거 없는 긴급성 표현을 금지하는 형태가 적절함.<br><br>
+    여기서 LLM은 메시지 생산 효율을 높이는 도구일 뿐이며, 클릭률 또는 재구매율 개선은 반드시 실험 결과로 판단함.
+  </div>
+
+  <div class="card">
+    <div class="card-title">역할과 통제 원칙</div>
+    <div class="g2">
+      <div>
+        <ul class="item-list">
+          <li>전략별 템플릿을 먼저 고정한 뒤 문구 변형 생성</li>
+          <li>개인 시청작 또는 검증된 추천 후보만 입력</li>
+          <li>메시지 종류별 control / treatment 로그 보존</li>
+          <li>금지 표현 검사: 강요, 허위 긴급성, 가격 오인</li>
+          <li>성과 판단: 발송률이 아니라 재시청·재구매·차단률</li>
+        </ul>
+      </div>
+      <div>
+        <div style="background:var(--bg);border-radius:10px;padding:14px;margin-bottom:10px;">
+          <p style="font-size:12px;font-weight:700;margin-bottom:6px;">✅ 통제된 템플릿 예시</p>
+          <p style="font-size:12px;color:var(--sub);">“지난번 보신 [작품명]과 이어서 보기 좋은 [추천작]이 있습니다.”</p>
+        </div>
+        <div style="background:#fff0f0;border-radius:10px;padding:14px;">
+          <p style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:6px;">❌ 금지 방향</p>
+          <p style="font-size:12px;color:var(--sub);">자유 생성 문구를 무작위 발송한 뒤 효과를 전략 효과처럼 해석.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 벤치마킹 ===================== -->
+<section id="bench">
+  <div class="sec-title">근거가 고정된 벤치마킹 사례</div>
+  <div class="desc">
+    아래 표는 이번 보강에서 원출처 또는 공식 문서까지 확인한 사례만 남긴 것임. 
+    플랫폼이 실제 운영한 기능, 공식 연구에서 보고한 수치, 그리고 우리 프로젝트에 가져올 수 있는 범위를 분리함. 
+    외부 사례가 우리 데이터의 인과를 대신 증명하지는 않음.
+  </div>
+
+  <div class="card">
+    <table class="bench">
+      <tr><th>출처</th><th>확인된 사실</th><th>우리에게 주는 시사점 / 제한</th></tr>
+      <tr>
+        <td style="font-weight:700;">Amplitude</td>
+        <td>Acquisition cohort는 이탈 시점을, behavioral cohort는 유지와 연관된 행동을 탐색. 인과는 A/B 테스트 필요.</td>
+        <td>100원딜군 및 S1~S6를 실험 타깃 설계에 쓰되 효과 입증으로 부풀리지 않음.</td>
+      </tr>
+      <tr>
+        <td style="font-weight:700;">Spotify Research</td>
+        <td>활동량 통제 후 다양한 청취 사용자는 이탈 가능성이 10~20%p 낮게 연관됨.</td>
+        <td>콘텐츠 다양성과 유지의 외부 병행 관찰. 음악 플랫폼·상관관계라는 한계 표시.</td>
+      </tr>
+      <tr>
+        <td style="font-weight:700;">Duolingo</td>
+        <td>Streak Wager A/B 테스트: Day-7 retention +14%, Day-1·14도 유의한 증가.</td>
+        <td>행동 목표·보상 실험의 사례. OTT의 31분 조건 효과로 전용 금지.</td>
+      </tr>
+      <tr>
+        <td style="font-weight:700;">Sling TV</td>
+        <td>하루 30분 시청 시 Spin &amp; Win 1회 및 $5,000 sweepstakes entry 제공.</td>
+        <td>시청 행동 보상의 OTT 구현 선례. 유지율 uplift 수치는 미공개.</td>
+      </tr>
+      <tr>
+        <td style="font-weight:700;">Netflix</td>
+        <td>출시 예정 타이틀의 Remind Me 알림 및 개인화 추천·메시징 연구를 공식 제공.</td>
+        <td>콘텐츠 기반 리마인드의 기능 선례. 본 자료에서 재구매 효과 수치는 확인하지 않음.</td>
+      </tr>
+      <tr>
+        <td style="font-weight:700;">Journal of Marketing</td>
+        <td>독일 은행 약 10,000명·약 3년: 추천 유입 고객 가치 최소 16% 높음.</td>
+        <td>선택적 referral 실험의 근거. OTT 일반화 금지.</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">콘텐츠 다양성 — 내부 관찰과 Spotify 외부 연구의 연결</div>
+    <div class="audit">아래 Wavve 세그먼트별 막대 값은 기존 HTML 내부 차트 배열을 유지했으며, 이번 수정에서 원자료 재집계는 하지 않았음.</div>
+    <div class="cw"><canvas id="chartDiv"></canvas></div>
+    <div class="insight">
+      <strong>외부에서 확인된 수치:</strong> Spotify Research는 활동량을 통제한 분석에서 다양한 청취 사용자가 덜 다양한 사용자보다 이탈 가능성이 <strong>10~20%p 낮게 연관</strong>된다고 보고함. 
+      본 프로젝트에서는 이 결과를 “추천으로 콘텐츠 다양성을 늘리면 이탈이 줄어든다”는 인과 주장으로 사용하지 않고, 
+      내부 다양성 패턴을 추가 분석하거나 실험 가설로 발전시킬 외부 정합성 근거로만 사용함.
+      <div class="source-line"><a href="https://research.atspotify.com/2020/12/algorithmic-effects-on-the-diversity-of-consumption-on-spotify" target="_blank" rel="noopener noreferrer">Spotify Research / WWW 2020, Algorithmic Effects on the Diversity of Consumption on Spotify</a></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 출처 ===================== -->
+<section id="sources">
+  <div class="sec-title">검증 출처 목록</div>
+  <div class="card">
+    <div class="ref-list">
+      <div class="ref-item"><a href="https://hbr.org/2014/10/the-value-of-keeping-the-right-customers" target="_blank" rel="noopener noreferrer">Harvard Business Review (2014)</a><br>고객 획득 비용과 유지 비용의 범위형 근거.</div>
+      <div class="ref-item"><a href="https://amplitude.com/blog/funnel-analysis" target="_blank" rel="noopener noreferrer">Amplitude Funnel Analysis (2025)</a><br>획득과 유지의 고객 여정 연결.</div>
+      <div class="ref-item"><a href="https://amplitude.com/blog/cohorts-to-improve-your-retention" target="_blank" rel="noopener noreferrer">Amplitude Cohort Retention (2024)</a><br>행동 코호트와 A/B 검증 원칙.</div>
+      <div class="ref-item"><a href="https://mixpanel.com/blog/conversion-analysis/" target="_blank" rel="noopener noreferrer">Mixpanel Conversion Analysis</a><br>macro / micro conversion 구분.</div>
+      <div class="ref-item"><a href="https://research.atspotify.com/2020/12/algorithmic-effects-on-the-diversity-of-consumption-on-spotify" target="_blank" rel="noopener noreferrer">Spotify Research / WWW 2020</a><br>다양한 청취와 이탈 간 연관 수치.</div>
+      <div class="ref-item"><a href="https://blog.duolingo.com/how-streaks-keep-duolingo-learners-committed-to-their-language-goals/" target="_blank" rel="noopener noreferrer">Duolingo Blog (2017)</a><br>Streak Wager A/B Test, Day-7 retention +14%.</div>
+      <div class="ref-item"><a href="https://www.sling.com/whatson/announcements/spin-and-win-rewards" target="_blank" rel="noopener noreferrer">Sling TV (2025)</a><br>하루 30분 시청 기반 Spin &amp; Win 운영.</div>
+      <div class="ref-item"><a href="https://about.netflix.com/news/coming-soon-feature" target="_blank" rel="noopener noreferrer">Netflix (2019)</a><br>Remind Me 콘텐츠 알림 기능.</div>
+      <div class="ref-item"><a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2476354" target="_blank" rel="noopener noreferrer">Journal of Marketing (2011)</a><br>추천 유입 고객 가치 연구.</div>
+      <div class="ref-item"><a href="https://doi.org/10.1111/j.1467-9280.1993.tb00589.x" target="_blank" rel="noopener noreferrer">Psychological Science (1993)</a><br>Peak-End Rule의 원 연구.</div>
+      <div class="ref-item"><a href="https://doi.org/10.1086/500480" target="_blank" rel="noopener noreferrer">Journal of Consumer Research (2006)</a><br>Endowed Progress Effect 원 연구.</div>
+    </div>
+  </div>
+</section>
+
+<footer>Wavve OTT CRM 전략 — 외부 근거 보강본 | 내부 수치는 기존 HTML 기재값 유지 · 외부 주장은 출처 검증 후 반영 | 실제 효과는 A/B 테스트로 검증</footer>
+
+<script>
+Chart.register(ChartDataLabels);
+Chart.defaults.font.family = "'Noto Sans KR', sans-serif";
+Chart.defaults.font.size = 11;
+
+const C = {
+  blue:'#378ADD', pink:'#D4537E', green:'#1D9E75',
+  orange:'#E8743B', red:'#c0392b', yellow:'#f59e0b',
+  grid:'rgba(0,0,0,0.05)'
+};
+
+const dlPlugin = {
+  anchor:'end', align:'top',
+  color:'#1a1a2e', font:{weight:'700', size:11},
+  formatter: v => v + '%'
+};
+
+// 세그먼트 이탈률
+new Chart('chartSeg', {
+  type:'bar',
+  data:{
+    labels:['S1\n유지보호','S2\n이용약화','S3\n초기관심','S4\n늦은활성','S5\n저관여','S6\n휴면군'],
+    datasets:[{
+      data:[10.0,28.7,43.5,11.5,31.1,52.3],
+      backgroundColor:[C.green,C.blue,C.orange,'#2ecc71',C.pink,C.red],
+      borderRadius:6,borderSkipped:false
+    }]
+  },
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},datalabels:dlPlugin},
+    scales:{y:{beginAtZero:true,max:65,grid:{color:C.grid},ticks:{callback:v=>v+'%'}},x:{grid:{display:false}}}
+  }
+});
+
+// w2 재구매자 vs 이탈자
+new Chart('chartW2', {
+  type:'bar',
+  data:{
+    labels:['w1 시청량','w2 시청량'],
+    datasets:[
+      {label:'재구매자',data:[177,182],backgroundColor:C.green+'cc',borderRadius:5,borderSkipped:false},
+      {label:'이탈자',data:[230,98],backgroundColor:C.red+'cc',borderRadius:5,borderSkipped:false}
+    ]
+  },
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'top'},datalabels:{anchor:'end',align:'top',font:{weight:'700',size:11},formatter:v=>v+'분'}},
+    scales:{y:{beginAtZero:true,grid:{color:C.grid},ticks:{callback:v=>v+'분'}},x:{grid:{display:false}}}
+  }
+});
+
+// w4 유무 격차
+new Chart('chartW4Gap', {
+  type:'bar',
+  data:{
+    labels:['S1','S2','S3','S4','S5','S6'],
+    datasets:[
+      {label:'w4 시청 있음',data:[4.7,10.5,7.5,9.0,16.0,30.3],
+       backgroundColor:[C.green,C.blue,C.orange,'#2ecc71',C.pink,C.red].map(c=>c+'99'),
+       borderRadius:4,borderSkipped:false},
+      {label:'w4 시청 없음',data:[12.3,33.6,50.5,12.4,35.3,61.7],
+       backgroundColor:[C.green,C.blue,C.orange,'#2ecc71',C.pink,C.red],
+       borderRadius:4,borderSkipped:false}
+    ]
+  },
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'top'},datalabels:{anchor:'end',align:'top',font:{weight:'700',size:10},formatter:v=>v+'%'}},
+    scales:{y:{beginAtZero:true,max:75,grid:{color:C.grid},ticks:{callback:v=>v+'%'}},x:{grid:{display:false}}}
+  }
+});
+
+// w4 시청량별 이탈률
+new Chart('chartW4Vol', {
+  type:'bar',
+  data:{
+    labels:['1~30분','31~100분','101~300분','300분+'],
+    datasets:[
+      {label:'S3',data:[19.5,4.3,4.3,0.0],backgroundColor:C.orange,borderRadius:4,borderSkipped:false},
+      {label:'S5',data:[21.4,19.4,7.5,3.2],backgroundColor:C.pink,borderRadius:4,borderSkipped:false},
+      {label:'S6',data:[55.2,24.1,16.3,8.5],backgroundColor:C.red,borderRadius:4,borderSkipped:false},
+    ]
+  },
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'top'},datalabels:{anchor:'end',align:'top',font:{weight:'700',size:10},formatter:v=>v+'%'}},
+    scales:{y:{beginAtZero:true,max:70,grid:{color:C.grid},ticks:{callback:v=>v+'%'}},x:{grid:{display:false}}}
+  }
+});
+
+// 콘텐츠 다양성
+new Chart('chartDiv', {
+  type:'bar',
+  data:{
+    labels:['S1','S2','S3','S4','S5','S6'],
+    datasets:[
+      {label:'단일 집중형 (1~4편)',data:[11.6,28.1,43.5,15.3,35.7,60.3],
+       backgroundColor:C.red+'88',borderRadius:4,borderSkipped:false},
+      {label:'다양 탐색형 (11편+)',data:[7.6,19.0,46.7,7.3,23.7,33.3],
+       backgroundColor:C.green,borderRadius:4,borderSkipped:false}
+    ]
+  },
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'top'},datalabels:{anchor:'end',align:'top',font:{weight:'700',size:10},formatter:v=>v+'%'}},
+    scales:{y:{beginAtZero:true,max:75,grid:{color:C.grid},ticks:{callback:v=>v+'%'}},x:{grid:{display:false}}}
+  }
+});
+</script>
+</body>
+</html>

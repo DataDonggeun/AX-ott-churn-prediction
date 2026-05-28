@@ -1,10 +1,10 @@
 {
   "status": "PASS",
-  "raw_rows": 23345,
-  "dur_lt21_removed": 238,
-  "dur_eq0_count": 90,
-  "after_dur_filter": 23107,
-  "dup_removed": 26,
+  "raw_rows": 23081,
+  "dur_lt21_removed": 0,
+  "dur_eq0_count": 0,
+  "after_dur_filter": 23081,
+  "dup_removed": 0,
   "cohort_rows": 23081,
   "duration_dist_top10": {
     "31": 19261,
@@ -18,5 +18,5 @@
     "1": 11904,
     "0": 11177
   },
-  "summary": "원본 23,345행 → duration<21 238행 제거 → 중복 26행 제거 → 최종 코호트 23,081행."
+  "summary": "원본 23,081행 → duration<21 0행 제거 → 중복 0행 제거 → 최종 코호트 23,081행. Membership_v5.csv 저장 완료."
 }

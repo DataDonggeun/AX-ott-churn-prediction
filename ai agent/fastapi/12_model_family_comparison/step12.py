@@ -30,6 +30,30 @@ from cache import is_done, mark_done, save_json, load_json, load_df
 
 router = APIRouter(prefix="/12", tags=["12. Model Family Comparison"])
 
+# step11 우승 모델 → step12에서 돌릴 계열
+FAMILY_MAP = {
+    "boosting": ["XGBoost", "LightGBM", "CatBoost", "HistGradientBoosting", "GradientBoosting"],
+    "tree":     ["RandomForest", "ExtraTrees"],
+    "linear":   ["LogisticRegression"],
+}
+
+def _model_family(model_name: str) -> str:
+    for family, members in FAMILY_MAP.items():
+        if model_name in members:
+            return family
+    return "boosting"  # 기본값
+
+def _winner_families_from_step11() -> dict:
+    """step11 결과에서 scope별 우승 모델 계열 반환."""
+    cached = load_json("step11_result")
+    if not cached or "candidates" not in cached:
+        return {}
+    families = {}
+    for scope, info in cached["candidates"].items():
+        winner = info.get("model", "")
+        families[scope] = _model_family(winner)
+    return families
+
 SCOPES = {
     "overall_without_promotion": lambda df: (df, False),
     "overall_with_promotion":    lambda df: (df, True),
@@ -118,8 +142,9 @@ def _cv_auc(df_scope, features, model) -> dict:
 
 
 def run_model_family_comparison(exp_df: pd.DataFrame) -> dict:
-    models  = _build_models()
-    rows    = []
+    all_models     = _build_models()
+    winner_families = _winner_families_from_step11()
+    rows = []
 
     for scope_name, scope_fn in SCOPES.items():
         df_scope, inc_promo = scope_fn(exp_df)
@@ -130,6 +155,11 @@ def run_model_family_comparison(exp_df: pd.DataFrame) -> dict:
             exclude.add("is_promotion")
         features = [c for c in exp_df.columns if c not in exclude and c in df_scope.columns]
 
+        # step11 우승 계열만 실행, 없으면 전체
+        family   = winner_families.get(scope_name)
+        allowed  = set(FAMILY_MAP.get(family, [])) if family else None
+        models   = {k: v for k, v in all_models.items() if allowed is None or k in allowed}
+
         for model_name, model in models.items():
             try:
                 metrics = _cv_auc(df_scope, features, model)
@@ -137,6 +167,7 @@ def run_model_family_comparison(exp_df: pd.DataFrame) -> dict:
                 metrics = {"oof_auc": None, "error": str(e)}
             rows.append({
                 "scope": scope_name, "model": model_name,
+                "family": family or "all",
                 "rows": len(df_scope), "features": len(features),
                 **metrics,
             })
@@ -157,13 +188,12 @@ def run_model_family_comparison(exp_df: pd.DataFrame) -> dict:
                 "oof_auc": best["oof_auc"],
             }
 
-    available_models = list(models.keys())
     return {
         "status":           "PASS",
-        "available_models": available_models,
+        "winner_families":  winner_families,
         "summary":          rows,
         "candidates":       candidates,
-        "note": "후보 선정만. 최종 모델 확정 아님.",
+        "note": "step11 우승 계열만 비교. 후보 선정만. 최종 모델 확정 아님.",
     }
 
 

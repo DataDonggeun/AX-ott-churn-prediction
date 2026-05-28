@@ -16,7 +16,7 @@ import pandas as pd
 import numpy as np
 
 from config import MEM_PATH, COHORT_MIN_DAYS
-from cache import is_done, mark_done, save_json, load_json
+from cache import is_done, mark_done, save_json, load_json, save_df
 
 router = APIRouter(prefix="/03", tags=["03. Observation Window"])
 
@@ -69,6 +69,10 @@ def run_observation_window(df: pd.DataFrame) -> dict:
             for k, v in after_filter["is_promotion"].value_counts().items()
         }
 
+    # 정제된 데이터 CSV 저장 (임시 컬럼 제거)
+    save_cols = [c for c in after_filter.columns if not c.startswith("_")]
+    after_filter[save_cols].to_csv(MEM_PATH, index=False, encoding="utf-8-sig")
+
     return {
         "status":           "PASS",
         "raw_rows":         raw_rows,
@@ -84,24 +88,15 @@ def run_observation_window(df: pd.DataFrame) -> dict:
             f"원본 {raw_rows:,}행 → "
             f"duration<21 {dur_lt21}행 제거 → "
             f"중복 {dup_removed}행 제거 → "
-            f"최종 코호트 {cohort_rows:,}행."
+            f"최종 코호트 {cohort_rows:,}행. "
+            f"Membership_v5.csv 저장 완료."
         ),
     }
 
 
 @router.post("/observation-window")
-def observation_window(force: bool = False):
-    """
-    Step 03: 관측창 정책 적용 결과 반환.
-    - force=false: 캐시 결과 반환
-    - force=true:  재실행
-    """
-    if not force and is_done("step03"):
-        cached = load_json("step03_result")
-        if cached:
-            cached["from_cache"] = True
-            return cached
-
+def observation_window():
+    """Step 03: 관측창 정책 적용 결과 반환. 항상 재실행."""
     if not MEM_PATH.exists():
         return {"status": "FAIL", "reason": "데이터 파일 없음"}
 

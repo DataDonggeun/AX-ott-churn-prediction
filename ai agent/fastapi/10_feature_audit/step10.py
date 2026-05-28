@@ -126,13 +126,8 @@ def run_feature_audit(df: pd.DataFrame) -> dict:
 
 
 @router.post("/feature-audit")
-def feature_audit(force: bool = False):
-    """Step 10: VIF·상관계수·zero-inflation 감사."""
-    if not force and is_done("step10"):
-        cached = load_json("step10_result")
-        if cached:
-            cached["from_cache"] = True
-            return cached
+def feature_audit():
+    """Step 10: VIF·상관계수·zero-inflation 감사. 항상 재실행."""
 
     df = load_df("expanded_dataset")
     if df is None:

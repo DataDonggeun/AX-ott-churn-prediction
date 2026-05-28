@@ -183,13 +183,8 @@ def run_scoring_only(exp_df: pd.DataFrame) -> dict:
 # ── 엔드포인트 ─────────────────────────────────────────────────────────────────
 
 @router.post("/payment-sensitivity")
-def payment_sensitivity(force: bool = False):
-    """Step 15 full: payment_is_* 제거 민감도 분석 + OOF 예측 저장."""
-    if not force and is_done("step15"):
-        cached = load_json("step15_result")
-        if cached:
-            cached["from_cache"] = True
-            return cached
+def payment_sensitivity():
+    """Step 15 full: payment_is_* 제거 민감도 분석 + OOF 예측 저장. 항상 재실행."""
 
     exp_df = load_df("expanded_dataset")
     if exp_df is None:

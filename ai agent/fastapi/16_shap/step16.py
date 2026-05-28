@@ -131,13 +131,8 @@ def run_shap_all_scopes(exp_df: pd.DataFrame) -> dict:
 
 
 @router.post("/shap")
-def shap_interpretation(force: bool = False):
-    """Step 16: SHAP 피처 중요도 계산 (payment 제거 후 기준)."""
-    if not force and is_done("step16"):
-        cached = load_json("step16_shap_global")
-        if cached:
-            cached["from_cache"] = True
-            return cached
+def shap_interpretation():
+    """Step 16: SHAP 피처 중요도 계산 (payment 제거 후 기준). 항상 재실행."""
 
     exp_df = load_df("expanded_dataset")
     if exp_df is None:

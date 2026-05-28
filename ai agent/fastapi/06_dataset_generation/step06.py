@@ -178,19 +178,8 @@ def run_dataset_generation(df_raw: pd.DataFrame) -> dict:
 
 
 @router.post("/dataset-generation")
-def dataset_generation(force: bool = False):
-    """
-    Step 06: 모델 입력 데이터셋 생성.
-    가장 무거운 단계 — 처음 실행 시 수 분 소요.
-    - force=false: 캐시 데이터셋 있으면 즉시 반환
-    - force=true:  재생성
-    """
-    if not force and is_done("step06"):
-        cached = load_json("step06_result")
-        if cached:
-            cached["from_cache"] = True
-            return cached
-
+def dataset_generation():
+    """Step 06: 모델 입력 데이터셋 생성. 항상 재실행."""
     if not MEM_PATH.exists():
         return {"status": "FAIL", "reason": "데이터 파일 없음"}
 

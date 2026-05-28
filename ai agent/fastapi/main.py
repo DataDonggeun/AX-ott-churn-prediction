@@ -17,8 +17,8 @@ OTT 이탈 방지 파이프라인 FastAPI 서버
     빈 문자열(기본값)이면 인증 비활성화 — 개발/로컬 환경 전용.
 
 파이프라인 순서 (FastAPI 담당 단계):
-    00 → 01 → 03 → 06 → 08 → 09 → 10 → 11 → 12 → 14 → 15 → 16 → 17
-    (02·04·05·07은 Dify 정책 기록만, 13은 없음)
+    00 → 01 → 06 → 08 → 09 → 10 → 11 → 12 → 14 → 15 → 16 → 17
+    (02·04·05·07은 Dify 정책 기록만, 03은 00에 통합, 13은 없음)
 """
 import sys
 import uuid
@@ -36,7 +36,6 @@ from config import API_KEY
 # ── 단계별 모듈 로드 ────────────────────────────────────────────────────────────
 step00 = importlib.import_module("00_feature_engineering.step00")
 step01 = importlib.import_module("01_data_contract.step01")
-step03 = importlib.import_module("03_observation_window.step03")
 step06 = importlib.import_module("06_dataset_generation.step06")
 step08 = importlib.import_module("08_promotion_eda.step08")
 step09 = importlib.import_module("09_2x2_eda.step09")
@@ -57,7 +56,6 @@ app = FastAPI(
 # ── 라우터 등록 ────────────────────────────────────────────────────────────────
 app.include_router(step00.router)
 app.include_router(step01.router)
-app.include_router(step03.router)
 app.include_router(step06.router)
 app.include_router(step08.router)
 app.include_router(step09.router)
@@ -106,19 +104,18 @@ def _run_full(job_id: str):
     results = _jobs[job_id]["results"]
 
     try:
-        _run_step("step00", step00.feature_engineering,    results, force=True)
-        _run_step("step01", step01.data_contract,          results, force=True)
-        _run_step("step03", step03.observation_window,     results, force=True)
-        _run_step("step06", step06.dataset_generation,     results, force=True)
-        _run_step("step08", step08.promotion_eda,          results, force=True)
-        _run_step("step09", step09.eda_2x2,                results, force=True)
-        _run_step("step10", step10.feature_audit,          results, force=True)
+        _run_step("step00", step00.feature_engineering,    results)
+        _run_step("step01", step01.data_contract,          results)
+        _run_step("step06", step06.dataset_generation,     results)
+        _run_step("step08", step08.promotion_eda,          results)
+        _run_step("step09", step09.eda_2x2,                results)
+        _run_step("step10", step10.feature_audit,          results)
         _run_step("step11", step11.baseline_comparison,    results, force=True)
         _run_step("step12", step12.model_family_comparison,results, force=True)
         _run_step("step14", step14.tuning,                 results, force=True)
-        _run_step("step15", step15.payment_sensitivity,    results, force=True)
-        _run_step("step16", step16.shap_interpretation,    results, force=True)
-        _run_step("step17", step17.segmentation,           results, force=True)
+        _run_step("step15", step15.payment_sensitivity,    results)
+        _run_step("step16", step16.shap_interpretation,    results)
+        _run_step("step17", step17.segmentation,           results)
         _jobs[job_id]["status"] = "DONE"
 
     except StopIteration as failed_step:
@@ -143,12 +140,11 @@ def _run_fast(job_id: str):
     results = _jobs[job_id]["results"]
 
     try:
-        _run_step("step00", step00.feature_engineering, results, force=True)
-        _run_step("step01", step01.data_contract,       results, force=True)
-        _run_step("step03", step03.observation_window,  results, force=True)
-        _run_step("step06", step06.dataset_generation,  results, force=True)
-        _run_step("step15_scoring", step15.scoring,     results, force=True)
-        _run_step("step17", step17.segmentation,        results, force=True)
+        _run_step("step00", step00.feature_engineering, results)
+        _run_step("step01", step01.data_contract,       results)
+        _run_step("step06", step06.dataset_generation,  results)
+        _run_step("step15_scoring", step15.scoring,     results)
+        _run_step("step17", step17.segmentation,        results)
         _jobs[job_id]["status"] = "DONE"
 
     except StopIteration as failed_step:
@@ -254,5 +250,5 @@ def root():
     return {
         "message": "OTT 이탈 방지 파이프라인 서버 실행 중",
         "docs":    "/docs",
-        "steps":   "00→01→03→06→08→09→10→11→12→14→15→16→17",
+        "steps":   "00→01→06→08→09→10→11→12→14→15→16→17",
     }
