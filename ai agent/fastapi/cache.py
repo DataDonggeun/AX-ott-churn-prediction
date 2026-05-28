@@ -67,9 +67,9 @@ def get_step_meta(step: str) -> dict:
 def needs_retrain() -> bool:
     """마지막 학습으로부터 RETRAIN_MONTHS 이상 경과했는지 확인"""
     state = load_state()
-    if "step14" not in state:
+    if "step07" not in state:
         return True
-    last = datetime.fromisoformat(state["step14"]["completed_at"])
+    last = datetime.fromisoformat(state["step07"]["completed_at"])
     months_elapsed = (datetime.now() - last).days / 30
     return months_elapsed >= RETRAIN_MONTHS
 

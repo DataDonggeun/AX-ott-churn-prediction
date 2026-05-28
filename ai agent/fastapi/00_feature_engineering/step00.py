@@ -44,8 +44,8 @@ from fastapi import APIRouter
 import numpy as np
 import pandas as pd
 
-from config import DATA_DIR, MEM_PATH
-from cache import is_done, mark_done, save_json, load_json
+from config import DATA_DIR, MEM_PATH, EXPANDED_FEATURES
+from cache import is_done, mark_done, save_json, load_json, save_df
 
 router = APIRouter(prefix="/00", tags=["00. Feature Engineering"])
 
@@ -169,7 +169,6 @@ def _engineer_features(mem: pd.DataFrame,
     df = mem.copy()
 
     # ── 멤버십 기본 파생 ──────────────────────────────────────────────────────
-    # duration_days / is_basic / is_cold_start_*_fixed 는 step06에서 생성
     df["is_standard"] = (df["max_screen"] == 2).astype(int)
     df["is_premium"]  = (df["max_screen"] == 4).astype(int)
 
@@ -329,9 +328,7 @@ def _engineer_features(mem: pd.DataFrame,
     # ── 온보딩 cold_start (watch_rel_day 1-based 기준) ────────────────────────
     first = grp["watch_rel_day"].min().reset_index(name="first_watch_rel_day")
     df = df.merge(first, on="USER_KEY", how="left")
-    # days = first_watch_rel_day - 1, is_cold_start_3d: days <= 2 (3일 이내)
-    # is_cold_start_3d / 7d 원본만 생성 (_fixed 버전은 step06에서 생성)
-    # CSV 기준: days = (first_watch_date - reg_date).days, is_cold_start_3d: days<=3, 7d: days<=7
+    # CSV 기준: days = first_watch_rel_day - 1, is_cold_start_3d: days<=3, 7d: days<=7
     df["is_cold_start_3d"] = ((df["first_watch_rel_day"] - 1) <= 3).astype(int)
     df["is_cold_start_7d"] = ((df["first_watch_rel_day"] - 1) <= 7).astype(int)
     df = df.drop(columns=["first_watch_rel_day"], errors="ignore")
@@ -528,6 +525,18 @@ def run_feature_engineering(
 
     # ── 저장 ─────────────────────────────────────────────────────────────────
     df.to_csv(OUTPUT_PATH, index=False, encoding="utf-8-sig")
+
+    # ── expanded_dataset 캐시 저장 (step06 대체) ─────────────────────────────
+    exp_features = [
+        f for f in EXPANDED_FEATURES
+        if f in df.columns
+    ]
+    exp_df = df[["USER_KEY", "is_repurchase"] +
+                (["is_promotion"] if "is_promotion" in df.columns else []) +
+                [f for f in exp_features if f not in {"USER_KEY", "is_repurchase", "is_promotion"}]
+               ].copy()
+    save_df("expanded_dataset", exp_df)
+
 
     return {
         "status":        "PASS",

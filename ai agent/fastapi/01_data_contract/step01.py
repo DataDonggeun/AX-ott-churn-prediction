@@ -30,8 +30,8 @@ REQUIRED_COLS = [
     "watch_session_w1",   "watch_session_w2",   "watch_session_w3",
     "retention_w2_ratio", "retention_w3_ratio",
     "is_cold_start_3d",   "is_cold_start_7d",
-    "recency",            "active_ratio",
-    "watch_per_day",      "max_inactive_gap_days",
+    "recency",            "watch_per_day",
+    "max_inactive_gap_days",
 ]
 
 

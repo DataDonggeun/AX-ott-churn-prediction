@@ -16,9 +16,9 @@ OTT 이탈 방지 파이프라인 FastAPI 서버
     PIPELINE_API_KEY 환경변수를 설정하면 X-Api-Key 헤더 검증 활성화.
     빈 문자열(기본값)이면 인증 비활성화 — 개발/로컬 환경 전용.
 
-파이프라인 순서 (FastAPI 담당 단계):
-    00 → 01 → 06 → 08 → 09 → 10 → 11 → 12 → 14 → 15 → 16 → 17
-    (02·04·05·07은 Dify 정책 기록만, 03은 00에 통합, 13은 없음)
+파이프라인 순서:
+    [FastAPI] 00 → 01 → 02 → 03 → 04 → 05 → 06 → 07 → 08 → 09 → 10
+    [Dify]    Step 10 결과 수신 → Gemini API 호출 → CRM 메시지 생성
 """
 import sys
 import uuid
@@ -32,40 +32,40 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from cache import load_state, list_cache, reset_pipeline, needs_retrain
 from config import API_KEY
+import report as _report_module
 
 # ── 단계별 모듈 로드 ────────────────────────────────────────────────────────────
 step00 = importlib.import_module("00_feature_engineering.step00")
 step01 = importlib.import_module("01_data_contract.step01")
-step06 = importlib.import_module("06_dataset_generation.step06")
-step08 = importlib.import_module("08_promotion_eda.step08")
-step09 = importlib.import_module("09_2x2_eda.step09")
-step10 = importlib.import_module("10_feature_audit.step10")
-step11 = importlib.import_module("11_baseline_comparison.step11")
-step12 = importlib.import_module("12_model_family_comparison.step12")
-step14 = importlib.import_module("14_tuning.step14")
-step15 = importlib.import_module("15_payment_sensitivity.step15")
-step16 = importlib.import_module("16_shap.step16")
-step17 = importlib.import_module("17_segmentation.step17")
+step02 = importlib.import_module("02_promotion_eda.step02")
+step03 = importlib.import_module("03_2x2_eda.step03")
+step04 = importlib.import_module("04_model_selection.step04")
+step05 = importlib.import_module("05_feature_audit.step05")
+step06 = importlib.import_module("06_model_family_comparison.step06")
+step07 = importlib.import_module("07_tuning.step07")
+step08 = importlib.import_module("08_scoring.step08")
+step09 = importlib.import_module("09_shap.step09")
+step10 = importlib.import_module("10_segmentation.step10")
 
 app = FastAPI(
     title="OTT 이탈 방지 파이프라인",
-    description="Step 01~17 순차 실행 / 캐시 기반 빠른 재실행 지원",
-    version="2.1",
+    description="Step 00~10 순차 실행 / 캐시 기반 빠른 재실행 지원",
+    version="3.0",
 )
 
 # ── 라우터 등록 ────────────────────────────────────────────────────────────────
 app.include_router(step00.router)
 app.include_router(step01.router)
+app.include_router(step02.router)
+app.include_router(step03.router)
+app.include_router(step04.router)
+app.include_router(step05.router)
 app.include_router(step06.router)
+app.include_router(step07.router)
 app.include_router(step08.router)
 app.include_router(step09.router)
 app.include_router(step10.router)
-app.include_router(step11.router)
-app.include_router(step12.router)
-app.include_router(step14.router)
-app.include_router(step15.router)
-app.include_router(step16.router)
-app.include_router(step17.router)
+app.include_router(_report_module.router)
 
 
 # ── 인증 ───────────────────────────────────────────────────────────────────────
@@ -104,18 +104,17 @@ def _run_full(job_id: str):
     results = _jobs[job_id]["results"]
 
     try:
-        _run_step("step00", step00.feature_engineering,    results)
-        _run_step("step01", step01.data_contract,          results)
-        _run_step("step06", step06.dataset_generation,     results)
-        _run_step("step08", step08.promotion_eda,          results)
-        _run_step("step09", step09.eda_2x2,                results)
-        _run_step("step10", step10.feature_audit,          results)
-        _run_step("step11", step11.baseline_comparison,    results, force=True)
-        _run_step("step12", step12.model_family_comparison,results, force=True)
-        _run_step("step14", step14.tuning,                 results, force=True)
-        _run_step("step15", step15.payment_sensitivity,    results)
-        _run_step("step16", step16.shap_interpretation,    results)
-        _run_step("step17", step17.segmentation,           results)
+        _run_step("step00", step00.feature_engineering,      results)
+        _run_step("step01", step01.data_contract,            results)
+        _run_step("step02", step02.promotion_eda,            results)
+        _run_step("step03", step03.eda_2x2,                  results)
+        _run_step("step04", step04.baseline_comparison,      results, force=True)
+        _run_step("step05", step05.feature_audit,            results)
+        _run_step("step06", step06.model_family_comparison,  results, force=True)
+        _run_step("step07", step07.tuning,                   results, force=True)
+        _run_step("step08", step08.scoring,                  results)
+        _run_step("step09", step09.shap_interpretation,      results)
+        _run_step("step10", step10.segmentation,             results)
         _jobs[job_id]["status"] = "DONE"
 
     except StopIteration as failed_step:
@@ -130,21 +129,20 @@ def _run_fast(job_id: str):
     """
     빠른 실행 — 새 데이터 유입 시.
 
-    흐름: 00(피처생성) → 01(데이터 검증) → 03(코호트) → 06(데이터셋 생성)
-          → 15/scoring(저장된 모델로 점수만 계산, 재학습 없음)
-          → 17(세그먼트 재배정)
+    흐름: 00(피처생성) → 01(데이터 검증)
+          → 08/scoring(저장된 모델로 점수만 계산, 재학습 없음)
+          → 10(세그먼트 재배정)
 
-    모델(step11·12·14)은 캐시 사용. 6개월 경과 시 run-full로 재학습.
+    모델(step06·07)은 캐시 사용. 6개월 경과 시 run-full로 재학습.
     """
     _jobs[job_id] = {"status": "RUNNING", "results": {}}
     results = _jobs[job_id]["results"]
 
     try:
-        _run_step("step00", step00.feature_engineering, results)
-        _run_step("step01", step01.data_contract,       results)
-        _run_step("step06", step06.dataset_generation,  results)
-        _run_step("step15_scoring", step15.scoring,     results)
-        _run_step("step17", step17.segmentation,        results)
+        _run_step("step00", step00.feature_engineering,  results)
+        _run_step("step01", step01.data_contract,        results)
+        _run_step("step08_scoring", step08.scoring_fast,  results)
+        _run_step("step10", step10.segmentation,         results)
         _jobs[job_id]["status"] = "DONE"
 
     except StopIteration as failed_step:
@@ -205,7 +203,7 @@ def pipeline_run_full(background_tasks: BackgroundTasks):
 
     - 즉시 job_id를 반환하고 백그라운드에서 실행.
     - GET /pipeline/job/{job_id} 로 진행 상황 확인.
-    - Step 11·12·14는 수십 분 소요될 수 있음.
+    - Step 06·07·09(모델 비교·튜닝·SHAP)는 수십 분 소요될 수 있음.
     """
     job_id = str(uuid.uuid4())[:8]
     _jobs[job_id] = {"status": "QUEUED"}
@@ -227,10 +225,10 @@ def pipeline_run_fast(background_tasks: BackgroundTasks):
     """
     빠른 실행 (새 데이터 유입 시).
 
-    흐름: 01 → 03 → 06 → 15/scoring → 17
+    흐름: 00 → 01 → 08/scoring → 10
 
-    - 데이터 검증·코호트·데이터셋 생성 후 저장된 모델로 점수만 계산.
-    - 모델 재학습(Step 11·12·14) 없음 — 캐시 사용.
+    - 피처 생성·데이터 검증 후 저장된 모델로 점수만 계산.
+    - 모델 재학습(Step 06·07) 없음 — 캐시 사용.
     - 6개월 경과 시 /pipeline/run-full 로 전체 재학습 필요.
     - 즉시 job_id 반환 후 백그라운드 실행.
     """
@@ -241,7 +239,7 @@ def pipeline_run_fast(background_tasks: BackgroundTasks):
         "job_id":    job_id,
         "status":    "QUEUED",
         "check_url": f"/pipeline/job/{job_id}",
-        "message":   "빠른 실행이 백그라운드에서 시작됩니다. 모델(14단계)은 캐시 사용.",
+        "message":   "빠른 실행이 백그라운드에서 시작됩니다. 모델(07단계)은 캐시 사용.",
     }
 
 
@@ -250,5 +248,5 @@ def root():
     return {
         "message": "OTT 이탈 방지 파이프라인 서버 실행 중",
         "docs":    "/docs",
-        "steps":   "00→01→06→08→09→10→11→12→14→15→16→17",
+        "steps":   "00→01→02→03→04→05→06→07→08→09→10",
     }

@@ -21,46 +21,31 @@ API_KEY = os.getenv("PIPELINE_API_KEY", "")
 COHORT_MIN_DAYS  = 21    # 관측창 완료 기준 (day0~20)
 N_SPLITS         = 5     # StratifiedGroupKFold
 RANDOM_STATE     = 42
-N_OPTUNA_TRIALS  = 30    # Step 14 Optuna trial 수
+N_OPTUNA_TRIALS  = 30    # Step 07 Optuna trial 수
 RETRAIN_MONTHS   = 6     # 모델 재학습 주기 (개월)
 
-# ── 피처 계약 (05y/06x/15x 기준) ──────────────────────────────────────────────
-
-# conservative_safe_22: 주차별 행동 중심 (cold_start_fixed 적용) — 정확히 22개
-# is_promotion은 scope 조건부이므로 이 목록에 포함하지 않음.
-# overall_with_promotion scope에서만 feature로 추가됨 (step 코드에서 처리).
-CONSERVATIVE_FEATURES = [
-    "watch_time(min)_w1", "watch_time(min)_w2", "watch_time(min)_w3",
-    "watch_session_w1",   "watch_session_w2",   "watch_session_w3",
-    "retention_w2_ratio", "retention_w3_ratio",
-    "is_cold_start_3d_fixed", "is_cold_start_7d_fixed",
-    "is_only_w1",         "is_w1_over_50pct",
-    "diff_between_w3_w2", "diff_between_w3_w1", "diff_between_w2_w1",
-    "recency",            "max_inactive_gap_days",
-    "active_ratio",       "watch_per_day",
-    "age_group",          "is_user_verified",    "is_churn_prevented",
-]
-
+# ── 피처 계약 ──────────────────────────────────────────────────────────────────
 # is_promotion — split key. overall_with_promotion 모델에서만 feature로 사용.
 PROMOTION_FEATURE = "is_promotion"
 
-# expanded — 15x payment 제거 후 최종
+# payment 기기 피처 — SHAP 계열 분류용
 PAYMENT_FEATURES = [
     "payment_is_mobile", "payment_is_pc",
     "payment_is_android", "payment_is_ios",
 ]
 
-# expanded_no_payment (15x 결과 반영)
-EXPANDED_FEATURES_NO_PAYMENT = [
+# expanded — step00 출력 기준 최종 피처 목록 (payment 포함)
+# VIF=inf 제거 완료: diff_between_w3_w1, active_ratio, reg_hour_night, other_ratio, max_screen
+EXPANDED_FEATURES = [
     # 주차별 행동
     "watch_time(min)_w1", "watch_time(min)_w2", "watch_time(min)_w3",
     "watch_session_w1",   "watch_session_w2",   "watch_session_w3",
     "retention_w2_ratio", "retention_w3_ratio",
-    "is_cold_start_3d_fixed", "is_cold_start_7d_fixed",
+    "is_cold_start_3d", "is_cold_start_7d",
     "is_only_w1",  "is_w2_over_50pct", "is_w3_over_50pct", "is_w1_over_50pct",
-    "diff_between_w3_w2", "diff_between_w3_w1", "diff_between_w2_w1",
+    "diff_between_w3_w2", "diff_between_w2_w1",
     "recency",     "max_inactive_gap_days",
-    "active_ratio", "watch_per_day",
+    "watch_per_day",
     # 사용량 요약
     "total_watch_count",    "unique_movie",        "watch_days",
     "avg_watch_time(min)",  "median_watch_time(min)", "std_watch_time(min)",
@@ -73,32 +58,34 @@ EXPANDED_FEATURES_NO_PAYMENT = [
     "total_watch_time(min)",
     # 콘텍스트
     "age_group", "is_female", "is_male",
-    "is_standard", "is_premium", "is_basic",
+    "is_standard", "is_premium",
     "reg_is_weekend",
-    "reg_hour_morning", "reg_hour_afternoon", "reg_hour_evening", "reg_hour_night",
+    "reg_hour_morning", "reg_hour_afternoon", "reg_hour_evening",
     "is_user_verified", "is_churn_prevented",
     # 콘텐츠
     "genre_diversity_count",
     "action_adventure_ratio", "family_animation_ratio", "drama_ratio",
     "thriller_crime_ratio",   "sf_fantasy_ratio",       "comedy_ratio",
     "romance_ratio",          "horror_ratio",            "documentary_ratio",
-    "historical_war_ratio",   "other_ratio",
+    "historical_war_ratio",
     "new_movie_in_90d_ratio", "new_movie_in_180d_ratio", "new_movie_in_365d_ratio",
     "old_movie_ratio(5y)",    "avg_ott_release_year",
+    # payment 기기 피처
+    "payment_is_mobile", "payment_is_pc",
+    "payment_is_android", "payment_is_ios",
     # scope 조건부: overall_with_promotion에서만 모델 feature로 사용.
     # 데이터셋에는 포함해 scope 필터링(df[df["is_promotion"]==1])에 활용하고,
     # 각 step의 exclude 집합에서 제거 여부를 결정함.
     "is_promotion",
 ]
 
-# 제외 컬럼 (타겟·식별자·원본 cold_start·결제기기 proxy)
+# 제외 컬럼 (타겟·식별자·원본 컬럼 — 모델 피처 아님)
 EXCLUDED_COLS = [
     "USER_KEY", "is_repurchase", "reg_date", "end_date",
     "product_code", "billing_method", "payment_device",
     "gender", "age", "reg_hour",
     "price", "max_screen",
-    "is_cold_start_3d", "is_cold_start_7d",  # _fixed 버전 사용
-] + PAYMENT_FEATURES
+]
 
 # ── 17x 세그먼트 순서 ──────────────────────────────────────────────────────────
 SEGMENT_ORDER = ["S1", "S2", "S3", "S4", "S5", "S6"]
