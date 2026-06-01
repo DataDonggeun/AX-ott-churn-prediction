@@ -1,0 +1,119 @@
+{
+  "status": "PASS",
+  "summary": [
+    {
+      "scope": "overall",
+      "model": "LogisticRegression",
+      "rows": 23081,
+      "features": 78,
+      "oof_auc": 0.8511,
+      "mean_train_auc": 0.8547,
+      "mean_valid_auc": 0.8511,
+      "train_valid_gap": 0.0037,
+      "fold_auc_std": 0.005
+    },
+    {
+      "scope": "overall",
+      "model": "XGBoost",
+      "rows": 23081,
+      "features": 78,
+      "oof_auc": 0.8738,
+      "mean_train_auc": 0.898,
+      "mean_valid_auc": 0.8739,
+      "train_valid_gap": 0.0241,
+      "fold_auc_std": 0.0034
+    },
+    {
+      "scope": "overall",
+      "model": "RandomForest",
+      "rows": 23081,
+      "features": 78,
+      "oof_auc": 0.856,
+      "mean_train_auc": 0.9107,
+      "mean_valid_auc": 0.8561,
+      "train_valid_gap": 0.0546,
+      "fold_auc_std": 0.0061
+    },
+    {
+      "scope": "promotion_only",
+      "model": "LogisticRegression",
+      "rows": 11904,
+      "features": 77,
+      "oof_auc": 0.8374,
+      "mean_train_auc": 0.8434,
+      "mean_valid_auc": 0.8372,
+      "train_valid_gap": 0.0061,
+      "fold_auc_std": 0.003
+    },
+    {
+      "scope": "promotion_only",
+      "model": "XGBoost",
+      "rows": 11904,
+      "features": 77,
+      "oof_auc": 0.8612,
+      "mean_train_auc": 0.9023,
+      "mean_valid_auc": 0.8614,
+      "train_valid_gap": 0.0409,
+      "fold_auc_std": 0.0063
+    },
+    {
+      "scope": "promotion_only",
+      "model": "RandomForest",
+      "rows": 11904,
+      "features": 77,
+      "oof_auc": 0.8391,
+      "mean_train_auc": 0.9011,
+      "mean_valid_auc": 0.8393,
+      "train_valid_gap": 0.0618,
+      "fold_auc_std": 0.0044
+    },
+    {
+      "scope": "nonpromotion_only",
+      "model": "LogisticRegression",
+      "rows": 11177,
+      "features": 77,
+      "oof_auc": 0.8613,
+      "mean_train_auc": 0.8684,
+      "mean_valid_auc": 0.8614,
+      "train_valid_gap": 0.007,
+      "fold_auc_std": 0.0042
+    },
+    {
+      "scope": "nonpromotion_only",
+      "model": "XGBoost",
+      "rows": 11177,
+      "features": 77,
+      "oof_auc": 0.8836,
+      "mean_train_auc": 0.9231,
+      "mean_valid_auc": 0.8838,
+      "train_valid_gap": 0.0393,
+      "fold_auc_std": 0.0042
+    },
+    {
+      "scope": "nonpromotion_only",
+      "model": "RandomForest",
+      "rows": 11177,
+      "features": 77,
+      "oof_auc": 0.8641,
+      "mean_train_auc": 0.9162,
+      "mean_valid_auc": 0.8644,
+      "train_valid_gap": 0.0518,
+      "fold_auc_std": 0.0083
+    }
+  ],
+  "candidates": {
+    "overall": {
+      "model": "XGBoost",
+      "oof_auc": 0.8738
+    },
+    "promotion_only": {
+      "model": "XGBoost",
+      "oof_auc": 0.8612
+    },
+    "nonpromotion_only": {
+      "model": "XGBoost",
+      "oof_auc": 0.8836
+    }
+  },
+  "note": "Membership_v5 기반 3개 모델 계열 선정. 우승 계열 → step06 전달."
+}

@@ -18,11 +18,11 @@ import numpy as np
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
+from xgboost import XGBClassifier
 from sklearn.metrics import roc_auc_score, average_precision_score
 from sklearn.model_selection import StratifiedGroupKFold
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-from xgboost import XGBClassifier
 
 from config import N_SPLITS, RANDOM_STATE
 from cache import is_done, mark_done, save_json, load_json, load_df, save_df
@@ -38,7 +38,7 @@ MODELS = {
         n_estimators=120, max_depth=4, learning_rate=0.06,
         subsample=0.9, colsample_bytree=0.9,
         eval_metric="logloss", tree_method="hist",
-        n_jobs=-1, random_state=RANDOM_STATE, verbosity=0,
+        n_jobs=-1, random_state=RANDOM_STATE,
     ),
     "RandomForest": RandomForestClassifier(
         n_estimators=120, min_samples_leaf=20,
@@ -47,10 +47,9 @@ MODELS = {
 }
 
 SCOPES = {
-    "overall_without_promotion": lambda df: (df, False),
-    "overall_with_promotion":    lambda df: (df, True),
-    "promotion_only":            lambda df: (df[df["is_promotion"] == 1].copy(), False),
-    "nonpromotion_only":         lambda df: (df[df["is_promotion"] == 0].copy(), False),
+    "overall":          lambda df: (df, True),
+    "promotion_only":   lambda df: (df[df["is_promotion"] == 1].copy(), False),
+    "nonpromotion_only": lambda df: (df[df["is_promotion"] == 0].copy(), False),
 }
 
 

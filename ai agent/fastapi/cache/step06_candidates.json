@@ -1,0 +1,32 @@
+{
+  "overall": {
+    "model": "CatBoost",
+    "oof_auc": 0.8681,
+    "train_valid_gap": 0.0065,
+    "gap_threshold": 0.03,
+    "overfit_warning": false,
+    "scope_winner": "CatBoost",
+    "scope_winner_auc": 0.8681,
+    "note": "통합모델 사용"
+  },
+  "promotion_only": {
+    "model": "CatBoost",
+    "oof_auc": 0.853,
+    "train_valid_gap": 0.0124,
+    "gap_threshold": 0.03,
+    "overfit_warning": false,
+    "scope_winner": "GradientBoosting",
+    "scope_winner_auc": 0.8532,
+    "note": "통합모델 사용"
+  },
+  "nonpromotion_only": {
+    "model": "CatBoost",
+    "oof_auc": 0.8782,
+    "train_valid_gap": 0.0125,
+    "gap_threshold": 0.03,
+    "overfit_warning": false,
+    "scope_winner": "CatBoost",
+    "scope_winner_auc": 0.8782,
+    "note": "통합모델 사용"
+  }
+}

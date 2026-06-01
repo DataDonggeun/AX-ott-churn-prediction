@@ -169,6 +169,7 @@ def _engineer_features(mem: pd.DataFrame,
     df = mem.copy()
 
     # ── 멤버십 기본 파생 ──────────────────────────────────────────────────────
+    df["is_basic"]    = (df["max_screen"] == 1).astype(int)
     df["is_standard"] = (df["max_screen"] == 2).astype(int)
     df["is_premium"]  = (df["max_screen"] == 4).astype(int)
 
@@ -193,7 +194,7 @@ def _engineer_features(mem: pd.DataFrame,
     df["reg_hour_morning"]   = ((h >= 6)  & (h <= 11)).astype(int)
     df["reg_hour_afternoon"] = ((h >= 12) & (h <= 17)).astype(int)
     df["reg_hour_evening"]   = ((h >= 18) & (h <= 23)).astype(int)
-    # reg_hour_night 제거 (VIF=inf, 나머지 3개로 유추 가능)
+    df["reg_hour_night"]     = ((h >= 0)  & (h <= 5)).astype(int)
 
     # ── View_History 전처리 ────────────────────────────────────────────────────
     vh = vh_raw.copy()
@@ -256,7 +257,7 @@ def _engineer_features(mem: pd.DataFrame,
         watch_days=("watch_date_d", "nunique"),
         **{"total_watch_time(min)": (wc, "sum")},
     ).reset_index()
-    # active_ratio 제거 (VIF=inf, watch_days/21과 동일)
+    basic["active_ratio"]  = basic["watch_days"] / 21
     basic["watch_per_day"] = basic["total_watch_count"] / basic["watch_days"].clip(lower=1)
     df = df.merge(basic, on="USER_KEY", how="left")
 
@@ -362,7 +363,7 @@ def _engineer_features(mem: pd.DataFrame,
     # ── diff ──────────────────────────────────────────────────────────────────
     df["diff_between_w2_w1"] = df["watch_time(min)_w2"] - df["watch_time(min)_w1"]
     df["diff_between_w3_w2"] = df["watch_time(min)_w3"] - df["watch_time(min)_w2"]
-    # diff_between_w3_w1 제거 (VIF=inf, diff_w2_w1 + diff_w3_w2로 계산 가능)
+    df["diff_between_w3_w1"] = df["watch_time(min)_w3"] - df["watch_time(min)_w1"]
 
     # ── is_w*_over_50pct (분모: w1+w2+w3 합) ─────────────────────────────────
     total_3w = df["watch_time(min)_w1"] + df["watch_time(min)_w2"] + df["watch_time(min)_w3"]
@@ -424,12 +425,20 @@ def _engineer_features(mem: pd.DataFrame,
             ("horror_ratio",           "Horror"),
             ("documentary_ratio",      "Documentary"),
             ("historical_war_ratio",   "Historical/War"),
-            # other_ratio 제거 (VIF=inf, 나머지 장르 합으로 계산 가능)
         ]:
             sub = vh[vh["genre"] == genre_val].groupby("USER_KEY")[wc].sum().reset_index(name="gwt")
             tmp = total_wt.merge(sub, on="USER_KEY", how="left").fillna(0)
             tmp[col] = tmp["gwt"] / tmp["total_wt"].clip(lower=0.001)
             df = df.merge(tmp[["USER_KEY", col]], on="USER_KEY", how="left")
+
+        known_genres = [
+            "Action/Adventure", "Animation/Family", "Drama", "Thriller/Crime",
+            "SF/Fantasy", "Comedy", "Romance", "Horror", "Documentary", "Historical/War",
+        ]
+        sub = vh[~vh["genre"].isin(known_genres)].groupby("USER_KEY")[wc].sum().reset_index(name="gwt")
+        tmp = total_wt.merge(sub, on="USER_KEY", how="left").fillna(0)
+        tmp["other_ratio"] = tmp["gwt"] / tmp["total_wt"].clip(lower=0.001)
+        df = df.merge(tmp[["USER_KEY", "other_ratio"]], on="USER_KEY", how="left")
 
     return df
 

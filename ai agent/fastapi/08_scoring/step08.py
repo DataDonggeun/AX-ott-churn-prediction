@@ -26,10 +26,9 @@ from cache import mark_done, save_json, load_df, save_df, load_artifact
 router = APIRouter(prefix="/08", tags=["08. Scoring"])
 
 SCOPES = {
-    "overall_without_promotion": lambda df: (df, False),
-    "overall_with_promotion":    lambda df: (df, True),
-    "promotion_only":            lambda df: (df[df["is_promotion"] == 1].copy(), False),
-    "nonpromotion_only":         lambda df: (df[df["is_promotion"] == 0].copy(), False),
+    "overall":           lambda df: (df, True),
+    "promotion_only":    lambda df: (df[df["is_promotion"] == 1].copy(), False),
+    "nonpromotion_only": lambda df: (df[df["is_promotion"] == 0].copy(), False),
 }
 
 

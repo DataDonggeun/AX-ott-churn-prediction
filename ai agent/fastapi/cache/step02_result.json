@@ -1,0 +1,52 @@
+{
+  "status": "PASS",
+  "promo_rows": 11904,
+  "nonpromo_rows": 11177,
+  "promo_repurchase_rate": 0.6752,
+  "nonpromo_repurchase_rate": 0.7623,
+  "repurchase_rate_diff": -0.0871,
+  "top10_smd_features": [
+    {
+      "feature": "is_user_verified",
+      "smd": 1.3224
+    },
+    {
+      "feature": "payment_is_ios",
+      "smd": -1.019
+    },
+    {
+      "feature": "age_group",
+      "smd": -0.4364
+    },
+    {
+      "feature": "payment_is_mobile",
+      "smd": 0.4136
+    },
+    {
+      "feature": "is_female",
+      "smd": 0.3512
+    },
+    {
+      "feature": "is_premium",
+      "smd": 0.3507
+    },
+    {
+      "feature": "is_male",
+      "smd": 0.3057
+    },
+    {
+      "feature": "payment_is_pc",
+      "smd": 0.2991
+    },
+    {
+      "feature": "reg_hour_morning",
+      "smd": -0.2437
+    },
+    {
+      "feature": "payment_is_android",
+      "smd": 0.2048
+    }
+  ],
+  "interpretation": "관찰된 차이만 기록. 프로모션이 재구매율 차이를 유발했다는 주장이 아님.",
+  "summary": "프로모션 11,904행 재구매율 67.5% | 비프로모션 11,177행 재구매율 76.2% | 격차 -0.0871."
+}

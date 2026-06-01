@@ -56,10 +56,9 @@ def _winner_families_from_step04() -> dict:
     return families
 
 SCOPES = {
-    "overall_without_promotion": lambda df: (df, False),
-    "overall_with_promotion":    lambda df: (df, True),
-    "promotion_only":            lambda df: (df[df["is_promotion"] == 1].copy(), False),
-    "nonpromotion_only":         lambda df: (df[df["is_promotion"] == 0].copy(), False),
+    "overall":           lambda df: (df, True),
+    "promotion_only":    lambda df: (df[df["is_promotion"] == 1].copy(), False),
+    "nonpromotion_only": lambda df: (df[df["is_promotion"] == 0].copy(), False),
 }
 
 
@@ -118,17 +117,20 @@ def _cv_auc(df_scope, features, model) -> dict:
     y      = df_scope["is_repurchase"].astype(int).to_numpy()
     groups = df_scope["USER_KEY"].astype(str).to_numpy()
     sgkf   = StratifiedGroupKFold(n_splits=N_SPLITS, shuffle=True, random_state=RANDOM_STATE)
-    oof    = np.full(len(X), np.nan)
-    va_aucs = []
+    oof     = np.full(len(X), np.nan)
+    tr_aucs, va_aucs = [], []
 
     for tr_idx, va_idx in sgkf.split(X, y, groups):
         est  = clone(model)
         X_tr = X.iloc[tr_idx]; X_va = X.iloc[va_idx]
         est.fit(X_tr, y[tr_idx])
         p_va = est.predict_proba(X_va)[:, 1]
+        p_tr = est.predict_proba(X_tr)[:, 1]
         oof[va_idx] = p_va
         if len(np.unique(y[va_idx])) == 2:
             va_aucs.append(roc_auc_score(y[va_idx], p_va))
+        if len(np.unique(y[tr_idx])) == 2:
+            tr_aucs.append(roc_auc_score(y[tr_idx], p_tr))
 
     valid = ~np.isnan(oof)
     oof_auc = (
@@ -136,9 +138,11 @@ def _cv_auc(df_scope, features, model) -> dict:
         if len(np.unique(y[valid])) == 2 else None
     )
     return {
-        "oof_auc":        oof_auc,
-        "mean_valid_auc": round(float(np.nanmean(va_aucs)), 4),
-        "fold_auc_std":   round(float(np.nanstd(va_aucs, ddof=1)), 4),
+        "oof_auc":         oof_auc,
+        "mean_train_auc":  round(float(np.nanmean(tr_aucs)), 4),
+        "mean_valid_auc":  round(float(np.nanmean(va_aucs)), 4),
+        "train_valid_gap": round(float(np.nanmean(tr_aucs) - np.nanmean(va_aucs)), 4),
+        "fold_auc_std":    round(float(np.nanstd(va_aucs, ddof=1)), 4),
     }
 
 
@@ -175,26 +179,132 @@ def run_model_family_comparison(exp_df: pd.DataFrame) -> dict:
 
     summary_df = pd.DataFrame(rows)
 
-    # scope별 최고 AUC 후보 선정
-    candidates = {}
+    # ── 1단계: scope별 gap 필터 후 AUC 1등 선발 ─────────────────────────────
+    scope_winners = {}   # scope → {model, oof_auc, gap, threshold, all_overfit}
     for scope in SCOPES:
         sub = summary_df[
             (summary_df["scope"] == scope) &
             summary_df["oof_auc"].notna()
-        ].sort_values("oof_auc", ascending=False)
-        if len(sub):
-            best = sub.iloc[0]
+        ].copy()
+        if sub.empty:
+            continue
+
+        selected = None
+        gap_used = None
+        all_overfit = False
+
+        for threshold in [0.03, 0.04, 0.05]:
+            filtered = sub[sub["train_valid_gap"] <= threshold].sort_values("oof_auc", ascending=False)
+            if not filtered.empty:
+                selected = filtered.iloc[0]
+                gap_used = threshold
+                break
+        else:
+            all_overfit = True
+            selected = sub.sort_values("oof_auc", ascending=False).iloc[0]
+
+        scope_winners[scope] = {
+            "model":       selected["model"],
+            "oof_auc":     selected["oof_auc"],
+            "gap":         selected["train_valid_gap"],
+            "threshold":   gap_used,
+            "all_overfit": all_overfit,
+        }
+
+    # ── 2단계: 가장 많이 1등한 모델 → 통합 모델 결정 ────────────────────────
+    from collections import Counter
+
+    def _model_passes_all_scopes(model_name: str) -> bool:
+        """모델이 모든 scope에서 gap 기준을 통과하는지 확인"""
+        for scope, winner in scope_winners.items():
+            threshold = winner["threshold"] or 0.05
+            row = summary_df[
+                (summary_df["scope"] == scope) &
+                (summary_df["model"] == model_name)
+            ]
+            if row.empty or row.iloc[0]["train_valid_gap"] > threshold:
+                return False
+        return True
+
+    win_counts = Counter(v["model"] for v in scope_winners.values())
+    max_wins   = max(win_counts.values())
+    top_models = [m for m, c in win_counts.items() if c == max_wins]
+
+    tie_info = None
+    if len(top_models) == 1:
+        unified_model = top_models[0]
+    else:
+        # 타이: 과적합 없는 모델 우선, 그 중 avg_gap↑ avg_auc↓ 기준
+        no_overfit = [m for m in top_models if _model_passes_all_scopes(m)]
+        candidates_pool = no_overfit if no_overfit else top_models
+
+        model_stats = (
+            summary_df[summary_df["model"].isin(candidates_pool)]
+            .groupby("model")
+            .agg(avg_auc=("oof_auc", "mean"), avg_gap=("train_valid_gap", "mean"))
+            .reset_index()
+            .sort_values(["avg_gap", "avg_auc"], ascending=[True, False])
+        )
+        unified_model = model_stats.iloc[0]["model"]
+        tie_info = {
+            "tied_models":       top_models,
+            "no_overfit_models": no_overfit,
+            "ranking":           model_stats.to_dict("records"),
+        }
+
+    # ── 3단계: 통합 모델 기준으로 candidates 확정 ────────────────────────────
+    # 통합 모델이 해당 scope에서 과적합이면 scope 1등 모델로 따로 돌림
+    candidates = {}
+    for scope, winner in scope_winners.items():
+        threshold = winner["threshold"] or 0.05
+        sub = summary_df[
+            (summary_df["scope"] == scope) &
+            (summary_df["model"] == unified_model)
+        ]
+
+        if sub.empty:
             candidates[scope] = {
-                "model":   best["model"],
-                "oof_auc": best["oof_auc"],
+                **winner,
+                "note": f"통합모델({unified_model}) 데이터 없음 → scope 1등 사용",
+            }
+            continue
+
+        unified_row = sub.iloc[0]
+        gap_ok = unified_row["train_valid_gap"] <= threshold
+
+        if gap_ok:
+            # 통합 모델 과적합 없음 → 통합 모델 사용
+            candidates[scope] = {
+                "model":            unified_model,
+                "oof_auc":          unified_row["oof_auc"],
+                "train_valid_gap":  unified_row["train_valid_gap"],
+                "gap_threshold":    threshold,
+                "overfit_warning":  False,
+                "scope_winner":     winner["model"],
+                "scope_winner_auc": winner["oof_auc"],
+                "note":             "통합모델 사용",
+            }
+        else:
+            # 통합 모델 과적합 → scope 1등 모델 따로 사용
+            candidates[scope] = {
+                "model":            winner["model"],
+                "oof_auc":          winner["oof_auc"],
+                "train_valid_gap":  winner["gap"],
+                "gap_threshold":    threshold,
+                "overfit_warning":  winner["all_overfit"],
+                "unified_model":    unified_model,
+                "note":             f"통합모델({unified_model}) gap={unified_row['train_valid_gap']:.4f} 과적합 → scope 1등 사용",
             }
 
     return {
-        "status":           "PASS",
-        "winner_families":  winner_families,
-        "summary":          rows,
-        "candidates":       candidates,
-        "note": "step04 우승 계열만 비교. 후보 선정만. 최종 모델 확정 아님.",
+        "status":          "PASS",
+        "winner_families": winner_families,
+        "unified_model":   unified_model,
+        "win_counts":      dict(win_counts),
+        "tie_info":        tie_info,
+        "summary":         rows,
+        "candidates":      candidates,
+        "note": "scope별 gap 필터 후 최다 우승 모델을 통합 모델로 결정. 타이 시 avg_gap↑ avg_auc↓ 기준.",
     }
 
 

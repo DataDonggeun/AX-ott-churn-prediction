@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OTT 이탈 방지 분석 보고서</title>
+<style>
+  body { font-family: 'Segoe UI', sans-serif; max-width: 1100px; margin: 40px auto; padding: 0 20px; color: #333; line-height: 1.7; }
+  h1 { color: #1a1a2e; border-bottom: 3px solid #1a1a2e; padding-bottom: 10px; }
+  h2 { color: #16213e; margin-top: 40px; border-left: 4px solid #2980b9; padding-left: 12px; }
+  h3 { color: #444; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  th { background: #1a1a2e; color: white; padding: 10px 14px; text-align: left; }
+  td { padding: 9px 14px; border-bottom: 1px solid #e0e0e0; }
+  tr:nth-child(even) { background: #f8f9fa; }
+  hr { border: none; border-top: 1px solid #e0e0e0; margin: 30px 0; }
+  .danger { color: #e74c3c; font-weight: bold; }
+  .footer { text-align: center; color: #aaa; font-size: 0.85rem; margin-top: 40px; }
+</style>
+</head>
+<body>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<html>
+<head>
+<title>OTT 구독자 이탈 예측 및 CRM 전략 분석 보고서</title>
+</head>
+<body>
+
+<h2>구독자 행동 분석 및 이탈 예측 리포트 (가입 후 21일)</h2>
+<p>
+본 보고서는 신규 가입자의 첫 21일간 시청 데이터를 기반으로 이탈 가능성을 예측하고, 세그먼트별 맞춤 CRM 전략을 제안하기 위해 작성되었습니다. CRM 담당자와 마케터가 즉시 활용할 수 있는 구체적인 분석 결과와 실행 방안을 담았습니다.
+</p>
+
+<table style="width:100%; border:none;">
+<tr style="text-align:center;">
+<td style="width:50%;"><h3>세그먼트별 재구매율</h3></td>
+<td style="width:50%;"><h3>세그먼트별 인원 분포</h3></td>
+</tr>
+<tr>
+<td><canvas id="repurchaseRateChart"></canvas></td>
+<td><canvas id="segmentCountChart"></canvas></td>
+</tr>
+<tr style="text-align:center;">
+<td style="width:50%;"><h3>가입 경로별 고객 구성</h3></td>
+<td style="width:50%;"><h3>재구매 예측에 중요한 요인 (SHAP Top 10)</h3></td>
+</tr>
+<tr>
+<td><canvas id="promoPieChart"></canvas></td>
+<td><canvas id="shapChart"></canvas></td>
+</tr>
+</table>
+
+<hr>
+
+<h2>1. 데이터 개요</h2>
+<p>이번 분석은 가입 후 21일 동안의 활동 기록이 있는 <strong>총 23,081명</strong>의 구독자를 대상으로 진행되었습니다.</p>
+<ul>
+    <li><strong>프로모션 가입자:</strong> 11,904명 (전체의 51.6%)</li>
+    <li><strong>일반 가입자:</strong> 11,177명 (전체의 48.4%)</li>
+</ul>
+<p>
+    전체 구독자의 <strong>재구매율(리텐션)은 71.7%</strong>, 이탈률은 28.3%로 나타났습니다. 특히 가입 경로에 따라 재구매율에 차이가 관찰되었습니다.
+</p>
+<table border="1" style="border-collapse:collapse;width:100%">
+    <tr>
+        <th style="padding:8px">구분</th>
+        <th style="padding:8px">인원 (명)</th>
+        <th style="padding:8px">재구매율 (%)</th>
+        <th style="padding:8px">이탈률 (%)</th>
+    </tr>
+    <tr>
+        <td style="padding:8px">프로모션 가입자</td>
+        <td style="padding:8px">11,904</td>
+        <td style="padding:8px">67.5%</td>
+        <td style="padding:8px">32.5%</td>
+    </tr>
+    <tr>
+        <td style="padding:8px">일반 가입자</td>
+        <td style="padding:8px">11,177</td>
+        <td style="padding:8px">76.2%</td>
+        <td style="padding:8px">23.8%</td>
+    </tr>
+</table>
+<p>
+    <strong>핵심 관찰:</strong> 프로모션으로 가입한 그룹의 재구매율이 일반 가입 그룹보다 약 8.7%p 낮게 나타났습니다. 이는 프로모션이 신규 고객 유치에는 효과적일 수 있으나, 장기 구독으로 전환하는 데에는 추가적인 노력이 필요함을 시사합니다.
+</p>
+
+<hr>
+
+<h2>2. 모델 성능 요약</h2>
+<p>
+    구독자의 다음 달 재구매 여부를 예측하기 위해 다양한 머신러닝 모델을 테스트했으며, 최종적으로 <strong>CatBoost 모델</strong>이 선정되었습니다.
+</p>
+<ul>
+    <li><strong>선정 이유:</strong> CatBoost는 부스팅(Boosting) 계열 모델 중 하나로, 예측 정확도가 높으면서도 과적합(모델이 학습 데이터에만 지나치게 최적화되는 현상) 위험이 낮아 안정적인 성능을 보였습니다.</li>
+    <li><strong>성능 평가:</strong> 모델의 예측 성능은 <strong>ROC-AUC</strong>(모델이 재구매자와 이탈자를 얼마나 잘 구별하는지를 나타내는 지표, 1에 가까울수록 우수)로 평가했으며, 전체 고객 대상 모델의 최종 성능은 <strong>0.8805</strong>로 높은 수준의 예측 정확도를 확보했습니다.</li>
+    <li><strong>튜닝 결과:</strong> Optuna를 활용한 하이퍼파라미터 튜닝을 통해 모델 성능을 미세하게 향상시켰습니다. 예를 들어, 일반 가입자 대상 모델의 경우 튜닝 후 AUC가 0.8863에서 0.8888로 0.0025p 상승했습니다.</li>
+</ul>
+<table border="1" style="border-collapse:collapse;width:100%">
+    <tr>
+        <th style="padding:8px">분석 범위</th>
+        <th style="padding:8px">최종 모델 AUC</th>
+        <th style="padding:8px">성능 요약</th>
+    </tr>
+    <tr>
+        <td style="padding:8px"><strong>전체 구독자</strong></td>
+        <td style="padding:8px"><strong>0.8805</strong></td>
+        <td style="padding:8px">매우 우수한 예측 성능</td>
+    </tr>
+    <tr>
+        <td style="padding:8px">프로모션 가입자</td>
+        <td style="padding:8px">0.8663</td>
+        <td style="padding:8px">우수한 예측 성능</td>
+    </tr>
+    <tr>
+        <td style="padding:8px">일반 가입자</td>
+        <td style="padding:8px">0.8887</td>
+        <td style="padding:8px">매우 우수한 예측 성능</td>
+    </tr>
+</table>
+
+<hr>
+
+<h2>3. 핵심 이탈 신호</h2>
+<p>
+    모델은 어떤 정보를 바탕으로 이탈 가능성을 예측했을까요? SHAP 분석을 통해 재구매 결정에 큰 영향을 미치는 상위 5가지 요인을 확인했습니다. <strong>이것은 모델의 판단 근거이며, 실제 인과관계를 의미하지는 않습니다.</strong>
+</p>
+<ol>
+    <li><strong>3주차 시청 유지율 (retention_w3_ratio):</strong> 2주차 대비 3주차에 얼마나 꾸준히 시청했는지가 가장 중요한 신호였습니다. 3주차에 시청이 끊기면 이탈 위험이 급격히 높아지는 것과 연관됩니다.</li>
+    <li><strong>2주차 시청 유지율 (retention_w2_ratio):</strong> 1주차 대비 2주차 시청 유지율 역시 매우 중요한 변수였습니다. 초기 2주간의 시청 습관이 중요함을 보여줍니다.</li>
+    <li><strong>드라마 장르 시청 비중 (drama_ratio):</strong> 드라마 장르를 많이 시청하는 행동이 재구매와 높은 연관성을 보였습니다.</li>
+    <li><strong>프로모션 가입 여부 (is_promotion):</strong> 프로모션으로 가입한 사실 자체가 이탈 예측에 중요한 요인으로 작용했습니다.</li>
+    <li><strong>가입 후 3일 내 미시청 (is_cold_start_3d):</strong> 가입 후 첫 3일 동안 아무것도 시청하지 않은 경우, 이탈 가능성이 높은 그룹으로 예측되었습니다.</li>
+</ol>
+<p>
+    <strong>프로모션/비프로모션 그룹 간 차이:</strong>
+    두 그룹 모두 '시청 유지율'과 '장르 선호도'가 중요했지만, 프로모션 그룹에서는 '가입 후 3일 내 미시청' 변수가 더 높은 중요도를 보였습니다. 이는 프로모션 가입자의 경우, 초반에 서비스를 경험하게 하는 것이 리텐션에 더 결정적인 역할을 할 수 있음을 시사합니다.
+</p>
+
+<hr>
+
+<h2>4. 세그먼트 현황</h2>
+<p>
+    가입 후 3주간의 시청량 패턴을 기준으로 전체 구독자를 6개의 세그먼트(S1~S6)로 분류했습니다. 각 세그먼트는 뚜렷한 재구매율과 이탈 위험도 차이를 보였습니다.
+</p>
+<table border="1" style="border-collapse:collapse;width:100%">
+    <tr>
+        <th style="padding:8px">세그먼트</th>
+        <th style="padding:8px">특징 (3주차 시청량)</th>
+        <th style="padding:8px">인원 (명)</th>
+        <th style="padding:8px">비율 (%)</th>
+        <th style="padding:8px">재구매율 (%)</th>
+        <th style="padding:8px">평균 이탈 위험도 (%)</th>
+    </tr>
+    <tr>
+        <td style="padding:8px"><strong>S1</strong></td>
+        <td style="padding:8px">초기 시청량 많고, 3주차에도 활발</td>
+        <td style="padding:8px">3,801</td>
+        <td style="padding:8px">16.5%</td>
+        <td style="padding:8px"><strong>92.5%</strong></td>
+        <td style="padding:8px">7.8%</td>
+    </tr>
+    <tr>
+        <td style="padding:8px"><strong>S2</strong></td>
+        <td style="padding:8px">초기 시청량 많고, 3주차 시청량 중간</td>
+        <td style="padding:8px">4,248</td>
+        <td style="padding:8px">18.4%</td>
+        <td style="padding:8px">76.6%</td>
+        <td style="padding:8px">22.4%</td>
+    </tr>
+    <tr>
+        <td style="padding:8px"><span style="color:red;font-weight:bold">S3</span></td>
+        <td style="padding:8px"><span style="color:red;font-weight:bold">초기 시청량 많았으나, 3주차 시청 없음</span></td>
+        <td style="padding:8px"><span style="color:red;font-weight:bold">3,525</span></td>
+        <td style="padding:8px"><span style="color:red;font-weight:bold">15.3%</span></td>
+        <td style="padding:8px"><span style="color:red;font-weight:bold">61.2%</span></td>
+        <td style="padding:8px"><span style="color:red;font-weight:bold">38.9%</span></td>
+    </tr>
+    <tr>
+        <td style="padding:8px"><strong>S4</strong></td>
+        <td style="padding:8px">초기 시청량 적었으나, 3주차에 활발</td>
+        <td style="padding:8px">1,989</td>
+        <td style="padding:8px">8.6%</td>
+        <td style="padding:8px"><strong>91.9%</strong></td>
+        <td style="padding:8px">8.2%</td>
+    </tr>
+    <tr>
+        <td style="padding:8px"><strong>S5</strong></td>
+        <td style="padding:8px">초기 시청량 적고, 3주차 시청량 중간</td>
+        <td style="padding:8px">4,672</td>
+        <td style="padding:8px">20.2%</td>
+        <td style="padding:8px">72.7%</td>
+        <td style="padding:8px">27.5%</td>
+    </tr>
+    <tr>
+        <td style="padding:8px"><span style="color:red;font-weight:bold">S6</span></td>
+        <td style="padding:8px"><span style="color:red;font-weight:bold">초기 시청량 적고, 3주차 시청 없음</span></td>
+        <td style="padding:8px"><span style="color:red;font-weight:bold">4,846</span></td>
+        <td style="padding:8px"><span style="color:red;font-weight:bold">21.0%</span></td>
+        <td style="padding:8px"><span style="color:red;font-weight:bold">49.7%</span></td>
+        <td style="padding:8px"><span style="color:red;font-weight:bold">50.2%</span></td>
+    </tr>
+</table>
+<p>
+    <strong>가장 위험한 세그먼트:</strong>
+    <span style="color:red;font-weight:bold">S3</span>과 <span style="color:red;font-weight:bold">S6</span>은 3주차에 시청 기록이 전혀 없는 그룹으로, 재구매율이 각각 61.2%, 49.7%에 불과하며 평균 이탈 위험도가 가장 높습니다. 이 두 그룹에 대한 즉각적인 개입이 시급합니다.
+</p>
+
+<hr>
+
+<h2>5. 즉각 조치 필요 유저</h2>
+<p>
+    이탈 가능성이 가장 높게 예측된 <span style="color:red;font-weight:bold">S3</span>과 <span style="color:red;font-weight:bold">S6</span> 세그먼트는 우리의 최우선 관리 대상입니다.
+</p>
+<ul>
+    <li><strong>총 대상 인원:</strong> 8,371명 (<span style="color:red;font-weight:bold">S3</span> 3,525명 + <span style="color:red;font-weight:bold">S6</span> 4,846명)</li>
+    <li><strong>전체 분석 대상 대비 비율:</strong> <strong>36.3%</strong></li>
+</ul>
+<p>
+    이들이 3주차에 활동을 멈추기 전에, 더 빨리 위험 신호를 포착할 수 있습니다. 아래 기준은 조기 개입을 위한 참고 지표로 활용할 수 있습니다.
+</p>
+<ul>
+    <li><strong>Day 7 조기 경보:</strong> 가입 후 첫 7일간 누적 시청 시간이 <strong>27분 미만</strong>인 유저</li>
+    <li><strong>Day 14 조기 경보:</strong> 가입 후 14일간 누적 시청 시간이 <strong>118분 미만</strong>인 유저</li>
+</ul>
+
+<hr>
+
+<h2>6. 세그먼트별 CRM 전략 제안</h2>
+<p>
+    각 세그먼트의 특성과 이탈 위험도를 고려한 맞춤형 CRM 액션 플랜입니다.
+</p>
+<table border="1" style="border-collapse:collapse;width:100%">
+    <tr>
+        <th style="padding:8px">세그먼트</th>
+        <th style="padding:8px">목표</th>
+        <th style="padding:8px">액션 플랜</th>
+        <th style="padding:8px">메시지 예시 (Push/Email)</th>
+    </tr>
+    <tr>
+        <td style="padding:8px"><strong>S1 (충성 고객)</strong></td>
+        <td style="padding:8px">가치 증대, 락인(Lock-in)</td>
+        <td style="padding:8px">신작 우선 관람 기회, 프리미엄 기능 안내, 로열티 프로그램 후보군으로 관리</td>
+        <td style="padding:8px">"OOO님은 저희의 소중한 구독자! 다음주 공개될 화제의 신작을 가장 먼저 만나보세요."</td>
+    </tr>
+    <tr>
+        <td style="padding:8px"><strong>S2 (관심 고객)</strong></td>
+        <td style="padding:8px">습관 형성, 추가 탐색 유도</td>
+        <td style="padding:8px">시청 이력 기반의 정교한 콘텐츠 추천, 유사 장르의 숨겨진 명작 소개</td>
+        <td style="padding:8px">"지난주에 보신 OOO, 재밌으셨나요? 비슷한 분위기의 명작 드라마 OOO는 어떠세요?"</td>
+    </tr>
+    <tr>
+        <td style="padding:8px"><span style="color:red;font-weight:bold">S3 (방치된 충성 고객)</span></td>
+        <td style="padding:8px"><span style="color:red;font-weight:bold">재방문 유도 (Win-back)</span></td>
+        <td style="padding:8px"><span style="color:red;font-weight:bold">강력한 개인화 추천, "돌아오세요" 메시지, 인기 콘텐츠 하이라이트</span></td>
+        <td style="padding:8px"><span style="color:red;font-weight:bold">"OOO님, 잠시 잊으신 건 아니죠? OOO님이 좋아하셨던 배우의 신작이 업데이트됐어요!"</span></td>
+    </tr>
+    <tr>
+        <td style="padding:8px"><strong>S4 (잠재 충성 고객)</strong></td>
+        <td style="padding:8px">가치 발견, 시청량 증대</td>
+        <td style="padding:8px">다양한 장르 큐레이션 제공, 서비스의 핵심 기능(프로필, 동시접속 등) 안내</td>
+        <td style="padding:8px">"혹시 놓치셨나요? 이번 주 가장 뜨거운 TOP 10 콘텐츠를 지금 바로 확인해보세요."</td>
+    </tr>
+    <tr>
+        <td style="padding:8px"><strong>S5 (탐색 중인 고객)</strong></td>
+        <td style="padding:8px">결정적 콘텐츠 경험 유도</td>
+        <td style="padding:8px">몰입도 높은 시리즈물의 1화 시청 유도, 웰메이드 단편 영화 추천</td>
+        <td style="padding:8px">"시간 순삭 보장! 한 번 시작하면 멈출 수 없는 명품 시리즈, OOO의 첫 화를 감상해보세요."</td>
+    </tr>
+    <tr>
+        <td style="padding:8px"><span style="color:red;font-weight:bold">S6 (이탈 임박 고객)</span></td>
+        <td style="padding:8px"><span style="color:red;font-weight:bold">이탈 방지 (Churn-prevention)</span></td>
+        <td style="padding:8px"><span style="color:red;font-weight:bold">특별 혜택(구독 연장 쿠폰 등) 제공, 서비스 불만족 관련 설문조사 발송</span></td>
+        <td style="padding:8px"><span style="color:red;font-weight:bold">"OOO님께만 드리는 특별한 혜택! 다음 달에도 저희와 함께 해주세요. (쿠폰 증정)"</span></td>
+    </tr>
+</table>
+<h3>프로모션 가입자 특별 전략</h3>
+<p>
+    프로모션 기간 종료가 임박한 고객에게는 할인 혜택이 끝나도 서비스를 계속 이용해야 하는 '가치'를 명확히 전달해야 합니다. "프로모션이 끝나도 OOO님이 즐겨보시던 시리즈의 새로운 에피소드는 계속됩니다!" 와 같이 개인화된 경험을 상기시키는 메시지가 효과적일 수 있습니다.
+</p>
+
+<hr>
+
+<h2>7. 비즈니스 제언</h2>
+<p>
+    분석 결과를 바탕으로 다음과 같은 비즈니스 액션을 제안합니다.
+</p>
+<ol>
+    <li><strong>가장 시급한 액션 Top 3</strong>
+        <ul>
+            <li><strong>즉시 실행:</strong> <span style="color:red;font-weight:bold">S3, S6 그룹 대상 이탈 방지 캠페인 즉시 시작.</span> (전체 36.3%, 8,371명)</li>
+            <li><strong>단기 실행:</strong> 신규 가입자 대상 '온보딩(On-boarding) 프로그램' 강화. 특히 가입 후 7일 이내 첫 시청을 유도하고, 14일 내 시청 습관을 형성할 수 있도록 돕는 웰컴 저니(Welcome Journey)를 설계해야 합니다.</li>
+            <li><strong>중기 실행:</strong> S1, S4(충성/잠재 충성 그룹)의 콘텐츠 소비 패턴(특히 드라마, 애니메이션 등)을 심층 분석하여, 해당 장르의 콘텐츠 수급 및 제작 전략에 반영해야 합니다.</li>
+        </ul>
+    </li>
+    <li><strong>장기 리텐션 전략 방향</strong>
+        <ul>
+            <li>결국 리텐션의 핵심은 '습관 형성'입니다. 가입 초기 3주가 골든타임이며, 이 기간에 고객이 자신만의 '인생 콘텐츠'를 발견하고 꾸준히 서비스를 방문하도록 만드는 개인화 추천 엔진 고도화에 지속적으로 투자해야 합니다.</li>
+        </ul>
+    </li>
+</ol>
+
+<hr>
+
+<h2>8. 다음 실행 권고</h2>
+<ul>
+    <li><strong>모델 재학습 주기:</strong> 고객 행동 패턴과 콘텐츠 트렌드는 계속 변화합니다. 본 이탈 예측 모델의 정확도를 최신 상태로 유지하기 위해 최소 <strong>6개월 주기</strong>의 정기적인 재학습을 권고합니다.</li>
+    <li><strong>데이터 수집 관련:</strong> '시청 시간', '시청 유지율', '장르 선호도'가 모델의 핵심 변수임이 재확인되었습니다. 앞으로도 이 데이터들이 누락 없이 정확하게 수집될 수 있도록 데이터 파이프라인의 안정성을 지속적으로 관리해야 합니다.</li>
+</ul>
+
+<script>
+    const ctx1 = document.getElementById('repurchaseRateChart').getContext('2d');
+    new Chart(ctx1, {
+        type: 'bar',
+        data: {
+            labels: ['S1', 'S2', 'S3', 'S4', 'S5', 'S6'],
+            datasets: [{
+                label: '재구매율 (%)',
+                data: [92.48, 76.62, 61.19, 91.86, 72.71, 49.65],
+                backgroundColor: [
+                    'rgba(75, 192, 192, 0.6)',
+                    'rgba(54, 162, 235, 0.6)',
+                    'rgba(255, 99, 132, 0.6)',
+                    'rgba(75, 192, 192, 0.4)',
+                    'rgba(54, 162, 235, 0.4)',
+                    'rgba(255, 99, 132, 0.4)'
+                ],
+                borderColor: [
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 99, 132, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+
+    const ctx2 = document.getElementById('segmentCountChart').getContext('2d');
+    new Chart(ctx2, {
+        type: 'bar',
+        data: {
+            labels: ['S1', 'S2', 'S3', 'S4', 'S5', 'S6'],
+            datasets: [{
+                label: '인원 수 (명)',
+                data: [3801, 4248, 3525, 1989, 4672, 4846],
+                backgroundColor: [
+                    'rgba(75, 192, 192, 0.6)',
+                    'rgba(54, 162, 235, 0.6)',
+                    'rgba(255, 99, 132, 0.6)',
+                    'rgba(75, 192, 192, 0.4)',
+                    'rgba(54, 162, 235, 0.4)',
+                    'rgba(255, 99, 132, 0.4)'
+                ],
+                borderColor: [
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 99, 132, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+
+    const ctx3 = document.getElementById('promoPieChart').getContext('2d');
+    new Chart(ctx3, {
+        type: 'pie',
+        data: {
+            labels: ['프로모션 가입 (재구매율 67.5%)', '일반 가입 (재구매율 76.2%)'],
+            datasets: [{
+                label: '가입자 구성',
+                data: [11904, 11177],
+                backgroundColor: [
+                    'rgba(255, 159, 64, 0.6)',
+                    'rgba(153, 102, 255, 0.6)'
+                ],
+                borderColor: [
+                    'rgba(255, 159, 64, 1)',
+                    'rgba(153, 102, 255, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed !== null) {
+                                label += new Intl.NumberFormat('ko-KR').format(context.parsed) + '명';
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    const ctx4 = document.getElementById('shapChart').getContext('2d');
+    new Chart(ctx4, {
+        type: 'bar',
+        data: {
+            labels: [
+                '3주차 시청 유지율', '2주차 시청 유지율', '드라마 시청 비중', '프로모션 가입 여부', 
+                '3일 내 미시청', '애니메이션 시청 비중', '로맨스 시청 비중', '스릴러 시청 비중', 
+                '3주차 시청 시간', '액션 시청 비중'
+            ].reverse(),
+            datasets: [{
+                label: 'SHAP Value (영향력)',
+                data: [0.4055, 0.3849, 0.3565, 0.3484, 0.3029, 0.2941, 0.2903, 0.2751, 0.2664, 0.2106].reverse(),
+                backgroundColor: 'rgba(255, 206, 86, 0.6)',
+                borderColor: 'rgba(255, 206, 86, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            scales: {
+                x: {
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+</script>
+
+</body>
+</html>
+<div class="footer">신통방통팀 | OTT 이탈 방지 파이프라인 | AI 생성 보고서</div>
+</body>
+</html>

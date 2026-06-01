@@ -146,9 +146,8 @@ def run_permutation_importance(df_scope: pd.DataFrame, features: list, model) ->
 
 def run_shap_all_scopes(exp_df: pd.DataFrame) -> dict:
     scopes = {
-        "overall_with_promotion":    (exp_df, True),
-        "overall_without_promotion": (exp_df, False),
-        "promotion_only":   (exp_df[exp_df["is_promotion"] == 1].copy(), False),
+        "overall":           (exp_df, True),
+        "promotion_only":    (exp_df[exp_df["is_promotion"] == 1].copy(), False),
         "nonpromotion_only": (exp_df[exp_df["is_promotion"] == 0].copy(), False),
     }
 

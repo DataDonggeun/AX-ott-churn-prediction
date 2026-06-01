@@ -52,10 +52,9 @@ def _bg_tuning(job_id: str, force: bool):
         _jobs[job_id]["error"]  = str(exc)
 
 SCOPES = {
-    "overall_without_promotion": lambda df: (df, False),
-    "overall_with_promotion":    lambda df: (df, True),
-    "promotion_only":            lambda df: (df[df["is_promotion"] == 1].copy(), False),
-    "nonpromotion_only":         lambda df: (df[df["is_promotion"] == 0].copy(), False),
+    "overall":           lambda df: (df, True),
+    "promotion_only":    lambda df: (df[df["is_promotion"] == 1].copy(), False),
+    "nonpromotion_only": lambda df: (df[df["is_promotion"] == 0].copy(), False),
 }
 
 
@@ -168,7 +167,6 @@ def run_tuning(exp_df: pd.DataFrame, candidates: dict, job_id: str = None) -> di
         y      = df_scope["is_repurchase"].astype(int).to_numpy()
         groups = df_scope["USER_KEY"].astype(str).to_numpy()
 
-        # baseline AUC
         def _set_progress(step, trial_num=0, best=None):
             if job_id and job_id in _jobs:
                 _jobs[job_id]["progress"] = {
@@ -180,7 +178,14 @@ def run_tuning(exp_df: pd.DataFrame, candidates: dict, job_id: str = None) -> di
                     "best_auc_so_far": best,
                 }
 
-        baseline_auc = None
+        # baseline AUC — 튜닝 전 기본 파라미터로 계산
+        _set_progress("baseline 계산 중", 0)
+        try:
+            baseline_model = _make_model(model_name, {})
+            baseline_auc = round(_cv_mean_auc(X, y, groups, baseline_model), 4)
+        except Exception:
+            baseline_auc = None
+
         _set_progress("optuna 튜닝 시작", 0)
 
         # Optuna 최적화

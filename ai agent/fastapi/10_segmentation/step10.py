@@ -33,7 +33,7 @@ def run_segmentation(exp_df: pd.DataFrame, oof_df: pd.DataFrame) -> dict:
       0 < w3 < 141분       → S2 (상위) / S5 (하위)
       w3 = 0               → S3 (상위) / S6 (하위)
     """
-    oof_scope = oof_df[oof_df["scope"] == "overall_with_promotion"].copy()
+    oof_scope = oof_df[oof_df["scope"] == "overall"].copy()
     if oof_scope.empty:
         oof_scope = oof_df.drop_duplicates("USER_KEY").copy()
 

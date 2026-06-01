@@ -1,109 +1,120 @@
 {
   "step00": {
-    "completed_at": "2026-05-28T15:12:10.218140",
+    "completed_at": "2026-05-30T00:55:03.255145",
     "meta": {
-      "final_rows": 23345,
+      "final_rows": 23081,
       "final_cols": 91
     }
   },
   "step01": {
-    "completed_at": "2026-05-28T15:12:28.730257",
+    "completed_at": "2026-05-30T00:55:05.009397",
     "meta": {
-      "row_count": 23345,
-      "cohort_eligible": 23107,
+      "row_count": 23081,
+      "cohort_eligible": 23081,
       "status": "PASS"
     }
   },
-  "step03": {
-    "completed_at": "2026-05-28T15:27:14.488284",
-    "meta": {
-      "cohort_rows": 23081,
-      "dup_removed": 0
-    }
-  },
-  "step06": {
-    "completed_at": "2026-05-28T13:47:23.829275",
-    "meta": {
-      "cohort_rows": 23081,
-      "cons_features": 22,
-      "exp_features": 74
-    }
-  },
-  "step08": {
-    "completed_at": "2026-05-28T13:47:38.509359",
+  "step02": {
+    "completed_at": "2026-05-30T00:55:06.886713",
     "meta": {
       "promo_rows": 11904,
       "nonpromo_rows": 11177,
       "rate_diff": -0.0871
     }
   },
-  "step09": {
-    "completed_at": "2026-05-28T13:47:55.608346",
+  "step03": {
+    "completed_at": "2026-05-30T00:55:07.895388",
     "meta": {
       "total_rows": 23081
     }
   },
-  "step10": {
-    "completed_at": "2026-05-28T13:48:13.609080",
-    "meta": {
-      "high_corr_pairs": 3,
-      "zero_inf_count": 33
-    }
-  },
-  "step11": {
-    "completed_at": "2026-05-28T14:17:42.428084",
-    "meta": {
-      "model_runs": 32
-    }
-  },
-  "step12": {
-    "completed_at": "2026-05-22T23:46:48.862186",
+  "step04": {
+    "completed_at": "2026-05-29T15:36:04.289749",
     "meta": {
       "candidates": {
-        "overall_without_promotion": {
-          "model": "LightGBM",
-          "oof_auc": 0.8717
-        },
-        "overall_with_promotion": {
-          "model": "LightGBM",
-          "oof_auc": 0.8771
+        "overall": {
+          "model": "XGBoost",
+          "oof_auc": 0.8738
         },
         "promotion_only": {
-          "model": "LightGBM",
-          "oof_auc": 0.8635
+          "model": "XGBoost",
+          "oof_auc": 0.8612
         },
         "nonpromotion_only": {
-          "model": "LightGBM",
-          "oof_auc": 0.8838
+          "model": "XGBoost",
+          "oof_auc": 0.8836
         }
       }
     }
   },
-  "step14": {
-    "completed_at": "2026-05-26T10:01:06.952966",
+  "step05": {
+    "completed_at": "2026-05-30T00:55:12.363421",
     "meta": {
-      "scopes_tuned": 4
+      "high_corr_pairs": 3,
+      "zero_inf_count": 37
     }
   },
-  "step15": {
-    "completed_at": "2026-05-26T10:05:58.040399",
+  "step06": {
+    "completed_at": "2026-05-29T16:37:20.363785",
     "meta": {
-      "scopes": 4
+      "candidates": {
+        "overall": {
+          "model": "CatBoost",
+          "oof_auc": 0.8681,
+          "train_valid_gap": 0.0065,
+          "gap_threshold": 0.03,
+          "overfit_warning": false,
+          "scope_winner": "CatBoost",
+          "scope_winner_auc": 0.8681,
+          "note": "통합모델 사용"
+        },
+        "promotion_only": {
+          "model": "CatBoost",
+          "oof_auc": 0.853,
+          "train_valid_gap": 0.0124,
+          "gap_threshold": 0.03,
+          "overfit_warning": false,
+          "scope_winner": "GradientBoosting",
+          "scope_winner_auc": 0.8532,
+          "note": "통합모델 사용"
+        },
+        "nonpromotion_only": {
+          "model": "CatBoost",
+          "oof_auc": 0.8782,
+          "train_valid_gap": 0.0125,
+          "gap_threshold": 0.03,
+          "overfit_warning": false,
+          "scope_winner": "CatBoost",
+          "scope_winner_auc": 0.8782,
+          "note": "통합모델 사용"
+        }
+      }
     }
   },
-  "step16": {
-    "completed_at": "2026-05-26T10:08:45.043052",
+  "step07": {
+    "completed_at": "2026-05-29T19:36:51.498649",
+    "meta": {
+      "scopes_tuned": 3
+    }
+  },
+  "step08": {
+    "completed_at": "2026-05-30T00:56:49.817282",
+    "meta": {
+      "scopes": 3
+    }
+  },
+  "step09": {
+    "completed_at": "2026-05-30T00:58:12.011072",
     "meta": {
       "scopes": [
-        "overall_with_promotion",
-        "overall_without_promotion",
+        "overall",
         "promotion_only",
         "nonpromotion_only"
       ]
     }
   },
-  "step17": {
-    "completed_at": "2026-05-26T16:32:46.805062",
+  "step10": {
+    "completed_at": "2026-05-30T00:58:14.067695",
     "meta": {
       "S1": 3801,
       "S2": 4248,

@@ -10,8 +10,8 @@ from datetime import datetime
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from fastapi import APIRouter
-from fastapi.responses import HTMLResponse
+from fastapi import APIRouter, Request
+from fastapi.responses import HTMLResponse, FileResponse
 
 from cache import load_json, load_state, list_cache
 
@@ -252,7 +252,7 @@ def render_html(data: dict) -> str:
     # ── Section 5: Step 09 SHAP Top 20 ───────────────────────────────────────────
     sec09 = ""
     if step09 and "by_scope" in step09:
-        scope_key = "overall_with_promotion"
+        scope_key = "overall"
         shap_data = step09["by_scope"].get(scope_key, {}).get("shap", {})
         top20 = shap_data.get("top20", [])
 
@@ -292,7 +292,7 @@ def render_html(data: dict) -> str:
 
             sec09 = f"""
             <div class="card">
-              <h2>🔎 Step 09 — SHAP 피처 중요도 Top 20 <small style="font-weight:400;color:#999">(scope: overall_with_promotion)</small></h2>
+              <h2>🔎 Step 09 — SHAP 피처 중요도 Top 20 <small style="font-weight:400;color:#999">(scope: overall)</small></h2>
               <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;">
                 <table>
                   <tr><th>#</th><th>피처</th><th>계열</th><th>Mean |SHAP|</th></tr>
@@ -465,3 +465,68 @@ def pipeline_report():
 def pipeline_report_json():
     """전체 파이프라인 결과 JSON (raw)."""
     return build_report()
+
+
+# ── AI 생성 보고서 저장/조회 ───────────────────────────────────────────────────
+
+_AI_REPORT_PATH = Path(__file__).parent / "cache" / "ai_report.html"
+
+@router.post("/report/save-html", tags=["Pipeline"])
+async def save_ai_report(request: Request):
+    """
+    Dify LLM이 생성한 HTML 보고서를 저장.
+    Body: raw text (HTML 전체)
+    """
+    html_content = (await request.body()).decode("utf-8")
+    if not html_content:
+        return {"status": "FAIL", "reason": "html 필드가 비어있음"}
+
+    full_html = f"""<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OTT 이탈 방지 분석 보고서</title>
+<style>
+  body {{ font-family: 'Segoe UI', sans-serif; max-width: 1100px; margin: 40px auto; padding: 0 20px; color: #333; line-height: 1.7; }}
+  h1 {{ color: #1a1a2e; border-bottom: 3px solid #1a1a2e; padding-bottom: 10px; }}
+  h2 {{ color: #16213e; margin-top: 40px; border-left: 4px solid #2980b9; padding-left: 12px; }}
+  h3 {{ color: #444; }}
+  table {{ width: 100%; border-collapse: collapse; margin: 16px 0; }}
+  th {{ background: #1a1a2e; color: white; padding: 10px 14px; text-align: left; }}
+  td {{ padding: 9px 14px; border-bottom: 1px solid #e0e0e0; }}
+  tr:nth-child(even) {{ background: #f8f9fa; }}
+  hr {{ border: none; border-top: 1px solid #e0e0e0; margin: 30px 0; }}
+  .danger {{ color: #e74c3c; font-weight: bold; }}
+  .footer {{ text-align: center; color: #aaa; font-size: 0.85rem; margin-top: 40px; }}
+</style>
+</head>
+<body>
+{html_content}
+<div class="footer">신통방통팀 | OTT 이탈 방지 파이프라인 | AI 생성 보고서</div>
+</body>
+</html>"""
+
+    _AI_REPORT_PATH.write_text(full_html, encoding="utf-8")
+    return {"status": "OK", "url": "/pipeline/report/ai-html"}
+
+
+@router.get("/report/ai-html", response_class=HTMLResponse, tags=["Pipeline"])
+def get_ai_report():
+    """Dify AI가 생성한 최신 보고서 조회 (브라우저에서 보기)."""
+    if not _AI_REPORT_PATH.exists():
+        return HTMLResponse(content="<h2>보고서가 아직 생성되지 않았습니다. 워크플로우를 먼저 실행해주세요.</h2>")
+    return HTMLResponse(content=_AI_REPORT_PATH.read_text(encoding="utf-8"))
+
+
+@router.get("/report/download", tags=["Pipeline"])
+def download_ai_report():
+    """Dify AI가 생성한 최신 보고서 다운로드 (.html 파일)."""
+    if not _AI_REPORT_PATH.exists():
+        return {"status": "FAIL", "reason": "보고서가 아직 생성되지 않았습니다. 워크플로우를 먼저 실행해주세요."}
+    return FileResponse(
+        path=_AI_REPORT_PATH,
+        filename="OTT_이탈방지_분석보고서.html",
+        media_type="text/html",
+        headers={"Content-Disposition": "attachment; filename*=UTF-8''OTT_%EC%9D%B4%ED%83%88%EB%B0%A9%EC%A7%80_%EB%B6%84%EC%84%9D%EB%B3%B4%EA%B3%A0%EC%84%9C.html"}
+    )

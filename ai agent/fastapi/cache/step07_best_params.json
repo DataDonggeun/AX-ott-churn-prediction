@@ -1,0 +1,41 @@
+{
+  "overall": {
+    "model": "CatBoost",
+    "best_params": {
+      "iterations": 497,
+      "learning_rate": 0.06000100458667046,
+      "depth": 4,
+      "l2_leaf_reg": 3.4736765409573644
+    },
+    "baseline_auc": 0.8803,
+    "tuned_auc": 0.8806,
+    "delta_auc": 0.0003,
+    "n_trials": 30
+  },
+  "promotion_only": {
+    "model": "CatBoost",
+    "best_params": {
+      "iterations": 500,
+      "learning_rate": 0.03891833455206658,
+      "depth": 5,
+      "l2_leaf_reg": 2.2942007981657158
+    },
+    "baseline_auc": 0.8658,
+    "tuned_auc": 0.8664,
+    "delta_auc": 0.0006,
+    "n_trials": 30
+  },
+  "nonpromotion_only": {
+    "model": "CatBoost",
+    "best_params": {
+      "iterations": 438,
+      "learning_rate": 0.041640425602275474,
+      "depth": 5,
+      "l2_leaf_reg": 9.437856448143924
+    },
+    "baseline_auc": 0.8863,
+    "tuned_auc": 0.8888,
+    "delta_auc": 0.0025,
+    "n_trials": 30
+  }
+}

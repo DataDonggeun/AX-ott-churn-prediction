@@ -25,7 +25,7 @@ N_OPTUNA_TRIALS  = 30    # Step 07 Optuna trial 수
 RETRAIN_MONTHS   = 6     # 모델 재학습 주기 (개월)
 
 # ── 피처 계약 ──────────────────────────────────────────────────────────────────
-# is_promotion — split key. overall_with_promotion 모델에서만 feature로 사용.
+# is_promotion — split key. overall 모델에서만 feature로 사용.
 PROMOTION_FEATURE = "is_promotion"
 
 # payment 기기 피처 — SHAP 계열 분류용
@@ -43,11 +43,11 @@ EXPANDED_FEATURES = [
     "retention_w2_ratio", "retention_w3_ratio",
     "is_cold_start_3d", "is_cold_start_7d",
     "is_only_w1",  "is_w2_over_50pct", "is_w3_over_50pct", "is_w1_over_50pct",
-    "diff_between_w3_w2", "diff_between_w2_w1",
+    "diff_between_w3_w2", "diff_between_w2_w1", "diff_between_w3_w1",
     "recency",     "max_inactive_gap_days",
     "watch_per_day",
     # 사용량 요약
-    "total_watch_count",    "unique_movie",        "watch_days",
+    "total_watch_count",    "unique_movie",        "watch_days",    "active_ratio",
     "avg_watch_time(min)",  "median_watch_time(min)", "std_watch_time(min)",
     "avg_daily_watch_time(min)", "max_watch_time(min)", "max_daily_watch_time(min)",
     "max_daily_sessions",   "avg_gap_between_watch_days",
@@ -58,22 +58,22 @@ EXPANDED_FEATURES = [
     "total_watch_time(min)",
     # 콘텍스트
     "age_group", "is_female", "is_male",
-    "is_standard", "is_premium",
+    "is_basic", "is_standard", "is_premium",
     "reg_is_weekend",
-    "reg_hour_morning", "reg_hour_afternoon", "reg_hour_evening",
+    "reg_hour_morning", "reg_hour_afternoon", "reg_hour_evening", "reg_hour_night",
     "is_user_verified", "is_churn_prevented",
     # 콘텐츠
     "genre_diversity_count",
     "action_adventure_ratio", "family_animation_ratio", "drama_ratio",
     "thriller_crime_ratio",   "sf_fantasy_ratio",       "comedy_ratio",
     "romance_ratio",          "horror_ratio",            "documentary_ratio",
-    "historical_war_ratio",
+    "historical_war_ratio",   "other_ratio",
     "new_movie_in_90d_ratio", "new_movie_in_180d_ratio", "new_movie_in_365d_ratio",
     "old_movie_ratio(5y)",    "avg_ott_release_year",
     # payment 기기 피처
     "payment_is_mobile", "payment_is_pc",
     "payment_is_android", "payment_is_ios",
-    # scope 조건부: overall_with_promotion에서만 모델 feature로 사용.
+    # scope 조건부: overall에서만 모델 feature로 사용.
     # 데이터셋에는 포함해 scope 필터링(df[df["is_promotion"]==1])에 활용하고,
     # 각 step의 exclude 집합에서 제거 여부를 결정함.
     "is_promotion",
