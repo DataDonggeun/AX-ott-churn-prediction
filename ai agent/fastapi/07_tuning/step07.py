@@ -104,7 +104,6 @@ def _search_space(trial, model_name: str) -> dict:
             "max_leaf_nodes": trial.suggest_int("max_leaf_nodes", 15, 63),
         }
     if model_name == "CatBoost":
-        # CatBoost는 max_iter/max_leaf_nodes 아님 — iterations/max_leaves 사용
         return {
             "iterations":    trial.suggest_int("iterations", 100, 500),
             "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.20, log=True),
@@ -164,7 +163,7 @@ def run_tuning(exp_df: pd.DataFrame, candidates: dict, job_id: str = None) -> di
             continue
 
         X      = df_scope[features].apply(pd.to_numeric, errors="coerce").fillna(0)
-        y      = df_scope["is_repurchase"].astype(int).to_numpy()
+        y      = (1 - df_scope["is_repurchase"].astype(int)).to_numpy()
         groups = df_scope["USER_KEY"].astype(str).to_numpy()
 
         def _set_progress(step, trial_num=0, best=None):

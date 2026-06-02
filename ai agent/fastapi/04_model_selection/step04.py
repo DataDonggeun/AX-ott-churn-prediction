@@ -18,6 +18,7 @@ import numpy as np
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
 from xgboost import XGBClassifier
 from sklearn.metrics import roc_auc_score, average_precision_score
 from sklearn.model_selection import StratifiedGroupKFold
@@ -33,6 +34,10 @@ MODELS = {
     "LogisticRegression": Pipeline([
         ("scaler", StandardScaler()),
         ("model", LogisticRegression(max_iter=1000, solver="lbfgs")),
+    ]),
+    "SVM": Pipeline([
+        ("scaler", StandardScaler()),
+        ("model", SVC(kernel="rbf", probability=True, random_state=RANDOM_STATE)),
     ]),
     "XGBoost": XGBClassifier(
         n_estimators=120, max_depth=4, learning_rate=0.06,
@@ -64,7 +69,7 @@ def _cv_auc(df_scope: pd.DataFrame, features: list, model) -> dict:
     """5-fold CV OOF AUC 계산"""
     from sklearn.base import clone
     X      = df_scope[features].apply(pd.to_numeric, errors="coerce").fillna(0)
-    y      = df_scope["is_repurchase"].astype(int).to_numpy()
+    y      = (1 - df_scope["is_repurchase"].astype(int)).to_numpy()
     groups = df_scope["USER_KEY"].astype(str).to_numpy()
 
     sgkf   = StratifiedGroupKFold(n_splits=N_SPLITS, shuffle=True, random_state=RANDOM_STATE)
@@ -142,7 +147,7 @@ def run_baseline_comparison(exp_df: pd.DataFrame) -> dict:
 
 @router.post("/baseline-comparison")
 def baseline_comparison(force: bool = False):
-    """Step 04: 3개 모델 AUC 비교로 우승 모델 계열 선정 (LogisticRegression / XGBoost / RandomForest)."""
+    """Step 04: 4개 모델 AUC 비교로 우승 모델 계열 선정 (LogisticRegression / SVM / XGBoost / RandomForest)."""
     if not force and is_done("step04"):
         cached = load_json("step04_result")
         if cached:

@@ -34,11 +34,11 @@
       "vif": "inf"
     },
     {
-      "feature": "watch_days",
+      "feature": "active_ratio",
       "vif": "inf"
     },
     {
-      "feature": "active_ratio",
+      "feature": "watch_days",
       "vif": "inf"
     }
   ],
@@ -51,165 +51,173 @@
     {
       "feature_a": "avg_watch_time(min)",
       "feature_b": "median_watch_time(min)",
-      "pearson": 0.9297
+      "pearson": 0.9298
     },
     {
       "feature_a": "total_watch_count",
       "feature_b": "unique_movie",
-      "pearson": 0.9059
+      "pearson": 0.9071
     }
   ],
   "high_corr_pair_count": 3,
   "zero_inflation_features": [
     {
+      "feature": "is_only_w2",
+      "zero_rate": 0.9213
+    },
+    {
       "feature": "is_only_w1",
-      "zero_rate": 0.9013
+      "zero_rate": 0.9022
+    },
+    {
+      "feature": "is_only_w3",
+      "zero_rate": 0.9003
     },
     {
       "feature": "documentary_ratio",
-      "zero_rate": 0.8994
+      "zero_rate": 0.8989
     },
     {
       "feature": "other_ratio",
-      "zero_rate": 0.894
+      "zero_rate": 0.8943
     },
     {
       "feature": "horror_ratio",
-      "zero_rate": 0.8812
+      "zero_rate": 0.8818
     },
     {
       "feature": "payment_is_mobile",
-      "zero_rate": 0.8453
+      "zero_rate": 0.8476
     },
     {
       "feature": "is_premium",
-      "zero_rate": 0.8364
+      "zero_rate": 0.836
     },
     {
       "feature": "payment_is_ios",
-      "zero_rate": 0.8345
-    },
-    {
-      "feature": "is_churn_prevented",
-      "zero_rate": 0.8201
+      "zero_rate": 0.8338
     },
     {
       "feature": "reg_hour_night",
-      "zero_rate": 0.8186
+      "zero_rate": 0.8195
+    },
+    {
+      "feature": "is_churn_prevented",
+      "zero_rate": 0.8183
     },
     {
       "feature": "reg_hour_morning",
-      "zero_rate": 0.8081
+      "zero_rate": 0.8085
     },
     {
       "feature": "payment_is_pc",
-      "zero_rate": 0.8062
+      "zero_rate": 0.8063
     },
     {
       "feature": "is_standard",
-      "zero_rate": 0.7934
+      "zero_rate": 0.7952
     },
     {
       "feature": "historical_war_ratio",
-      "zero_rate": 0.7832
+      "zero_rate": 0.7813
     },
     {
       "feature": "reg_hour_afternoon",
-      "zero_rate": 0.76
+      "zero_rate": 0.758
     },
     {
       "feature": "family_animation_ratio",
-      "zero_rate": 0.7542
+      "zero_rate": 0.7548
     },
     {
       "feature": "is_w2_over_50pct",
-      "zero_rate": 0.7365
+      "zero_rate": 0.7374
     },
     {
       "feature": "is_w3_over_50pct",
-      "zero_rate": 0.7163
+      "zero_rate": 0.7137
     },
     {
       "feature": "is_w1_over_50pct",
-      "zero_rate": 0.7085
+      "zero_rate": 0.7081
     },
     {
       "feature": "sf_fantasy_ratio",
-      "zero_rate": 0.6926
-    },
-    {
-      "feature": "romance_ratio",
-      "zero_rate": 0.6889
+      "zero_rate": 0.6914
     },
     {
       "feature": "comedy_ratio",
-      "zero_rate": 0.6884
+      "zero_rate": 0.6885
+    },
+    {
+      "feature": "romance_ratio",
+      "zero_rate": 0.6881
     },
     {
       "feature": "is_male",
-      "zero_rate": 0.6865
-    },
-    {
-      "feature": "avg_gap_w1_watch_days",
-      "zero_rate": 0.6764
+      "zero_rate": 0.6843
     },
     {
       "feature": "avg_gap_w2_watch_days",
-      "zero_rate": 0.6742
+      "zero_rate": 0.6761
+    },
+    {
+      "feature": "avg_gap_w1_watch_days",
+      "zero_rate": 0.675
     },
     {
       "feature": "avg_gap_w3_watch_days",
-      "zero_rate": 0.6709
+      "zero_rate": 0.6673
     },
     {
       "feature": "action_adventure_ratio",
-      "zero_rate": 0.6542
+      "zero_rate": 0.6526
     },
     {
       "feature": "reg_is_weekend",
-      "zero_rate": 0.6403
+      "zero_rate": 0.6385
     },
     {
       "feature": "new_movie_in_90d_ratio",
-      "zero_rate": 0.6368
+      "zero_rate": 0.6362
     },
     {
       "feature": "thriller_crime_ratio",
-      "zero_rate": 0.6259
+      "zero_rate": 0.6282
     },
     {
       "feature": "reg_hour_evening",
-      "zero_rate": 0.6134
+      "zero_rate": 0.6141
     },
     {
       "feature": "new_movie_in_180d_ratio",
-      "zero_rate": 0.5917
+      "zero_rate": 0.5899
     },
     {
       "feature": "day_count_over_3times",
-      "zero_rate": 0.5696
+      "zero_rate": 0.5705
     },
     {
       "feature": "is_cold_start_3d",
-      "zero_rate": 0.5366
+      "zero_rate": 0.5354
     },
     {
       "feature": "old_movie_ratio(5y)",
-      "zero_rate": 0.5337
+      "zero_rate": 0.5324
     },
     {
       "feature": "payment_is_android",
-      "zero_rate": 0.5311
+      "zero_rate": 0.529
     },
     {
       "feature": "drama_ratio",
-      "zero_rate": 0.5258
+      "zero_rate": 0.5261
     },
     {
       "feature": "new_movie_in_365d_ratio",
-      "zero_rate": 0.5157
+      "zero_rate": 0.5148
     }
   ],
   "note": "피처 제거 없음. 경고 리스트만 기록. vif='inf'는 완전 다중공선성.",
-  "summary": "VIF 극단값 피처 10개 | 고상관 쌍 3개 | zero-inflation >= 50% 피처 37개."
+  "summary": "VIF 극단값 피처 10개 | 고상관 쌍 3개 | zero-inflation >= 50% 피처 39개."
 }

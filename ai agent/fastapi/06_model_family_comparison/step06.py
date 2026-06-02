@@ -18,7 +18,7 @@ import numpy as np
 from sklearn.base import clone
 from sklearn.ensemble import (
     HistGradientBoostingClassifier, RandomForestClassifier,
-    GradientBoostingClassifier, ExtraTreesClassifier,
+    ExtraTreesClassifier,
 )
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score
@@ -33,7 +33,7 @@ router = APIRouter(prefix="/06", tags=["06. Model Family Comparison"])
 
 # step04 우승 모델 → step06에서 돌릴 계열
 FAMILY_MAP = {
-    "boosting": ["XGBoost", "LightGBM", "CatBoost", "HistGradientBoosting", "GradientBoosting"],
+    "boosting": ["XGBoost", "LightGBM", "CatBoost", "HistGradientBoosting"],
     "tree":     ["RandomForest", "ExtraTrees"],
     "linear":   ["LogisticRegression"],
 }
@@ -77,10 +77,6 @@ def _build_models() -> dict:
             n_estimators=120, min_samples_leaf=20,
             max_features="sqrt", random_state=RANDOM_STATE, n_jobs=-1,
         ),
-        "GradientBoosting": GradientBoostingClassifier(
-            n_estimators=100, learning_rate=0.06, max_depth=3,
-            random_state=RANDOM_STATE,
-        ),
         "ExtraTrees": ExtraTreesClassifier(
             n_estimators=120, min_samples_leaf=10,
             max_features="sqrt", random_state=RANDOM_STATE, n_jobs=-1,
@@ -114,7 +110,7 @@ def _build_models() -> dict:
 
 def _cv_auc(df_scope, features, model) -> dict:
     X      = df_scope[features].apply(pd.to_numeric, errors="coerce").fillna(0)
-    y      = df_scope["is_repurchase"].astype(int).to_numpy()
+    y      = (1 - df_scope["is_repurchase"].astype(int)).to_numpy()
     groups = df_scope["USER_KEY"].astype(str).to_numpy()
     sgkf   = StratifiedGroupKFold(n_splits=N_SPLITS, shuffle=True, random_state=RANDOM_STATE)
     oof     = np.full(len(X), np.nan)

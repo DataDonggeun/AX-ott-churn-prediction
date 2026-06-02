@@ -1,13 +1,13 @@
 {
   "step00": {
-    "completed_at": "2026-05-30T00:55:03.255145",
+    "completed_at": "2026-06-02T21:09:20.850592",
     "meta": {
       "final_rows": 23081,
       "final_cols": 91
     }
   },
   "step01": {
-    "completed_at": "2026-05-30T00:55:05.009397",
+    "completed_at": "2026-06-02T21:09:22.104030",
     "meta": {
       "row_count": 23081,
       "cohort_eligible": 23081,
@@ -15,90 +15,90 @@
     }
   },
   "step02": {
-    "completed_at": "2026-05-30T00:55:06.886713",
+    "completed_at": "2026-06-02T21:09:23.080105",
     "meta": {
-      "promo_rows": 11904,
-      "nonpromo_rows": 11177,
-      "rate_diff": -0.0871
+      "promo_rows": 9471,
+      "nonpromo_rows": 8993,
+      "rate_diff": -0.083
     }
   },
   "step03": {
-    "completed_at": "2026-05-30T00:55:07.895388",
+    "completed_at": "2026-06-02T21:09:24.163719",
     "meta": {
-      "total_rows": 23081
+      "total_rows": 18464
     }
   },
   "step04": {
-    "completed_at": "2026-05-29T15:36:04.289749",
+    "completed_at": "2026-06-02T16:00:17.680731",
     "meta": {
       "candidates": {
         "overall": {
           "model": "XGBoost",
-          "oof_auc": 0.8738
+          "oof_auc": 0.8741
         },
         "promotion_only": {
           "model": "XGBoost",
-          "oof_auc": 0.8612
+          "oof_auc": 0.8601
         },
         "nonpromotion_only": {
           "model": "XGBoost",
-          "oof_auc": 0.8836
+          "oof_auc": 0.8841
         }
       }
     }
   },
   "step05": {
-    "completed_at": "2026-05-30T00:55:12.363421",
+    "completed_at": "2026-06-02T21:09:26.207444",
     "meta": {
       "high_corr_pairs": 3,
-      "zero_inf_count": 37
+      "zero_inf_count": 39
     }
   },
   "step06": {
-    "completed_at": "2026-05-29T16:37:20.363785",
+    "completed_at": "2026-06-02T19:23:19.299551",
     "meta": {
       "candidates": {
         "overall": {
-          "model": "CatBoost",
-          "oof_auc": 0.8681,
-          "train_valid_gap": 0.0065,
+          "model": "XGBoost",
+          "oof_auc": 0.8656,
+          "train_valid_gap": 0.0132,
           "gap_threshold": 0.03,
           "overfit_warning": false,
           "scope_winner": "CatBoost",
-          "scope_winner_auc": 0.8681,
+          "scope_winner_auc": 0.8672,
           "note": "통합모델 사용"
         },
         "promotion_only": {
-          "model": "CatBoost",
-          "oof_auc": 0.853,
-          "train_valid_gap": 0.0124,
+          "model": "XGBoost",
+          "oof_auc": 0.8529,
+          "train_valid_gap": 0.0245,
           "gap_threshold": 0.03,
           "overfit_warning": false,
-          "scope_winner": "GradientBoosting",
-          "scope_winner_auc": 0.8532,
+          "scope_winner": "XGBoost",
+          "scope_winner_auc": 0.8529,
           "note": "통합모델 사용"
         },
         "nonpromotion_only": {
-          "model": "CatBoost",
-          "oof_auc": 0.8782,
-          "train_valid_gap": 0.0125,
+          "model": "XGBoost",
+          "oof_auc": 0.8767,
+          "train_valid_gap": 0.0234,
           "gap_threshold": 0.03,
           "overfit_warning": false,
-          "scope_winner": "CatBoost",
-          "scope_winner_auc": 0.8782,
+          "scope_winner": "XGBoost",
+          "scope_winner_auc": 0.8767,
           "note": "통합모델 사용"
         }
       }
     }
   },
   "step07": {
-    "completed_at": "2026-05-29T19:36:51.498649",
+    "completed_at": "2026-06-02T19:54:08.455387",
     "meta": {
       "scopes_tuned": 3
     }
   },
   "step08": {
-    "completed_at": "2026-05-30T00:56:49.817282",
+    "completed_at": "2026-06-02T20:14:01.760448",
     "meta": {
       "scopes": 3
     }
@@ -114,14 +114,14 @@
     }
   },
   "step10": {
-    "completed_at": "2026-05-30T00:58:14.067695",
+    "completed_at": "2026-06-02T20:06:09.147788",
     "meta": {
-      "S1": 3801,
-      "S2": 4248,
-      "S3": 3525,
-      "S4": 1989,
-      "S5": 4672,
-      "S6": 4846
+      "S1": 3028,
+      "S2": 3422,
+      "S3": 2800,
+      "S4": 1596,
+      "S5": 3763,
+      "S6": 3855
     }
   }
 }

@@ -21,7 +21,7 @@ from sklearn.model_selection import StratifiedGroupKFold
 from sklearn.ensemble import HistGradientBoostingClassifier
 
 from config import N_SPLITS, RANDOM_STATE
-from cache import mark_done, save_json, load_df, save_df, load_artifact
+from cache import is_done, mark_done, save_json, load_json, load_df, save_df, load_artifact
 
 router = APIRouter(prefix="/08", tags=["08. Scoring"])
 
@@ -45,7 +45,7 @@ def _get_model(scope_name: str):
 
 def _cv_oof(df_scope, features, model):
     X      = df_scope[features].apply(pd.to_numeric, errors="coerce").fillna(0)
-    y      = df_scope["is_repurchase"].astype(int).to_numpy()
+    y      = (1 - df_scope["is_repurchase"].astype(int)).to_numpy()
     groups = df_scope["USER_KEY"].astype(str).to_numpy()
     sgkf   = StratifiedGroupKFold(n_splits=N_SPLITS, shuffle=True, random_state=RANDOM_STATE)
     oof    = np.full(len(X), np.nan)
@@ -89,8 +89,8 @@ def run_scoring(exp_df: pd.DataFrame) -> dict:
 
         tmp = df_scope[["USER_KEY", "is_repurchase"]].copy().reset_index(drop=True)
         tmp["scope"]            = scope_name
-        tmp["repurchase_score"] = oof_scores
-        tmp["churn_risk"]       = 1 - oof_scores
+        tmp["churn_risk"]       = oof_scores
+        tmp["repurchase_score"] = 1 - oof_scores
         oof_rows.append(tmp)
 
     oof_df = pd.concat(oof_rows, ignore_index=True) if oof_rows else pd.DataFrame()
@@ -125,7 +125,7 @@ def run_scoring_fast(exp_df: pd.DataFrame) -> dict:
             continue
 
         X           = df_scope[features].apply(pd.to_numeric, errors="coerce").fillna(0)
-        y           = df_scope["is_repurchase"].astype(int).to_numpy()
+        y           = (1 - df_scope["is_repurchase"].astype(int)).to_numpy()
         saved_model = load_artifact(f"tuned_model_{scope_name}")
 
         if saved_model is not None:
@@ -142,8 +142,8 @@ def run_scoring_fast(exp_df: pd.DataFrame) -> dict:
 
         tmp = df_scope[["USER_KEY", "is_repurchase"]].copy().reset_index(drop=True)
         tmp["scope"]            = scope_name
-        tmp["repurchase_score"] = scores
-        tmp["churn_risk"]       = 1 - scores
+        tmp["churn_risk"]       = scores
+        tmp["repurchase_score"] = 1 - scores
         tmp["model_source"]     = model_source
         oof_rows.append(tmp)
 
@@ -163,8 +163,14 @@ def run_scoring_fast(exp_df: pd.DataFrame) -> dict:
 # ── 엔드포인트 ─────────────────────────────────────────────────────────────────
 
 @router.post("/scoring")
-def scoring():
-    """Step 08 full: OOF 예측 점수 생성. 항상 재실행."""
+def scoring(force: bool = False):
+    """Step 08 full: OOF 예측 점수 생성. force=false면 캐시 사용."""
+    if not force and is_done("step08"):
+        cached = load_json("step08_result")
+        if cached:
+            cached["from_cache"] = True
+            return cached
+
     exp_df = load_df("expanded_dataset")
     if exp_df is None:
         return {"status": "FAIL", "reason": "Step 00 먼저 실행 필요"}

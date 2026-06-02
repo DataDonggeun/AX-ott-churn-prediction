@@ -142,8 +142,13 @@ def run_segmentation(exp_df: pd.DataFrame, oof_df: pd.DataFrame) -> dict:
 
 
 @router.post("/segmentation")
-def segmentation():
-    """Step 10: 세그먼트 배정. 항상 재실행."""
+def segmentation(force: bool = False):
+    """Step 10: 세그먼트 배정. force=false면 캐시 사용."""
+    if not force and is_done("step10"):
+        cached = load_json("step10_segment_summary")
+        if cached:
+            cached["from_cache"] = True
+            return cached
 
     exp_df = load_df("expanded_dataset")
     oof_df = load_df("step08_oof")

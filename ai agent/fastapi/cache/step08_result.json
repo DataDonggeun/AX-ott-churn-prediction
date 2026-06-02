@@ -4,20 +4,20 @@
   "by_scope": [
     {
       "scope": "overall",
-      "oof_auc": 0.8805,
-      "rows": 23081
+      "oof_auc": 0.8789,
+      "rows": 18464
     },
     {
       "scope": "promotion_only",
-      "oof_auc": 0.8663,
-      "rows": 11904
+      "oof_auc": 0.8634,
+      "rows": 9471
     },
     {
       "scope": "nonpromotion_only",
-      "oof_auc": 0.8887,
-      "rows": 11177
+      "oof_auc": 0.8851,
+      "rows": 8993
     }
   ],
   "oof_saved": true,
-  "summary": "overall: AUC 0.8805 | promotion_only: AUC 0.8663 | nonpromotion_only: AUC 0.8887"
+  "summary": "overall: AUC 0.8789 | promotion_only: AUC 0.8634 | nonpromotion_only: AUC 0.8851"
 }

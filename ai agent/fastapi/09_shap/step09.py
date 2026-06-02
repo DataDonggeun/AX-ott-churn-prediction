@@ -9,10 +9,12 @@ Step 09: SHAP + Permutation Importance 해석
 캐시: step09_shap_global.json
 """
 import sys
+import json
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from fastapi import APIRouter
+from fastapi.responses import HTMLResponse
 import pandas as pd
 import numpy as np
 from sklearn.base import clone
@@ -63,7 +65,7 @@ def run_shap(df_scope: pd.DataFrame, features: list, model) -> dict:
         return {"status": "FAIL", "reason": "shap 미설치. pip install shap"}
 
     X = df_scope[features].apply(pd.to_numeric, errors="coerce").fillna(0)
-    y = df_scope["is_repurchase"].astype(int).to_numpy()
+    y = (1 - df_scope["is_repurchase"].astype(int)).to_numpy()
 
     # 최대 5000샘플로 제한 (속도)
     if len(X) > 5000:
@@ -98,11 +100,36 @@ def run_shap(df_scope: pd.DataFrame, features: list, model) -> dict:
         .sum().sort_values(ascending=False).round(6).to_dict()
     )
 
+    # Beeswarm용 raw SHAP값 (top 20 피처, 최대 1000 샘플)
+    top_features = [r["feature"] for r in top20]
+    feat_list = list(features)
+    top_feat_idx = [feat_list.index(f) for f in top_features if f in feat_list]
+    shap_top = vals[:, top_feat_idx]
+    X_top = X_sample[top_features].values
+
+    n_bee = min(len(shap_top), 1000)
+    bee_idx = np.random.RandomState(RANDOM_STATE).choice(len(shap_top), n_bee, replace=False)
+    shap_bee = shap_top[bee_idx]
+    X_bee = X_top[bee_idx]
+    X_min = X_bee.min(axis=0)
+    X_max = X_bee.max(axis=0)
+    X_norm = ((X_bee - X_min) / (X_max - X_min + 1e-8)).clip(0, 1)
+
+    beeswarm_data = {
+        feat: {
+            "shap_values":     shap_bee[:, i].round(5).tolist(),
+            "feat_vals_norm":  X_norm[:, i].round(3).tolist(),
+        }
+        for i, feat in enumerate(top_features)
+    }
+
     return {
-        "status":       "PASS",
-        "top20":        top20,
-        "family_sum":   family_sum,
-        "sample_size":  int(len(X_sample)),
+        "status":         "PASS",
+        "top20":          top20,
+        "family_sum":     family_sum,
+        "beeswarm_data":  beeswarm_data,
+        "beeswarm_n":     n_bee,
+        "sample_size":    int(len(X_sample)),
         "note": "SHAP은 모델 설명이며 인과 주장이 아님.",
     }
 
@@ -110,7 +137,7 @@ def run_shap(df_scope: pd.DataFrame, features: list, model) -> dict:
 def run_permutation_importance(df_scope: pd.DataFrame, features: list, model) -> dict:
     """Permutation Importance 계산 — AUC 기반."""
     X = df_scope[features].apply(pd.to_numeric, errors="coerce").fillna(0)
-    y = df_scope["is_repurchase"].astype(int).to_numpy()
+    y = (1 - df_scope["is_repurchase"].astype(int)).to_numpy()
 
     fitted = clone(model)
     fitted.fit(X, y)
@@ -171,8 +198,13 @@ def run_shap_all_scopes(exp_df: pd.DataFrame) -> dict:
 
 
 @router.post("/shap")
-def shap_interpretation():
-    """Step 09: SHAP + Permutation Importance 피처 중요도 계산. 항상 재실행."""
+def shap_interpretation(force: bool = False):
+    """Step 09: SHAP + Permutation Importance 피처 중요도 계산. force=false면 캐시 사용."""
+    if not force and is_done("step09"):
+        cached = load_json("step09_shap_global")
+        if cached:
+            cached["from_cache"] = True
+            return cached
 
     exp_df = load_df("expanded_dataset")
     if exp_df is None:
@@ -185,3 +217,215 @@ def shap_interpretation():
 
     result["from_cache"] = False
     return result
+
+
+@router.get("/shap/charts", response_class=HTMLResponse)
+def shap_charts():
+    """SHAP Beeswarm + Permutation Importance 인터랙티브 차트 (Plotly.js)"""
+    cached = load_json("step09_shap_global")
+    if not cached or "by_scope" not in cached:
+        return HTMLResponse(
+            content="<h2 style='font-family:sans-serif;padding:40px'>Step 09를 먼저 실행해주세요."
+                    " <a href='/docs'>→ Swagger UI</a></h2>"
+        )
+
+    data_json = json.dumps(cached["by_scope"], ensure_ascii=False)
+
+    # HTML을 세 부분으로 나눠 data_json을 안전하게 삽입
+    head = """<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SHAP & Permutation Importance 차트</title>
+  <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Segoe UI',sans-serif;background:#f0f2f5;color:#2c3e50}
+    .page{max-width:1200px;margin:0 auto;padding:28px 16px}
+    h1{font-size:1.6rem;font-weight:700;color:#1a252f;margin-bottom:4px}
+    .subtitle{color:#7f8c8d;font-size:.9rem;margin-bottom:20px}
+    .tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+    .tab{padding:8px 20px;border-radius:6px;cursor:pointer;background:#fff;
+         border:2px solid #dee2e6;font-size:.88rem;font-weight:600;transition:all .15s}
+    .tab:hover{border-color:#2980b9;color:#2980b9}
+    .tab.active{background:#2980b9;color:#fff;border-color:#2980b9}
+    .card{background:#fff;border-radius:12px;padding:24px;margin-bottom:20px;
+          box-shadow:0 1px 4px rgba(0,0,0,.08)}
+    .card h2{font-size:1.05rem;font-weight:700;color:#2c3e50;margin-bottom:12px;
+             padding-bottom:8px;border-bottom:2px solid #ecf0f1}
+    .note{font-size:.8rem;color:#95a5a6;margin-top:10px}
+    .warn{background:#fef9c3;border:1px solid #fde68a;color:#92400e;
+          padding:10px 16px;border-radius:8px;font-size:.85rem;margin-bottom:12px}
+    .legend-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;font-size:.8rem}
+    .dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:4px}
+    a.back{color:#2980b9;font-size:.9rem;text-decoration:none}
+    a.back:hover{text-decoration:underline}
+  </style>
+</head>
+<body>
+<div class="page">
+  <h1>🔎 SHAP Beeswarm &amp; Permutation Importance</h1>
+  <p class="subtitle">피처 중요도 인터랙티브 차트 &middot; Step 09 결과</p>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchScope('overall',this)">전체 (Overall)</button>
+    <button class="tab" onclick="switchScope('promotion_only',this)">프로모션 (Promotion)</button>
+    <button class="tab" onclick="switchScope('nonpromotion_only',this)">비프로모션 (Non-Promotion)</button>
+  </div>
+
+  <div class="card">
+    <h2>🐝 SHAP Beeswarm &mdash; <span id="bee-label">전체 (Overall)</span></h2>
+    <div id="bee-warn" class="warn" style="display:none">
+      ⚠️ Beeswarm 차트는 Step 09 재실행이 필요합니다.
+      <b>POST /09/shap?force=true</b> 실행 후 이 페이지를 새로고침하세요.
+    </div>
+    <div id="bee-chart" style="height:640px"></div>
+    <p class="note">
+      점 색상: 해당 피처의 실제 값 (파랑=낮음, 빨강=높음) &nbsp;|&nbsp;
+      X축 양수 → 이탈 확률 증가 기여 &nbsp;|&nbsp; X축 음수 → 이탈 확률 감소 기여
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>📊 Permutation Importance &mdash; <span id="perm-label">전체 (Overall)</span></h2>
+    <div id="perm-chart" style="height:540px"></div>
+    <div class="legend-row">
+      <span><span class="dot" style="background:#2980b9"></span>사용/리텐션 행동</span>
+      <span><span class="dot" style="background:#8e44ad"></span>콘텐츠 선호</span>
+      <span><span class="dot" style="background:#16a085"></span>멤버십 맥락</span>
+      <span><span class="dot" style="background:#e67e22"></span>가입 경로</span>
+      <span><span class="dot" style="background:#e74c3c"></span>결제 기기</span>
+    </div>
+    <p class="note">피처를 무작위로 섞었을 때 AUC 감소량 &middot; 에러바 = 5 repeats 표준편차</p>
+  </div>
+
+  <a class="back" href="/pipeline/report">← 전체 보고서로 돌아가기</a>
+</div>
+
+<script>
+const SCOPE_DATA = """
+
+    tail = """;
+
+const LABELS = {
+  overall: '전체 (Overall)',
+  promotion_only: '프로모션 (Promotion)',
+  nonpromotion_only: '비프로모션 (Non-Promotion)'
+};
+const FAM_COLORS = {
+  usage_retention_behavior: '#2980b9',
+  content_preference:       '#8e44ad',
+  membership_context:       '#16a085',
+  acquisition_split:        '#e67e22',
+  payment_proxy:            '#e74c3c',
+  other:                    '#95a5a6'
+};
+
+function switchScope(scope, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('bee-label').textContent  = LABELS[scope];
+  document.getElementById('perm-label').textContent = LABELS[scope];
+  renderAll(scope);
+}
+
+function renderBeeswarm(sd) {
+  const beeData = (sd.shap || {}).beeswarm_data;
+  if (!beeData || !Object.keys(beeData).length) {
+    document.getElementById('bee-warn').style.display  = 'block';
+    document.getElementById('bee-chart').innerHTML = '';
+    return;
+  }
+  document.getElementById('bee-warn').style.display = 'none';
+
+  const features = Object.keys(beeData);
+  const n = features.length;
+  const traces = features.map((feat, fi) => {
+    const sv  = beeData[feat].shap_values;
+    const fv  = beeData[feat].feat_vals_norm;
+    const yBase = n - 1 - fi;
+    const y = sv.map(() => yBase + (Math.random() - 0.5) * 0.55);
+    return {
+      type: 'scatter', mode: 'markers',
+      x: sv, y: y,
+      marker: {
+        color: fv,
+        colorscale: [[0,'#3b82f6'],[0.5,'#f1f5f9'],[1,'#ef4444']],
+        size: 4, opacity: 0.72,
+        cmin: 0, cmax: 1,
+        showscale: fi === n - 1,
+        colorbar: {
+          title: {text: '피처값<br>(정규화)', side: 'right'},
+          thickness: 12, len: 0.5, x: 1.02,
+          tickvals: [0, 0.5, 1], ticktext: ['낮음','중간','높음']
+        }
+      },
+      name: feat, showlegend: false,
+      hovertemplate: '<b>' + feat + '</b><br>SHAP: %{x:.5f}<extra></extra>'
+    };
+  });
+
+  Plotly.newPlot('bee-chart', traces, {
+    height: 640,
+    xaxis: {
+      title: 'SHAP 값 (양수=이탈 기여, 음수=유지 기여)',
+      zeroline: true, zerolinecolor: '#444', zerolinewidth: 1.5,
+      gridcolor: '#eee'
+    },
+    yaxis: {
+      tickmode: 'array',
+      tickvals: features.map((_, i) => n - 1 - i),
+      ticktext: features,
+      range: [-0.5, n - 0.5],
+      gridcolor: '#eee'
+    },
+    shapes: [{
+      type: 'line', x0: 0, x1: 0, y0: -0.5, y1: n - 0.5,
+      line: {color: '#333', width: 1.5, dash: 'dot'}
+    }],
+    margin: {l: 215, r: 85, t: 20, b: 60},
+    plot_bgcolor: '#fafafa', paper_bgcolor: '#fff',
+    hovermode: 'closest'
+  }, {responsive: true, displaylogo: false});
+}
+
+function renderPerm(sd) {
+  const top20 = ((sd.permutation || {}).top20 || []).slice(0, 20).reverse();
+  if (!top20.length) {
+    document.getElementById('perm-chart').innerHTML =
+      '<p style="padding:40px;color:#aaa">Permutation 데이터가 없습니다</p>';
+    return;
+  }
+  const feats  = top20.map(r => r.feature);
+  const vals   = top20.map(r => r.perm_importance || 0);
+  const errs   = top20.map(r => r.perm_std || 0);
+  const colors = top20.map(r => FAM_COLORS[r.family] || '#95a5a6');
+
+  Plotly.newPlot('perm-chart', [{
+    type: 'bar', orientation: 'h',
+    x: vals, y: feats,
+    error_x: {type: 'data', array: errs, visible: true, color: '#666'},
+    marker: {color: colors, opacity: 0.85},
+    hovertemplate: '<b>%{y}</b><br>AUC 감소량: %{x:.5f}<extra></extra>'
+  }], {
+    height: 540,
+    xaxis: {title: 'AUC 감소량 (클수록 중요)', gridcolor: '#eee'},
+    yaxis: {gridcolor: '#eee'},
+    margin: {l: 215, r: 40, t: 20, b: 60},
+    plot_bgcolor: '#fafafa', paper_bgcolor: '#fff'
+  }, {responsive: true, displaylogo: false});
+}
+
+function renderAll(scope) {
+  const sd = SCOPE_DATA[scope] || {};
+  renderBeeswarm(sd);
+  renderPerm(sd);
+}
+
+renderAll('overall');
+</script>
+</body>
+</html>"""
+
+    return HTMLResponse(content=head + data_json + tail)

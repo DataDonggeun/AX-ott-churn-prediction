@@ -44,7 +44,9 @@ from fastapi import APIRouter
 import numpy as np
 import pandas as pd
 
-from config import DATA_DIR, MEM_PATH, EXPANDED_FEATURES
+from sklearn.model_selection import train_test_split
+
+from config import DATA_DIR, MEM_PATH, EXPANDED_FEATURES, RANDOM_STATE
 from cache import is_done, mark_done, save_json, load_json, save_df
 
 router = APIRouter(prefix="/00", tags=["00. Feature Engineering"])
@@ -535,7 +537,7 @@ def run_feature_engineering(
     # ── 저장 ─────────────────────────────────────────────────────────────────
     df.to_csv(OUTPUT_PATH, index=False, encoding="utf-8-sig")
 
-    # ── expanded_dataset 캐시 저장 (step06 대체) ─────────────────────────────
+    # ── expanded_dataset 캐시 저장 (80:20 train/test split) ─────────────────
     exp_features = [
         f for f in EXPANDED_FEATURES
         if f in df.columns
@@ -544,8 +546,18 @@ def run_feature_engineering(
                 (["is_promotion"] if "is_promotion" in df.columns else []) +
                 [f for f in exp_features if f not in {"USER_KEY", "is_repurchase", "is_promotion"}]
                ].copy()
-    save_df("expanded_dataset", exp_df)
 
+    train_df, test_df = train_test_split(
+        exp_df,
+        test_size=0.2,
+        stratify=exp_df["is_repurchase"],
+        random_state=RANDOM_STATE,
+    )
+    train_df = train_df.reset_index(drop=True)
+    test_df  = test_df.reset_index(drop=True)
+
+    save_df("expanded_dataset", train_df)
+    save_df("test_dataset",     test_df)
 
     return {
         "status":        "PASS",
@@ -555,11 +567,14 @@ def run_feature_engineering(
         "dup_removed":   dup_removed,
         "final_rows":    len(df),
         "final_cols":    len(df.columns),
+        "train_rows":    len(train_df),
+        "test_rows":     len(test_df),
         "output_path":   str(OUTPUT_PATH),
         "summary": (
             f"원본 {raw_rows:,}행 → 정제 {cleaned_rows:,}행 → "
             f"duration<21 {dur_removed}행 제거 → 중복 {dup_removed}행 제거 → "
             f"최종 {len(df):,}행 × {len(df.columns)}컬럼. "
+            f"학습 {len(train_df):,}행 / 테스트 {len(test_df):,}행 (80:20). "
             f"저장: {OUTPUT_PATH.name}"
         ),
     }
