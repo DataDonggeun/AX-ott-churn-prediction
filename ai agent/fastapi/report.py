@@ -293,12 +293,6 @@ def render_html(data: dict) -> str:
             sec09 = f"""
             <div class="card">
               <h2>🔎 Step 09 — SHAP 피처 중요도 Top 20 <small style="font-weight:400;color:#999">(scope: overall)</small></h2>
-              <a href="/09/shap/charts" target="_blank"
-                 style="display:inline-block;margin-bottom:14px;padding:7px 16px;
-                        background:#2980b9;color:#fff;border-radius:6px;text-decoration:none;
-                        font-size:0.85rem;font-weight:600">
-                🐝 Beeswarm &amp; Permutation 차트 열기 →
-              </a>
               <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;">
                 <table>
                   <tr><th>#</th><th>피처</th><th>계열</th><th>Mean |SHAP|</th></tr>
