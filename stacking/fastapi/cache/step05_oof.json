@@ -1,0 +1,100 @@
+{
+  "by_scope": {
+    "overall": {
+      "LR": {
+        "oof_auc": 0.8521,
+        "gap": 0.0032,
+        "mean_train_auc": 0.8553,
+        "overfit": false
+      },
+      "XGBoost": {
+        "oof_auc": 0.8807,
+        "gap": 0.0401,
+        "mean_train_auc": 0.9208,
+        "overfit": false
+      },
+      "CatBoost": {
+        "oof_auc": 0.8814,
+        "gap": 0.0702,
+        "mean_train_auc": 0.9517,
+        "overfit": true
+      },
+      "RF": {
+        "oof_auc": 0.8647,
+        "gap": 0.0926,
+        "mean_train_auc": 0.9574,
+        "overfit": true
+      },
+      "SVM": {
+        "oof_auc": 0.8555,
+        "gap": 0.0525,
+        "mean_train_auc": 0.9082,
+        "overfit": true
+      }
+    },
+    "promotion_only": {
+      "LR": {
+        "oof_auc": 0.8377,
+        "gap": 0.0056,
+        "mean_train_auc": 0.8435,
+        "overfit": false
+      },
+      "XGBoost": {
+        "oof_auc": 0.8653,
+        "gap": 0.0431,
+        "mean_train_auc": 0.9085,
+        "overfit": false
+      },
+      "CatBoost": {
+        "oof_auc": 0.8648,
+        "gap": 0.105,
+        "mean_train_auc": 0.97,
+        "overfit": true
+      },
+      "RF": {
+        "oof_auc": 0.85,
+        "gap": 0.1058,
+        "mean_train_auc": 0.9559,
+        "overfit": true
+      },
+      "SVM": {
+        "oof_auc": 0.8387,
+        "gap": 0.063,
+        "mean_train_auc": 0.9018,
+        "overfit": true
+      }
+    },
+    "nonpromotion_only": {
+      "LR": {
+        "oof_auc": 0.8619,
+        "gap": 0.0064,
+        "mean_train_auc": 0.8685,
+        "overfit": false
+      },
+      "XGBoost": {
+        "oof_auc": 0.8872,
+        "gap": 0.0377,
+        "mean_train_auc": 0.925,
+        "overfit": false
+      },
+      "CatBoost": {
+        "oof_auc": 0.8851,
+        "gap": 0.0949,
+        "mean_train_auc": 0.9801,
+        "overfit": true
+      },
+      "RF": {
+        "oof_auc": 0.8707,
+        "gap": 0.0896,
+        "mean_train_auc": 0.9605,
+        "overfit": true
+      },
+      "SVM": {
+        "oof_auc": 0.8569,
+        "gap": 0.0672,
+        "mean_train_auc": 0.9242,
+        "overfit": true
+      }
+    }
+  }
+}

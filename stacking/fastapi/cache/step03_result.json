@@ -1,0 +1,265 @@
+{
+  "status": "PASS",
+  "total_rows": 23081,
+  "cohorts": {
+    "promotion_repurchase": {
+      "is_promotion": 1,
+      "is_repurchase": 1,
+      "row_count": 8037,
+      "row_share": 0.3482,
+      "profile": {
+        "watch_time(min)_w1": {
+          "mean": 102.2202,
+          "median": 23.0
+        },
+        "watch_time(min)_w2": {
+          "mean": 115.6627,
+          "median": 51.0
+        },
+        "watch_time(min)_w3": {
+          "mean": 126.7838,
+          "median": 89.0
+        },
+        "watch_session_w1": {
+          "mean": 2.2034,
+          "median": 1.0
+        },
+        "watch_session_w2": {
+          "mean": 2.4709,
+          "median": 1.0
+        },
+        "watch_session_w3": {
+          "mean": 2.7269,
+          "median": 2.0
+        },
+        "retention_w2_ratio": {
+          "mean": 36.9001,
+          "median": 1.0
+        },
+        "retention_w3_ratio": {
+          "mean": 40.3534,
+          "median": 1.0
+        },
+        "recency": {
+          "mean": 5.0046,
+          "median": 3.0
+        },
+        "is_cold_start_3d": {
+          "mean": 0.4783,
+          "median": 0.0
+        },
+        "is_cold_start_7d": {
+          "mean": 0.6699,
+          "median": 1.0
+        },
+        "is_only_w1": {
+          "mean": 0.0392,
+          "median": 0.0
+        },
+        "diff_between_w3_w2": {
+          "mean": 11.1211,
+          "median": 0.0
+        }
+      }
+    },
+    "promotion_nonrepurchase": {
+      "is_promotion": 1,
+      "is_repurchase": 0,
+      "row_count": 3867,
+      "row_share": 0.1675,
+      "profile": {
+        "watch_time(min)_w1": {
+          "mean": 92.5441,
+          "median": 33.0
+        },
+        "watch_time(min)_w2": {
+          "mean": 57.3623,
+          "median": 1.0
+        },
+        "watch_time(min)_w3": {
+          "mean": 36.7683,
+          "median": 0.0
+        },
+        "watch_session_w1": {
+          "mean": 2.2214,
+          "median": 1.0
+        },
+        "watch_session_w2": {
+          "mean": 1.5562,
+          "median": 1.0
+        },
+        "watch_session_w3": {
+          "mean": 1.0494,
+          "median": 0.0
+        },
+        "retention_w2_ratio": {
+          "mean": 11.9052,
+          "median": 0.8774
+        },
+        "retention_w3_ratio": {
+          "mean": 11.9771,
+          "median": 1.0
+        },
+        "recency": {
+          "mean": 8.744,
+          "median": 8.0
+        },
+        "is_cold_start_3d": {
+          "mean": 0.4249,
+          "median": 0.0
+        },
+        "is_cold_start_7d": {
+          "mean": 0.6902,
+          "median": 1.0
+        },
+        "is_only_w1": {
+          "mean": 0.2157,
+          "median": 0.0
+        },
+        "diff_between_w3_w2": {
+          "mean": -20.594,
+          "median": 0.0
+        }
+      }
+    },
+    "nonpromotion_repurchase": {
+      "is_promotion": 0,
+      "is_repurchase": 1,
+      "row_count": 8520,
+      "row_share": 0.3691,
+      "profile": {
+        "watch_time(min)_w1": {
+          "mean": 100.975,
+          "median": 24.0
+        },
+        "watch_time(min)_w2": {
+          "mean": 111.3295,
+          "median": 49.0
+        },
+        "watch_time(min)_w3": {
+          "mean": 119.4964,
+          "median": 70.0
+        },
+        "watch_session_w1": {
+          "mean": 2.2074,
+          "median": 1.0
+        },
+        "watch_session_w2": {
+          "mean": 2.4295,
+          "median": 1.0
+        },
+        "watch_session_w3": {
+          "mean": 2.5687,
+          "median": 2.0
+        },
+        "retention_w2_ratio": {
+          "mean": 35.2686,
+          "median": 1.0
+        },
+        "retention_w3_ratio": {
+          "mean": 38.3109,
+          "median": 1.0
+        },
+        "recency": {
+          "mean": 5.291,
+          "median": 3.0
+        },
+        "is_cold_start_3d": {
+          "mean": 0.4687,
+          "median": 0.0
+        },
+        "is_cold_start_7d": {
+          "mean": 0.6703,
+          "median": 1.0
+        },
+        "is_only_w1": {
+          "mean": 0.0453,
+          "median": 0.0
+        },
+        "diff_between_w3_w2": {
+          "mean": 8.1669,
+          "median": 0.0
+        }
+      }
+    },
+    "nonpromotion_nonrepurchase": {
+      "is_promotion": 0,
+      "is_repurchase": 0,
+      "row_count": 2657,
+      "row_share": 0.1151,
+      "profile": {
+        "watch_time(min)_w1": {
+          "mean": 88.7027,
+          "median": 37.0
+        },
+        "watch_time(min)_w2": {
+          "mean": 45.9424,
+          "median": 1.0
+        },
+        "watch_time(min)_w3": {
+          "mean": 23.3606,
+          "median": 0.0
+        },
+        "watch_session_w1": {
+          "mean": 2.2051,
+          "median": 1.0
+        },
+        "watch_session_w2": {
+          "mean": 1.2973,
+          "median": 1.0
+        },
+        "watch_session_w3": {
+          "mean": 0.7719,
+          "median": 0.0
+        },
+        "retention_w2_ratio": {
+          "mean": 8.4333,
+          "median": 0.6455
+        },
+        "retention_w3_ratio": {
+          "mean": 6.3872,
+          "median": 1.0
+        },
+        "recency": {
+          "mean": 9.8739,
+          "median": 10.0
+        },
+        "is_cold_start_3d": {
+          "mean": 0.4577,
+          "median": 0.0
+        },
+        "is_cold_start_7d": {
+          "mean": 0.717,
+          "median": 1.0
+        },
+        "is_only_w1": {
+          "mean": 0.2793,
+          "median": 0.0
+        },
+        "diff_between_w3_w2": {
+          "mean": -22.5819,
+          "median": 0.0
+        }
+      }
+    }
+  },
+  "promo_repurchase_rate": 0.6752,
+  "nonpromo_repurchase_rate": 0.7623,
+  "profile_features_used": [
+    "watch_time(min)_w1",
+    "watch_time(min)_w2",
+    "watch_time(min)_w3",
+    "watch_session_w1",
+    "watch_session_w2",
+    "watch_session_w3",
+    "retention_w2_ratio",
+    "retention_w3_ratio",
+    "recency",
+    "is_cold_start_3d",
+    "is_cold_start_7d",
+    "is_only_w1",
+    "diff_between_w3_w2"
+  ],
+  "interpretation": "관찰된 코호트 차이만 기록. 인과 주장 없음.",
+  "summary": "4개 코호트 생성. 프로모션 재구매율 67.5% | 비프로모션 재구매율 76.2%."
+}

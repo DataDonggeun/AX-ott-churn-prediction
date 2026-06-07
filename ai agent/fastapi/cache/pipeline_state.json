@@ -1,13 +1,13 @@
 {
   "step00": {
-    "completed_at": "2026-06-02T21:09:20.850592",
+    "completed_at": "2026-06-03T00:31:52.989997",
     "meta": {
       "final_rows": 23081,
       "final_cols": 91
     }
   },
   "step01": {
-    "completed_at": "2026-06-02T21:09:22.104030",
+    "completed_at": "2026-06-03T00:31:54.286025",
     "meta": {
       "row_count": 23081,
       "cohort_eligible": 23081,
@@ -15,7 +15,7 @@
     }
   },
   "step02": {
-    "completed_at": "2026-06-02T21:09:23.080105",
+    "completed_at": "2026-06-03T00:31:55.284861",
     "meta": {
       "promo_rows": 9471,
       "nonpromo_rows": 8993,
@@ -23,7 +23,7 @@
     }
   },
   "step03": {
-    "completed_at": "2026-06-02T21:09:24.163719",
+    "completed_at": "2026-06-03T00:31:56.316036",
     "meta": {
       "total_rows": 18464
     }
@@ -48,7 +48,7 @@
     }
   },
   "step05": {
-    "completed_at": "2026-06-02T21:09:26.207444",
+    "completed_at": "2026-06-03T00:31:58.808253",
     "meta": {
       "high_corr_pairs": 3,
       "zero_inf_count": 39

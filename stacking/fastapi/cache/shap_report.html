@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SHAP + Permutation Importance (장르 제외)</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Segoe UI",system-ui,sans-serif;background:#0d0d1a;color:#e0e0f0}
+.page{max-width:1300px;margin:0 auto;padding:36px 20px}
+h1{font-size:1.5rem;font-weight:700;color:#e8e8ff;margin-bottom:6px}
+.meta{font-size:0.83rem;color:#6666aa;margin-bottom:14px}
+.excl{background:#2a1414;border:1px solid #6b3030;border-radius:8px;padding:10px 16px;font-size:0.82rem;color:#e08080;margin-bottom:18px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:28px}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:0.82rem;color:#9999bb}
+.leg-dot{width:11px;height:11px;border-radius:50%}
+.scope-section{background:#13132a;border:1px solid #22224a;border-radius:14px;padding:26px;margin-bottom:28px}
+h2{font-size:1.05rem;font-weight:700;color:#7eb8f7;padding-bottom:12px;border-bottom:1px solid #22224a;margin-bottom:20px}
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.chart-box{background:#0f0f22;border-radius:10px;padding:18px}
+h3{font-size:0.9rem;font-weight:600;color:#c0c0e0;margin-bottom:4px}
+.note{font-size:0.76rem;color:#5555aa;margin-bottom:12px}
+@media(max-width:800px){.chart-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>SHAP + Permutation Importance 분석</h1>
+  <div class="meta">생성: 2026-05-30 15:23 &nbsp;·&nbsp; ⚠️ SHAP은 모델 설명이며 인과 주장이 아닙니다</div>
+  <div class="excl">🚫 제외된 피처 계열: <b>content_preference</b> (drama_ratio, comedy_ratio, thriller_crime_ratio, action_adventure_ratio, sf_fantasy_ratio, romance_ratio, horror_ratio, documentary_ratio, historical_war_ratio, family_animation_ratio, genre_diversity_count 등)</div>
+  <div class="legend"><span class="leg-item"><span class="leg-dot" style="background:#4C72B0"></span>시청 행동 / 리텐션</span><span class="leg-item"><span class="leg-dot" style="background:#16a085"></span>멤버십 / 인구통계</span><span class="leg-item"><span class="leg-dot" style="background:#e67e22"></span>가입 유형</span><span class="leg-item"><span class="leg-dot" style="background:#aaaaaa"></span>결제 기기</span><span class="leg-item"><span class="leg-dot" style="background:#8e44ad"></span>기타</span></div>
+  
+    <div class="scope-section">
+      <h2>전체 (Overall)</h2>
+      <div class="chart-row">
+        <div class="chart-box">
+          <h3>SHAP Feature Importance Top 13</h3>
+          <p class="note">Mean |SHAP value| — 모델 예측에 대한 각 피처의 평균 기여도</p>
+          <div style="height:364px"><canvas id="shap_overall"></canvas></div>
+        </div>
+        <div class="chart-box">
+          <h3>Permutation Importance Top 13</h3>
+          <p class="note">피처를 섞었을 때 AUC 감소량 — 클수록 실제 예측에 중요</p>
+          <div style="height:364px"><canvas id="perm_overall"></canvas></div>
+        </div>
+      </div>
+    </div>
+    <div class="scope-section">
+      <h2>프로모션 가입</h2>
+      <div class="chart-row">
+        <div class="chart-box">
+          <h3>SHAP Feature Importance Top 13</h3>
+          <p class="note">Mean |SHAP value| — 모델 예측에 대한 각 피처의 평균 기여도</p>
+          <div style="height:364px"><canvas id="shap_promotion_only"></canvas></div>
+        </div>
+        <div class="chart-box">
+          <h3>Permutation Importance Top 12</h3>
+          <p class="note">피처를 섞었을 때 AUC 감소량 — 클수록 실제 예측에 중요</p>
+          <div style="height:336px"><canvas id="perm_promotion_only"></canvas></div>
+        </div>
+      </div>
+    </div>
+    <div class="scope-section">
+      <h2>일반 가입 (비프로모션)</h2>
+      <div class="chart-row">
+        <div class="chart-box">
+          <h3>SHAP Feature Importance Top 14</h3>
+          <p class="note">Mean |SHAP value| — 모델 예측에 대한 각 피처의 평균 기여도</p>
+          <div style="height:392px"><canvas id="shap_nonpromotion_only"></canvas></div>
+        </div>
+        <div class="chart-box">
+          <h3>Permutation Importance Top 12</h3>
+          <p class="note">피처를 섞었을 때 AUC 감소량 — 클수록 실제 예측에 중요</p>
+          <div style="height:336px"><canvas id="perm_nonpromotion_only"></canvas></div>
+        </div>
+      </div>
+    </div>
+</div>
+<script>
+
+    new Chart(document.getElementById('shap_overall'), {
+        type:'bar', data:{labels:["is_churn_prevented", "watch_time(min)_w1", "diff_between_w3_w1", "is_basic", "diff_between_w2_w1", "median_watch_time(min)", "diff_between_w3_w2", "max_watch_time(min)", "watch_time(min)_w3", "is_cold_start_3d", "is_promotion", "retention_w2_ratio", "retention_w3_ratio"], datasets:[{data:[0.094271, 0.103995, 0.119532, 0.142154, 0.161955, 0.177782, 0.178223, 0.201581, 0.266377, 0.302937, 0.348351, 0.384898, 0.405461], backgroundColor:["#16a085", "#4C72B0", "#4C72B0", "#16a085", "#4C72B0", "#4C72B0", "#4C72B0", "#4C72B0", "#4C72B0", "#4C72B0", "#e67e22", "#4C72B0", "#4C72B0"], borderWidth:0, borderRadius:3}]},
+        options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+            plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' '+c.parsed.x.toFixed(5);} } } },
+            scales:{x:{beginAtZero:true,grid:{color:'rgba(255,255,255,0.06)'},ticks:{color:'#9999bb'}},
+                     y:{grid:{display:false},ticks:{color:'#c0c0d8',font:{size:11}}} } } });
+    new Chart(document.getElementById('perm_overall'), {
+        type:'bar', data:{labels:["avg_watch_time(min)", "diff_between_w2_w1", "is_basic", "age_group", "watch_time(min)_w1", "is_churn_prevented", "watch_time(min)_w3", "max_watch_time(min)", "median_watch_time(min)", "is_promotion", "is_cold_start_3d", "retention_w3_ratio", "retention_w2_ratio"], datasets:[{data:[0.002565, 0.003348, 0.003632, 0.003929, 0.004006, 0.005427, 0.00597, 0.007938, 0.009422, 0.014412, 0.015833, 0.030635, 0.030663], backgroundColor:["#4C72B0", "#4C72B0", "#16a085", "#16a085", "#4C72B0", "#16a085", "#4C72B0", "#4C72B0", "#4C72B0", "#e67e22", "#4C72B0", "#4C72B0", "#4C72B0"], borderWidth:0, borderRadius:3}]},
+        options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+            plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' '+c.parsed.x.toFixed(5);} } } },
+            scales:{x:{beginAtZero:true,grid:{color:'rgba(255,255,255,0.06)'},ticks:{color:'#9999bb'}},
+                     y:{grid:{display:false},ticks:{color:'#c0c0d8',font:{size:11}}} } } });
+
+    new Chart(document.getElementById('shap_promotion_only'), {
+        type:'bar', data:{labels:["is_w1_over_50pct", "avg_watch_time(min)", "diff_between_w3_w1", "is_churn_prevented", "median_watch_time(min)", "diff_between_w2_w1", "is_basic", "diff_between_w3_w2", "max_watch_time(min)", "watch_time(min)_w3", "is_cold_start_3d", "retention_w3_ratio", "retention_w2_ratio"], datasets:[{data:[0.064879, 0.074802, 0.088825, 0.100813, 0.115778, 0.147497, 0.161323, 0.168238, 0.19511, 0.215714, 0.308656, 0.383126, 0.388796], backgroundColor:["#8e44ad", "#4C72B0", "#4C72B0", "#16a085", "#4C72B0", "#4C72B0", "#16a085", "#4C72B0", "#4C72B0", "#4C72B0", "#4C72B0", "#4C72B0", "#4C72B0"], borderWidth:0, borderRadius:3}]},
+        options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+            plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' '+c.parsed.x.toFixed(5);} } } },
+            scales:{x:{beginAtZero:true,grid:{color:'rgba(255,255,255,0.06)'},ticks:{color:'#9999bb'}},
+                     y:{grid:{display:false},ticks:{color:'#c0c0d8',font:{size:11}}} } } });
+    new Chart(document.getElementById('perm_promotion_only'), {
+        type:'bar', data:{labels:["watch_time(min)_w3", "recency", "watch_time(min)_w1", "diff_between_w2_w1", "avg_watch_time(min)", "median_watch_time(min)", "is_basic", "is_churn_prevented", "max_watch_time(min)", "is_cold_start_3d", "retention_w3_ratio", "retention_w2_ratio"], datasets:[{data:[0.003872, 0.004066, 0.004158, 0.004253, 0.004683, 0.005757, 0.006442, 0.006683, 0.011103, 0.021657, 0.031222, 0.034671], backgroundColor:["#4C72B0", "#4C72B0", "#4C72B0", "#4C72B0", "#4C72B0", "#4C72B0", "#16a085", "#16a085", "#4C72B0", "#4C72B0", "#4C72B0", "#4C72B0"], borderWidth:0, borderRadius:3}]},
+        options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+            plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' '+c.parsed.x.toFixed(5);} } } },
+            scales:{x:{beginAtZero:true,grid:{color:'rgba(255,255,255,0.06)'},ticks:{color:'#9999bb'}},
+                     y:{grid:{display:false},ticks:{color:'#c0c0d8',font:{size:11}}} } } });
+
+    new Chart(document.getElementById('shap_nonpromotion_only'), {
+        type:'bar', data:{labels:["age_group", "is_only_w1", "max_day_share", "is_churn_prevented", "is_w1_over_50pct", "max_watch_time(min)", "diff_between_w3_w2", "diff_between_w2_w1", "is_cold_start_3d", "median_watch_time(min)", "diff_between_w3_w1", "watch_time(min)_w3", "retention_w2_ratio", "retention_w3_ratio"], datasets:[{data:[0.069464, 0.071823, 0.081238, 0.081671, 0.085543, 0.123829, 0.168403, 0.174097, 0.195936, 0.206091, 0.219977, 0.258457, 0.290341, 0.31393], backgroundColor:["#16a085", "#4C72B0", "#8e44ad", "#16a085", "#8e44ad", "#4C72B0", "#4C72B0", "#4C72B0", "#4C72B0", "#4C72B0", "#4C72B0", "#4C72B0", "#4C72B0", "#4C72B0"], borderWidth:0, borderRadius:3}]},
+        options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+            plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' '+c.parsed.x.toFixed(5);} } } },
+            scales:{x:{beginAtZero:true,grid:{color:'rgba(255,255,255,0.06)'},ticks:{color:'#9999bb'}},
+                     y:{grid:{display:false},ticks:{color:'#c0c0d8',font:{size:11}}} } } });
+    new Chart(document.getElementById('perm_nonpromotion_only'), {
+        type:'bar', data:{labels:["max_day_share", "max_watch_time(min)", "std_watch_time(min)", "watch_time(min)_w3", "diff_between_w2_w1", "age_group", "is_churn_prevented", "diff_between_w3_w1", "is_cold_start_3d", "median_watch_time(min)", "retention_w3_ratio", "retention_w2_ratio"], datasets:[{data:[0.002206, 0.002487, 0.002833, 0.003254, 0.00359, 0.005572, 0.005618, 0.007221, 0.009398, 0.009779, 0.017405, 0.019493], backgroundColor:["#8e44ad", "#4C72B0", "#4C72B0", "#4C72B0", "#4C72B0", "#16a085", "#16a085", "#4C72B0", "#4C72B0", "#4C72B0", "#4C72B0", "#4C72B0"], borderWidth:0, borderRadius:3}]},
+        options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+            plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' '+c.parsed.x.toFixed(5);} } } },
+            scales:{x:{beginAtZero:true,grid:{color:'rgba(255,255,255,0.06)'},ticks:{color:'#9999bb'}},
+                     y:{grid:{display:false},ticks:{color:'#c0c0d8',font:{size:11}}} } } });
+
+</script>
+</body>
+</html>

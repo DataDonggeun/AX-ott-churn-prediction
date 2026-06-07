@@ -1,0 +1,138 @@
+{
+  "status": "PASS",
+  "total_rows": 23081,
+  "segments": [
+    {
+      "segment": "A1",
+      "row_count": 3801,
+      "row_share": 0.1647,
+      "repurchase_rate": 0.9248,
+      "mean_churn_risk": 0.0717,
+      "promotion": {
+        "row_count": 2001,
+        "row_share": 0.0867,
+        "repurchase_rate": 0.8956,
+        "mean_churn_risk": 0.0909
+      },
+      "nonpromotion": {
+        "row_count": 1800,
+        "row_share": 0.078,
+        "repurchase_rate": 0.9572,
+        "mean_churn_risk": 0.0505
+      }
+    },
+    {
+      "segment": "A2",
+      "row_count": 4248,
+      "row_share": 0.184,
+      "repurchase_rate": 0.7662,
+      "mean_churn_risk": 0.219,
+      "promotion": {
+        "row_count": 2179,
+        "row_share": 0.0944,
+        "repurchase_rate": 0.7187,
+        "mean_churn_risk": 0.2626
+      },
+      "nonpromotion": {
+        "row_count": 2069,
+        "row_share": 0.0896,
+        "repurchase_rate": 0.8163,
+        "mean_churn_risk": 0.1731
+      }
+    },
+    {
+      "segment": "A3",
+      "row_count": 3525,
+      "row_share": 0.1527,
+      "repurchase_rate": 0.6119,
+      "mean_churn_risk": 0.3941,
+      "promotion": {
+        "row_count": 1776,
+        "row_share": 0.0769,
+        "repurchase_rate": 0.5631,
+        "mean_churn_risk": 0.4462
+      },
+      "nonpromotion": {
+        "row_count": 1749,
+        "row_share": 0.0758,
+        "repurchase_rate": 0.6615,
+        "mean_churn_risk": 0.3412
+      }
+    },
+    {
+      "segment": "B1",
+      "row_count": 1989,
+      "row_share": 0.0862,
+      "repurchase_rate": 0.9186,
+      "mean_churn_risk": 0.0773,
+      "promotion": {
+        "row_count": 1023,
+        "row_share": 0.0443,
+        "repurchase_rate": 0.8817,
+        "mean_churn_risk": 0.1026
+      },
+      "nonpromotion": {
+        "row_count": 966,
+        "row_share": 0.0419,
+        "repurchase_rate": 0.9576,
+        "mean_churn_risk": 0.0505
+      }
+    },
+    {
+      "segment": "B2",
+      "row_count": 4672,
+      "row_share": 0.2024,
+      "repurchase_rate": 0.7271,
+      "mean_churn_risk": 0.277,
+      "promotion": {
+        "row_count": 2447,
+        "row_share": 0.106,
+        "repurchase_rate": 0.6759,
+        "mean_churn_risk": 0.3228
+      },
+      "nonpromotion": {
+        "row_count": 2225,
+        "row_share": 0.0964,
+        "repurchase_rate": 0.7834,
+        "mean_churn_risk": 0.2266
+      }
+    },
+    {
+      "segment": "B3",
+      "row_count": 4846,
+      "row_share": 0.21,
+      "repurchase_rate": 0.4965,
+      "mean_churn_risk": 0.5127,
+      "promotion": {
+        "row_count": 2478,
+        "row_share": 0.1074,
+        "repurchase_rate": 0.4532,
+        "mean_churn_risk": 0.5533
+      },
+      "nonpromotion": {
+        "row_count": 2368,
+        "row_share": 0.1026,
+        "repurchase_rate": 0.5418,
+        "mean_churn_risk": 0.4702
+      }
+    }
+  ],
+  "early_intervention": {
+    "day7": {
+      "threshold_w1": 27.0,
+      "개입필요": 11523,
+      "정상": 11558
+    },
+    "day14": {
+      "threshold_w1w2": 118.0,
+      "개입필요": 11507,
+      "정상": 11574
+    },
+    "day21": {
+      "threshold_w3": 140.0,
+      "note": "S1~S6 확정 배정"
+    }
+  },
+  "note": "A1~B3: w1+w2 중앙값(118분) × w3 75th percentile(140분) 기준 6분할.",
+  "summary": "A1:3,801 | A2:4,248 | A3:3,525 | B1:1,989 | B2:4,672 | B3:4,846"
+}

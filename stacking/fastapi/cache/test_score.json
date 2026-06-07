@@ -1,0 +1,103 @@
+{
+  "status": "PASS",
+  "by_scope": [
+    {
+      "scope": "overall",
+      "final_model": "catboost_fallback",
+      "test_auc": 0.8861,
+      "oof_auc": 0.8821,
+      "delta": 0.004,
+      "test_rows": 2545,
+      "base_models": [
+        {
+          "model": "LR",
+          "error": "The feature names should match those that were passed during fit.\nFeature names must be in the same order as they were in fit.\n"
+        },
+        {
+          "model": "XGBoost",
+          "error": "feature_names mismatch: ['is_promotion', 'is_churn_prevented', 'is_user_verified', 'is_basic', 'is_standard', 'is_premium', 'age_group', 'is_female', 'is_male', 'payment_is_mobile', 'payment_is_pc', 'payment_is_android', 'payment_is_ios', 'reg_is_weekend', 'reg_hour_morning', 'reg_hour_afternoon', 'reg_hour_evening', 'reg_hour_night', 'total_watch_count', 'unique_movie', 'watch_days', 'total_watch_time(min)', 'active_ratio', 'watch_per_day', 'avg_watch_time(min)', 'median_watch_time(min)', 'std_watch_time(min)', 'max_watch_time(min)', 'avg_daily_watch_time(min)', 'max_daily_watch_time(min)', 'max_daily_sessions', 'recency', 'avg_gap_between_watch_days', 'max_inactive_gap_days', 'avg_gap_w1_watch_days', 'avg_gap_w2_watch_days', 'avg_gap_w3_watch_days', 'avg_rewatch_ratio', 'weekend_watch_ratio', 'watch_ratio_under_1m', 'watch_ratio_under_5m', 'is_cold_start_3d', 'is_cold_start_7d', 'movie_per_active_day', 'max_day_share', 'day_count_over_3times', 'watch_time(min)_w1', 'watch_session_w1', 'watch_time(min)_w2', 'watch_session_w2', 'watch_time(min)_w3', 'watch_session_w3', 'retention_w2_ratio', 'retention_w3_ratio', 'diff_between_w2_w1', 'diff_between_w3_w2', 'diff_between_w3_w1', 'is_w1_over_50pct', 'is_w2_over_50pct', 'is_w3_over_50pct', 'is_only_w1', 'is_only_w2', 'is_only_w3', 'new_movie_in_90d_ratio', 'new_movie_in_180d_ratio', 'new_movie_in_365d_ratio', 'old_movie_ratio(5y)', 'avg_ott_release_year', 'genre_diversity_count', 'action_adventure_ratio', 'family_animation_ratio', 'drama_ratio', 'thriller_crime_ratio', 'sf_fantasy_ratio', 'comedy_ratio', 'romance_ratio', 'horror_ratio', 'documentary_ratio', 'historical_war_ratio', 'other_ratio'] ['is_promotion', 'watch_time(min)_w1', 'watch_time(min)_w2', 'watch_time(min)_w3', 'watch_session_w1', 'watch_session_w2', 'watch_session_w3', 'retention_w2_ratio', 'retention_w3_ratio', 'is_cold_start_3d', 'is_cold_start_7d', 'is_only_w1', 'is_only_w2', 'is_only_w3', 'is_w2_over_50pct', 'is_w3_over_50pct', 'is_w1_over_50pct', 'diff_between_w3_w2', 'diff_between_w2_w1', 'diff_between_w3_w1', 'recency', 'max_inactive_gap_days', 'watch_per_day', 'total_watch_count', 'unique_movie', 'watch_days', 'active_ratio', 'avg_watch_time(min)', 'median_watch_time(min)', 'std_watch_time(min)', 'avg_daily_watch_time(min)', 'max_watch_time(min)', 'max_daily_watch_time(min)', 'max_daily_sessions', 'avg_gap_between_watch_days', 'avg_gap_w1_watch_days', 'avg_gap_w2_watch_days', 'avg_gap_w3_watch_days', 'avg_rewatch_ratio', 'weekend_watch_ratio', 'watch_ratio_under_1m', 'watch_ratio_under_5m', 'movie_per_active_day', 'max_day_share', 'day_count_over_3times', 'total_watch_time(min)', 'age_group', 'is_female', 'is_male', 'is_basic', 'is_standard', 'is_premium', 'reg_is_weekend', 'reg_hour_morning', 'reg_hour_afternoon', 'reg_hour_evening', 'reg_hour_night', 'is_user_verified', 'is_churn_prevented', 'genre_diversity_count', 'action_adventure_ratio', 'family_animation_ratio', 'drama_ratio', 'thriller_crime_ratio', 'sf_fantasy_ratio', 'comedy_ratio', 'romance_ratio', 'horror_ratio', 'documentary_ratio', 'historical_war_ratio', 'other_ratio', 'new_movie_in_90d_ratio', 'new_movie_in_180d_ratio', 'new_movie_in_365d_ratio', 'old_movie_ratio(5y)', 'avg_ott_release_year', 'payment_is_mobile', 'payment_is_pc', 'payment_is_android', 'payment_is_ios']"
+        },
+        {
+          "model": "CatBoost",
+          "test_auc": 0.8861,
+          "oof_auc": 0.8814,
+          "delta": 0.0047
+        },
+        {
+          "model": "RF",
+          "error": "'DecisionTreeClassifier' object has no attribute 'monotonic_cst'"
+        },
+        {
+          "model": "SVM",
+          "error": "The feature names should match those that were passed during fit.\nFeature names must be in the same order as they were in fit.\n"
+        }
+      ]
+    },
+    {
+      "scope": "promotion_only",
+      "final_model": "catboost_fallback",
+      "test_auc": 0.8836,
+      "oof_auc": 0.8659,
+      "delta": 0.0177,
+      "test_rows": 1293,
+      "base_models": [
+        {
+          "model": "LR",
+          "error": "The feature names should match those that were passed during fit.\nFeature names must be in the same order as they were in fit.\n"
+        },
+        {
+          "model": "XGBoost",
+          "error": "feature_names mismatch: ['is_churn_prevented', 'is_user_verified', 'is_basic', 'is_standard', 'is_premium', 'age_group', 'is_female', 'is_male', 'payment_is_mobile', 'payment_is_pc', 'payment_is_android', 'payment_is_ios', 'reg_is_weekend', 'reg_hour_morning', 'reg_hour_afternoon', 'reg_hour_evening', 'reg_hour_night', 'total_watch_count', 'unique_movie', 'watch_days', 'total_watch_time(min)', 'active_ratio', 'watch_per_day', 'avg_watch_time(min)', 'median_watch_time(min)', 'std_watch_time(min)', 'max_watch_time(min)', 'avg_daily_watch_time(min)', 'max_daily_watch_time(min)', 'max_daily_sessions', 'recency', 'avg_gap_between_watch_days', 'max_inactive_gap_days', 'avg_gap_w1_watch_days', 'avg_gap_w2_watch_days', 'avg_gap_w3_watch_days', 'avg_rewatch_ratio', 'weekend_watch_ratio', 'watch_ratio_under_1m', 'watch_ratio_under_5m', 'is_cold_start_3d', 'is_cold_start_7d', 'movie_per_active_day', 'max_day_share', 'day_count_over_3times', 'watch_time(min)_w1', 'watch_session_w1', 'watch_time(min)_w2', 'watch_session_w2', 'watch_time(min)_w3', 'watch_session_w3', 'retention_w2_ratio', 'retention_w3_ratio', 'diff_between_w2_w1', 'diff_between_w3_w2', 'diff_between_w3_w1', 'is_w1_over_50pct', 'is_w2_over_50pct', 'is_w3_over_50pct', 'is_only_w1', 'is_only_w2', 'is_only_w3', 'new_movie_in_90d_ratio', 'new_movie_in_180d_ratio', 'new_movie_in_365d_ratio', 'old_movie_ratio(5y)', 'avg_ott_release_year', 'genre_diversity_count', 'action_adventure_ratio', 'family_animation_ratio', 'drama_ratio', 'thriller_crime_ratio', 'sf_fantasy_ratio', 'comedy_ratio', 'romance_ratio', 'horror_ratio', 'documentary_ratio', 'historical_war_ratio', 'other_ratio'] ['watch_time(min)_w1', 'watch_time(min)_w2', 'watch_time(min)_w3', 'watch_session_w1', 'watch_session_w2', 'watch_session_w3', 'retention_w2_ratio', 'retention_w3_ratio', 'is_cold_start_3d', 'is_cold_start_7d', 'is_only_w1', 'is_only_w2', 'is_only_w3', 'is_w2_over_50pct', 'is_w3_over_50pct', 'is_w1_over_50pct', 'diff_between_w3_w2', 'diff_between_w2_w1', 'diff_between_w3_w1', 'recency', 'max_inactive_gap_days', 'watch_per_day', 'total_watch_count', 'unique_movie', 'watch_days', 'active_ratio', 'avg_watch_time(min)', 'median_watch_time(min)', 'std_watch_time(min)', 'avg_daily_watch_time(min)', 'max_watch_time(min)', 'max_daily_watch_time(min)', 'max_daily_sessions', 'avg_gap_between_watch_days', 'avg_gap_w1_watch_days', 'avg_gap_w2_watch_days', 'avg_gap_w3_watch_days', 'avg_rewatch_ratio', 'weekend_watch_ratio', 'watch_ratio_under_1m', 'watch_ratio_under_5m', 'movie_per_active_day', 'max_day_share', 'day_count_over_3times', 'total_watch_time(min)', 'age_group', 'is_female', 'is_male', 'is_basic', 'is_standard', 'is_premium', 'reg_is_weekend', 'reg_hour_morning', 'reg_hour_afternoon', 'reg_hour_evening', 'reg_hour_night', 'is_user_verified', 'is_churn_prevented', 'genre_diversity_count', 'action_adventure_ratio', 'family_animation_ratio', 'drama_ratio', 'thriller_crime_ratio', 'sf_fantasy_ratio', 'comedy_ratio', 'romance_ratio', 'horror_ratio', 'documentary_ratio', 'historical_war_ratio', 'other_ratio', 'new_movie_in_90d_ratio', 'new_movie_in_180d_ratio', 'new_movie_in_365d_ratio', 'old_movie_ratio(5y)', 'avg_ott_release_year', 'payment_is_mobile', 'payment_is_pc', 'payment_is_android', 'payment_is_ios']"
+        },
+        {
+          "model": "CatBoost",
+          "test_auc": 0.8836,
+          "oof_auc": 0.8648,
+          "delta": 0.0188
+        },
+        {
+          "model": "RF",
+          "error": "'DecisionTreeClassifier' object has no attribute 'monotonic_cst'"
+        },
+        {
+          "model": "SVM",
+          "error": "The feature names should match those that were passed during fit.\nFeature names must be in the same order as they were in fit.\n"
+        }
+      ]
+    },
+    {
+      "scope": "nonpromotion_only",
+      "final_model": "catboost_fallback",
+      "test_auc": 0.8737,
+      "oof_auc": 0.888,
+      "delta": -0.0143,
+      "test_rows": 1252,
+      "base_models": [
+        {
+          "model": "LR",
+          "error": "The feature names should match those that were passed during fit.\nFeature names must be in the same order as they were in fit.\n"
+        },
+        {
+          "model": "XGBoost",
+          "error": "feature_names mismatch: ['is_churn_prevented', 'is_user_verified', 'is_basic', 'is_standard', 'is_premium', 'age_group', 'is_female', 'is_male', 'payment_is_mobile', 'payment_is_pc', 'payment_is_android', 'payment_is_ios', 'reg_is_weekend', 'reg_hour_morning', 'reg_hour_afternoon', 'reg_hour_evening', 'reg_hour_night', 'total_watch_count', 'unique_movie', 'watch_days', 'total_watch_time(min)', 'active_ratio', 'watch_per_day', 'avg_watch_time(min)', 'median_watch_time(min)', 'std_watch_time(min)', 'max_watch_time(min)', 'avg_daily_watch_time(min)', 'max_daily_watch_time(min)', 'max_daily_sessions', 'recency', 'avg_gap_between_watch_days', 'max_inactive_gap_days', 'avg_gap_w1_watch_days', 'avg_gap_w2_watch_days', 'avg_gap_w3_watch_days', 'avg_rewatch_ratio', 'weekend_watch_ratio', 'watch_ratio_under_1m', 'watch_ratio_under_5m', 'is_cold_start_3d', 'is_cold_start_7d', 'movie_per_active_day', 'max_day_share', 'day_count_over_3times', 'watch_time(min)_w1', 'watch_session_w1', 'watch_time(min)_w2', 'watch_session_w2', 'watch_time(min)_w3', 'watch_session_w3', 'retention_w2_ratio', 'retention_w3_ratio', 'diff_between_w2_w1', 'diff_between_w3_w2', 'diff_between_w3_w1', 'is_w1_over_50pct', 'is_w2_over_50pct', 'is_w3_over_50pct', 'is_only_w1', 'is_only_w2', 'is_only_w3', 'new_movie_in_90d_ratio', 'new_movie_in_180d_ratio', 'new_movie_in_365d_ratio', 'old_movie_ratio(5y)', 'avg_ott_release_year', 'genre_diversity_count', 'action_adventure_ratio', 'family_animation_ratio', 'drama_ratio', 'thriller_crime_ratio', 'sf_fantasy_ratio', 'comedy_ratio', 'romance_ratio', 'horror_ratio', 'documentary_ratio', 'historical_war_ratio', 'other_ratio'] ['watch_time(min)_w1', 'watch_time(min)_w2', 'watch_time(min)_w3', 'watch_session_w1', 'watch_session_w2', 'watch_session_w3', 'retention_w2_ratio', 'retention_w3_ratio', 'is_cold_start_3d', 'is_cold_start_7d', 'is_only_w1', 'is_only_w2', 'is_only_w3', 'is_w2_over_50pct', 'is_w3_over_50pct', 'is_w1_over_50pct', 'diff_between_w3_w2', 'diff_between_w2_w1', 'diff_between_w3_w1', 'recency', 'max_inactive_gap_days', 'watch_per_day', 'total_watch_count', 'unique_movie', 'watch_days', 'active_ratio', 'avg_watch_time(min)', 'median_watch_time(min)', 'std_watch_time(min)', 'avg_daily_watch_time(min)', 'max_watch_time(min)', 'max_daily_watch_time(min)', 'max_daily_sessions', 'avg_gap_between_watch_days', 'avg_gap_w1_watch_days', 'avg_gap_w2_watch_days', 'avg_gap_w3_watch_days', 'avg_rewatch_ratio', 'weekend_watch_ratio', 'watch_ratio_under_1m', 'watch_ratio_under_5m', 'movie_per_active_day', 'max_day_share', 'day_count_over_3times', 'total_watch_time(min)', 'age_group', 'is_female', 'is_male', 'is_basic', 'is_standard', 'is_premium', 'reg_is_weekend', 'reg_hour_morning', 'reg_hour_afternoon', 'reg_hour_evening', 'reg_hour_night', 'is_user_verified', 'is_churn_prevented', 'genre_diversity_count', 'action_adventure_ratio', 'family_animation_ratio', 'drama_ratio', 'thriller_crime_ratio', 'sf_fantasy_ratio', 'comedy_ratio', 'romance_ratio', 'horror_ratio', 'documentary_ratio', 'historical_war_ratio', 'other_ratio', 'new_movie_in_90d_ratio', 'new_movie_in_180d_ratio', 'new_movie_in_365d_ratio', 'old_movie_ratio(5y)', 'avg_ott_release_year', 'payment_is_mobile', 'payment_is_pc', 'payment_is_android', 'payment_is_ios']"
+        },
+        {
+          "model": "CatBoost",
+          "test_auc": 0.8737,
+          "oof_auc": 0.8851,
+          "delta": -0.0114
+        },
+        {
+          "model": "RF",
+          "error": "'DecisionTreeClassifier' object has no attribute 'monotonic_cst'"
+        },
+        {
+          "model": "SVM",
+          "error": "The feature names should match those that were passed during fit.\nFeature names must be in the same order as they were in fit.\n"
+        }
+      ]
+    }
+  ],
+  "summary": "overall: test=0.8861 (Δ+0.0040) | promotion_only: test=0.8836 (Δ+0.0177) | nonpromotion_only: test=0.8737 (Δ-0.0143)",
+  "note": "test set 평가 완료. force=True 없이는 재실행 안 됨."
+}

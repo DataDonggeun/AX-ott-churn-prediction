@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "raw_rows": 24074,
+  "cleaned_rows": 23345,
+  "dur_removed": 238,
+  "dup_removed": 26,
+  "final_rows": 23081,
+  "final_cols": 91,
+  "expanded_rows": 23081,
+  "test_expanded_rows": 2545,
+  "output_path": "C:\\Users\\USER\\OneDrive\\바탕 화면\\AX-ott-churn-prediction\\stacking\\_data\\02_interim\\260513 feature\\Membership_final.csv",
+  "summary": "[TRAIN] 원본 24,074행 → 정제 23,345행 → duration<21 238행 제거 → 중복 26행 제거 → 최종 23,081행 × 91컬럼. expanded_dataset 23,081행 저장. [TEST] Membership_final_2.csv + test_expanded 2,545행 저장."
+}

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<style>
+  body {
+    font-family: 'Malgun Gothic', sans-serif;
+    background: #fff;
+    padding: 32px;
+    color: #222;
+  }
+  h2 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 14px;
+  }
+  thead tr:first-child th {
+    background: #f5f5f5;
+    padding: 10px 14px;
+    text-align: center;
+    font-weight: 700;
+    border-bottom: 1px solid #ddd;
+    border-top: 2px solid #bbb;
+  }
+  thead tr:last-child th {
+    background: #fafafa;
+    padding: 8px 14px;
+    text-align: center;
+    font-weight: 600;
+    color: #2e7d32;
+    border-bottom: 2px solid #ddd;
+    font-size: 13px;
+  }
+  thead tr:last-child th.plain {
+    color: #333;
+  }
+  tbody tr {
+    border-bottom: 1px solid #eee;
+  }
+  td {
+    padding: 5px 14px;
+    vertical-align: middle;
+    text-align: center;
+  }
+  td.feature {
+    text-align: left;
+    font-weight: 600;
+  }
+  td.group {
+    color: #555;
+    text-align: left;
+    white-space: nowrap;
+  }
+  td.red {
+    color: #c62828;
+    font-weight: 600;
+  }
+  td.note {
+    color: #555;
+    font-size: 13px;
+    text-align: left;
+    vertical-align: middle;
+  }
+  tr.top-row td { padding-top: 10px; }
+  tr.bottom-row td { padding-bottom: 10px; }
+</style>
+</head>
+<body>
+
+<h2>재구매 vs 이탈 핵심 행동 패턴 비교</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th class="plain" rowspan="2" style="text-align:left; width:22%">피처</th>
+      <th class="plain" rowspan="2" style="text-align:left; width:10%">그룹</th>
+      <th colspan="2">프로모션</th>
+      <th colspan="2">비프로모션</th>
+      <th class="plain" rowspan="2" style="text-align:left">해석</th>
+    </tr>
+    <tr>
+      <th>학습 mean</th>
+      <th>테스트 mean</th>
+      <th>학습 mean</th>
+      <th>테스트 mean</th>
+    </tr>
+  </thead>
+  <tbody>
+
+    <!-- w3 시청시간 -->
+    <tr class="top-row">
+      <td class="feature" rowspan="2">w3 시청시간</td>
+      <td class="group">재구매자</td>
+      <td>126.8분</td>
+      <td>-</td>
+      <td>119.5분</td>
+      <td>-</td>
+      <td class="note" rowspan="2">이탈자는 3주차 시청 완전 중단</td>
+    </tr>
+    <tr class="bottom-row">
+      <td class="group">이탈자</td>
+      <td class="red">36.8분</td>
+      <td class="red">-</td>
+      <td class="red">23.4분</td>
+      <td class="red">-</td>
+    </tr>
+
+    <!-- recency -->
+    <tr class="top-row">
+      <td class="feature" rowspan="2">recency (마지막 시청)</td>
+      <td class="group">재구매자</td>
+      <td>5.0일</td>
+      <td>-</td>
+      <td>5.3일</td>
+      <td>-</td>
+      <td class="note" rowspan="2">이탈자는 관측창 중반에 시청 중단</td>
+    </tr>
+    <tr class="bottom-row">
+      <td class="group">이탈자</td>
+      <td class="red">8.7일</td>
+      <td class="red">-</td>
+      <td class="red">9.9일</td>
+      <td class="red">-</td>
+    </tr>
+
+    <!-- is_only_w1 -->
+    <tr class="top-row">
+      <td class="feature" rowspan="2">is_only_w1 (1주차만 시청)</td>
+      <td class="group">재구매자</td>
+      <td>3.9%</td>
+      <td>-</td>
+      <td>4.5%</td>
+      <td>-</td>
+      <td class="note" rowspan="2">이탈자 4~5명 중 1명은 1주차만 보고 완전 중단</td>
+    </tr>
+    <tr class="bottom-row">
+      <td class="group">이탈자</td>
+      <td class="red">21.6%</td>
+      <td class="red">-</td>
+      <td class="red">27.9%</td>
+      <td class="red">-</td>
+    </tr>
+
+    <!-- diff_w3_w2 -->
+    <tr class="top-row">
+      <td class="feature" rowspan="2">diff_w3_w2 (3주차 시청 변화)</td>
+      <td class="group">재구매자</td>
+      <td>+11.1분</td>
+      <td>-</td>
+      <td>+8.2분</td>
+      <td>-</td>
+      <td class="note" rowspan="2">이탈자는 3주차에 시청이 20분 이상 급감</td>
+    </tr>
+    <tr class="bottom-row">
+      <td class="group">이탈자</td>
+      <td class="red">-20.6분</td>
+      <td class="red">-</td>
+      <td class="red">-22.6분</td>
+      <td class="red">-</td>
+    </tr>
+
+  </tbody>
+</table>
+
+<p style="font-size:12px; color:#999; margin-top:12px;">* 테스트 mean: 테스트셋 동일 집계 시 채울 수 있음 &nbsp;|&nbsp; 출처: step03 캐시 (학습 데이터 기준)</p>
+
+</body>
+</html>

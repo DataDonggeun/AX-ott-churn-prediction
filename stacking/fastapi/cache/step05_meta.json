@@ -1,0 +1,49 @@
+{
+  "by_scope": {
+    "overall": {
+      "meta_auc": 0.8821,
+      "meta_gap": 0.0001,
+      "best_base_auc": 0.8814,
+      "col_names": [
+        "LR",
+        "XGBoost",
+        "CatBoost",
+        "RF",
+        "SVM"
+      ],
+      "adopted": true,
+      "fallback": null,
+      "note": "Meta LR 채택"
+    },
+    "promotion_only": {
+      "meta_auc": 0.8659,
+      "meta_gap": 0.0003,
+      "best_base_auc": 0.8653,
+      "col_names": [
+        "LR",
+        "XGBoost",
+        "CatBoost",
+        "RF",
+        "SVM"
+      ],
+      "adopted": true,
+      "fallback": null,
+      "note": "Meta LR 채택"
+    },
+    "nonpromotion_only": {
+      "meta_auc": 0.888,
+      "meta_gap": 0.0001,
+      "best_base_auc": 0.8872,
+      "col_names": [
+        "LR",
+        "XGBoost",
+        "CatBoost",
+        "RF",
+        "SVM"
+      ],
+      "adopted": true,
+      "fallback": null,
+      "note": "Meta LR 채택"
+    }
+  }
+}

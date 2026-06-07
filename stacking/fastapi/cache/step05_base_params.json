@@ -1,0 +1,65 @@
+{
+  "LR": {
+    "model": "LR",
+    "best_params": {
+      "penalty": "l1",
+      "C": 0.0894930734207377,
+      "class_weight": "balanced"
+    },
+    "best_auc": 0.8521,
+    "n_trials": 56
+  },
+  "CatBoost": {
+    "model": "CatBoost",
+    "best_params": {
+      "iterations": 1773,
+      "learning_rate": 0.03027182927734624,
+      "depth": 8,
+      "l2_leaf_reg": 2.00864022049432,
+      "random_strength": 1.9398197043239886,
+      "bagging_temperature": 8.324426408004218,
+      "border_count": 79
+    },
+    "best_auc": 0.8758,
+    "n_trials": 2
+  },
+  "RF": {
+    "model": "RF",
+    "best_params": {
+      "n_estimators": 402,
+      "max_depth": 11,
+      "min_samples_split": 13,
+      "min_samples_leaf": 3,
+      "max_features": null,
+      "class_weight": "balanced"
+    },
+    "best_auc": 0.8617,
+    "n_trials": 3
+  },
+  "XGBoost": {
+    "model": "XGBoost",
+    "best_params": {
+      "n_estimators": 996,
+      "learning_rate": 0.007593739613361234,
+      "max_depth": 6,
+      "min_child_weight": 7.960875022580142,
+      "subsample": 0.628034992108518,
+      "colsample_bytree": 0.7925879806965068,
+      "gamma": 2.995106732375396,
+      "reg_alpha": 1.524996572521356,
+      "reg_lambda": 2.3076168040117313,
+      "scale_pos_weight": 1.185801650879991
+    },
+    "best_auc": 0.8792,
+    "n_trials": 4
+  },
+  "SVM": {
+    "model": "SVM",
+    "best_params": {
+      "kernel": "linear",
+      "C": 0.10593386164879204
+    },
+    "best_auc": 0.8427,
+    "n_trials": 15
+  }
+}

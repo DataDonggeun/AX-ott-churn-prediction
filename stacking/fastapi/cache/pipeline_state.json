@@ -1,0 +1,105 @@
+{
+  "step00": {
+    "completed_at": "2026-06-07T08:33:46.716116",
+    "meta": {
+      "final_rows": 23081,
+      "final_cols": 91
+    }
+  },
+  "step01": {
+    "completed_at": "2026-06-07T08:33:48.185776",
+    "meta": {
+      "row_count": 23081,
+      "cohort_eligible": 23081,
+      "status": "PASS"
+    }
+  },
+  "step02": {
+    "completed_at": "2026-06-07T08:33:49.764014",
+    "meta": {
+      "promo_rows": 11904,
+      "nonpromo_rows": 11177,
+      "rate_diff": -0.0871
+    }
+  },
+  "step03": {
+    "completed_at": "2026-06-07T08:33:50.096258",
+    "meta": {
+      "total_rows": 23081
+    }
+  },
+  "step04": {
+    "completed_at": "2026-06-07T08:33:51.299004",
+    "meta": {
+      "high_corr_pairs": 3,
+      "zero_inf_count": 39
+    }
+  },
+  "step05_tune": {
+    "completed_at": "2026-06-05T21:37:53.642439",
+    "meta": {
+      "n_trials": 200,
+      "models": [
+        "LR",
+        "XGBoost",
+        "CatBoost",
+        "RF",
+        "SVM"
+      ]
+    }
+  },
+  "step05_oof": {
+    "completed_at": "2026-06-05T16:45:51.882264",
+    "meta": {
+      "scopes": [
+        "overall",
+        "promotion_only",
+        "nonpromotion_only"
+      ]
+    }
+  },
+  "step05_meta": {
+    "completed_at": "2026-06-05T16:45:54.690120",
+    "meta": {
+      "scopes": [
+        "overall",
+        "promotion_only",
+        "nonpromotion_only"
+      ]
+    }
+  },
+  "step05_score": {
+    "completed_at": "2026-06-05T16:45:55.222431",
+    "meta": {
+      "total_rows": 46162
+    }
+  },
+  "step06": {
+    "completed_at": "2026-06-05T18:49:25.883163",
+    "meta": {
+      "scopes": [
+        "overall",
+        "promotion_only",
+        "nonpromotion_only"
+      ]
+    }
+  },
+  "step07": {
+    "completed_at": "2026-06-05T19:50:58.048020",
+    "meta": {
+      "A1": 3801,
+      "A2": 4248,
+      "A3": 3525,
+      "B1": 1989,
+      "B2": 4672,
+      "B3": 4846
+    }
+  },
+  "step05_test": {
+    "completed_at": "2026-06-05T21:07:53.373199",
+    "meta": {
+      "scopes": 3,
+      "summary": "overall: test=0.8861 (Δ+0.0040) | promotion_only: test=0.8836 (Δ+0.0177) | nonpromotion_only: test=0.8737 (Δ-0.0143)"
+    }
+  }
+}

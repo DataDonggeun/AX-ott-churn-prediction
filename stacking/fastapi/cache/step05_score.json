@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "by_scope": [
+    {
+      "scope": "overall",
+      "rows": 23081
+    },
+    {
+      "scope": "promotion_only",
+      "rows": 11904
+    },
+    {
+      "scope": "nonpromotion_only",
+      "rows": 11177
+    }
+  ]
+}

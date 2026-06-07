@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OTT 이탈 방지 — 고객관리팀 보고서</title>
+<style>
+  body { font-family: 'Segoe UI', sans-serif; max-width: 1100px; margin: 40px auto; padding: 0 20px; color: #333; line-height: 1.7; }
+  h1 { color: #1a1a2e; border-bottom: 3px solid #1a1a2e; padding-bottom: 10px; }
+  h2 { color: #16213e; margin-top: 40px; border-left: 4px solid #2980b9; padding-left: 12px; }
+  h3 { color: #444; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  th { background: #1a1a2e; color: white; padding: 10px 14px; text-align: left; }
+  td { padding: 9px 14px; border-bottom: 1px solid #e0e0e0; }
+  tr:nth-child(even) { background: #f8f9fa; }
+  hr { border: none; border-top: 1px solid #e0e0e0; margin: 30px 0; }
+  .danger { color: #e74c3c; font-weight: bold; }
+  .footer { text-align: center; color: #aaa; font-size: 0.85rem; margin-top: 40px; }
+</style>
+</head>
+<body>
+OTT 구독자 이탈 방지 분석 보고서 — 고객관리팀
+
+<div style="font-family:'Segoe UI',sans-serif; max-width:1100px; margin:0 auto; padding:32px 20px; color:#2c3e50">
+
+<h2 style="color:#1a252f;border-left:5px solid #2980b9;padding-left:14px;margin-top:40px">섹션 0 — 상단 KPI 카드</h2>
+<div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:32px">
+<div style="background:#1a252f; color:white; border-radius:12px; padding:20px; text-align:center">
+<div style="font-size:2.2rem; font-weight:700; color:#3498db">23,081</div>
+<div>전체 유저 수</div>
+</div>
+<div style="background:#1a252f; color:white; border-radius:12px; padding:20px; text-align:center">
+<div style="font-size:2.2rem; font-weight:700; color:#3498db">8,371</div>
+<div>이탈 위험 유저 수 (A3+B3)</div>
+</div>
+<div style="background:#1a252f; color:white; border-radius:12px; padding:20px; text-align:center">
+<div style="font-size:2.2rem; font-weight:700; color:#3498db">28.25%</div>
+<div>전체 이탈률</div>
+</div>
+<div style="background:#1a252f; color:white; border-radius:12px; padding:20px; text-align:center">
+<div style="font-size:2.2rem; font-weight:700; color:#3498db">11,523</div>
+<div>Day 7 개입 필요 인원</div>
+</div>
+</div>
+
+<h2 style="color:#1a252f;border-left:5px solid #2980b9;padding-left:14px;margin-top:40px">섹션 1 — 이탈 위험 현황 요약</h2>
+<p style="margin-bottom:15px">
+전체 유저 중 71.75%가 재구매 의사를 보이는 반면, 28.25%는 이탈 위험군에 속합니다. 특히 A3 및 B3 세그먼트는 전체 유저의 36.27%를 차지하며, 3주차 시청이 전혀 없는 이들은 낮은 재구매율(A3: 61.19%, B3: 49.65%)과 높은 이탈 위험(A3: 39.41%, B3: 51.27%)을 보입니다. 지금 가장 위험한 고객은 3주차에 시청 기록이 없는 B3 세그먼트입니다.
+</p>
+
+<h2 style="color:#1a252f;border-left:5px solid #2980b9;padding-left:14px;margin-top:40px">섹션 2 — 세그먼트 현황</h2>
+<p style="margin-bottom:15px">
+전체 유저를 시청 패턴에 따라 6가지 세그먼트로 분류했습니다. 각 세그먼트별 인원, 재구매율, 이탈 위험도를 상세히 확인하고, 위험 등급에 따라 맞춤 전략을 수립해야 합니다. A3, B3 세그먼트는 즉각적인 관심과 개입이 필요합니다.
+</p>
+
+<table style="border-collapse:collapse; width:100%; font-size:0.9rem">
+<thead>
+<tr style="background:#1a252f; color:white; padding:10px 14px">
+<th style="padding:10px 14px; text-align:left">세그먼트</th>
+<th style="padding:10px 14px; text-align:right">인원</th>
+<th style="padding:10px 14px; text-align:right">비율(%)</th>
+<th style="padding:10px 14px; text-align:right">재구매율(%)</th>
+<th style="padding:10px 14px; text-align:right">이탈위험(%)</th>
+<th style="padding:10px 14px; text-align:center">위험등급</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A1</td>
+<td style="padding:10px 14px; text-align:right">3,801</td>
+<td style="padding:10px 14px; text-align:right">16.47%</td>
+<td style="padding:10px 14px; text-align:right">92.48%</td>
+<td style="padding:10px 14px; text-align:right">7.17%</td>
+<td style="padding:10px 14px; text-align:center"><span style="background:#d5f5e3;color:#1e8449;padding:3px 10px;border-radius:12px;font-weight:600">안전</span></td>
+</tr>
+<tr>
+<td>A2</td>
+<td style="padding:10px 14px; text-align:right">4,248</td>
+<td style="padding:10px 14px; text-align:right">18.40%</td>
+<td style="padding:10px 14px; text-align:right">76.62%</td>
+<td style="padding:10px 14px; text-align:right">21.90%</td>
+<td style="padding:10px 14px; text-align:center"><span style="background:#fef9e7;color:#d68910;padding:3px 10px;border-radius:12px;font-weight:600">주의</span></td>
+</tr>
+<tr style="background:#fdf2f2">
+<td>A3</td>
+<td style="padding:10px 14px; text-align:right">3,525</td>
+<td style="padding:10px 14px; text-align:right">15.27%</td>
+<td style="padding:10px 14px; text-align:right">61.19%</td>
+<td style="padding:10px 14px; text-align:right">39.41%</td>
+<td style="padding:10px 14px; text-align:center"><span style="background:#fdecea;color:#e74c3c;padding:3px 10px;border-radius:12px;font-weight:600">위험</span></td>
+</tr>
+<tr>
+<td>B1</td>
+<td style="padding:10px 14px; text-align:right">1,989</td>
+<td style="padding:10px 14px; text-align:right">8.62%</td>
+<td style="padding:10px 14px; text-align:right">91.86%</td>
+<td style="padding:10px 14px; text-align:right">7.73%</td>
+<td style="padding:10px 14px; text-align:center"><span style="background:#d5f5e3;color:#1e8449;padding:3px 10px;border-radius:12px;font-weight:600">안전</span></td>
+</tr>
+<tr>
+<td>B2</td>
+<td style="padding:10px 14px; text-align:right">4,672</td>
+<td style="padding:10px 14px; text-align:right">20.24%</td>
+<td style="padding:10px 14px; text-align:right">72.71%</td>
+<td style="padding:10px 14px; text-align:right">27.70%</td>
+<td style="padding:10px 14px; text-align:center"><span style="background:#fef9e7;color:#d68910;padding:3px 10px;border-radius:12px;font-weight:600">주의</span></td>
+</tr>
+<tr style="background:#fdf2f2">
+<td>B3</td>
+<td style="padding:10px 14px; text-align:right">4,846</td>
+<td style="padding:10px 14px; text-align:right">21.00%</td>
+<td style="padding:10px 14px; text-align:right">49.65%</td>
+<td style="padding:10px 14px; text-align:right">51.27%</td>
+<td style="padding:10px 14px; text-align:center"><span style="background:#fdecea;color:#e74c3c;padding:3px 10px;border-radius:12px;font-weight:600">위험</span></td>
+</tr>
+</tbody>
+</table>
+
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin:20px 0">
+<div style="position:relative;height:300px"><canvas id="chart2"></canvas></div>
+<div style="position:relative;height:300px"><canvas id="chart3"></canvas></div>
+</div>
+<p style="text-align:center; margin-top:10px">
+산점도 해석: 왼쪽 위(낮은 이탈위험, 높은 재구매율)가 안전한 고객군이며, 오른쪽 아래로 갈수록 이탈 위험이 높아집니다.
+</p>
+
+<h2 style="color:#1a252f;border-left:5px solid #2980b9;padding-left:14px;margin-top:40px">섹션 3 — 즉각 조치 필요 유저</h2>
+<div style="border:2px solid #e74c3c; border-radius:10px; padding:20px; background:#fdf2f2; margin-bottom:30px">
+<p style="font-size:1.2rem; font-weight:600; color:#e74c3c">지금 당장 연락해야 할 유저</p>
+<p>
+총 8,371명의 유저(전체 36.27%)가 3주차 시청이 전혀 없어 즉각적인 관리가 필요합니다. 이들은 A3(3,525명)와 B3(4,846명) 세그먼트에 속합니다.
+</p>
+</div>
+
+<div style="position:relative;width:100%;height:260px"><canvas id="chart4"></canvas></div>
+
+<h2 style="color:#1a252f;border-left:5px solid #2980b9;padding-left:14px;margin-top:40px">섹션 4 — 고객 행동 핵심 신호</h2>
+<p style="margin-bottom:15px">
+고객의 이탈 위험에 영향을 미치는 주요 행동 지표는 다음과 같습니다. 이 지표들을 주의 깊게 모니터링하고 관리해야 합니다.
+</p>
+<div style="background:#1a252f; color:white; border-radius:10px; padding:20px; margin-bottom:20px">
+<p style="margin-bottom:5px"><strong>1. 3주차 시청 유지율</strong>: 3주차에도 콘텐츠를 계속 시청하는 비율로, 이탈 방지에 매우 중요합니다.</p>
+<p style="margin-bottom:5px"><strong>2. 2주차 시청 유지율</strong>: 2주차 시청 지속 여부가 3주차 이탈 위험과 높은 연관성을 보입니다.</p>
+<p style="margin-bottom:5px"><strong>3. 드라마 시청 비중</strong>: 드라마 장르를 선호하는 고객층은 특정 패턴을 보입니다.</p>
+<p style="margin-bottom:5px"><strong>4. 프로모션 가입 여부</strong>: 프로모션으로 가입한 고객은 그렇지 않은 고객과 다른 행동 패턴을 보입니다.</p>
+<p style="margin-bottom:5px"><strong>5. 로맨스 장르 시청 비중</strong>: 로맨스 장르 시청이 높은 고객의 이탈 위험이 상대적으로 높게 나타납니다.</p>
+</div>
+<p style="text-align:center; margin-bottom:20px; color:#e74c3c">
+3주차에 시청이 없으면 이탈 위험이 급격히 높아집니다.
+</p>
+
+<div style="position:relative;width:100%;height:340px"><canvas id="chart6"></canvas></div>
+
+<h2 style="color:#1a252f;border-left:5px solid #2980b9;padding-left:14px;margin-top:40px">섹션 5 — 세그먼트별 CRM 전략 및 메시지</h2>
+
+<div style="border:2px solid #e74c3c; border-radius:10px; padding:20px; background:#fdf2f2; margin-bottom:30px">
+<p style="font-size:1.2rem; font-weight:600; color:#e74c3c">A3: 긴급 재활성화</p>
+<p>3주차 시청 기록이 전혀 없는 위험 고객군입니다. 즉각적인 관심과 혜택 제공이 필요합니다.</p>
+<p><strong>추천 액션</strong></p>
+<ol style="margin-left:20px">
+<li>이어보기 딥링크 제공으로 시청 경험 이어가기</li>
+<li>30% 할인 쿠폰 즉시 지급으로 재구독 유도</li>
+<li>개인화된 콘텐츠 큐레이션 제안</li>
+</ol>
+<p><strong>CRM 메시지 예시</strong></p>
+<p>"[고객명]님, 놓치셨던 명작들이 기다려요! 30% 할인 쿠폰으로 다시 만나보세요."</p>
+<p><strong>발송 채널</strong>: 앱 푸시, SMS, 이메일 (최대 3회)</p>
+</div>
+
+<div style="border:2px solid #e74c3c; border-radius:10px; padding:20px; background:#fdf2f2; margin-bottom:30px">
+<p style="font-size:1.2rem; font-weight:600; color:#e74c3c">B3: 즉각 개입</p>
+<p>3주차 시청 기록이 전혀 없으며 이탈 위험이 가장 높은 고객군입니다. 파격적인 혜택으로 즉시 재참여를 유도해야 합니다.</p>
+<p><strong>추천 액션</strong></p>
+<ol style="margin-left:20px">
+<li>무료 콘텐츠 체험 확대 제공</li>
+<li>50% 할인 쿠폰 즉시 제공</li>
+<li>친구 초대 프로모션 강화</li>
+</ol>
+<p><strong>CRM 메시지 예시</strong></p>
+<p>"[고객명]님, 지금 바로 50% 할인 쿠폰 받고 무제한 콘텐츠를 즐겨보세요!"</p>
+<p><strong>발송 채널</strong>: 앱 푸시, SMS, 이메일 (3일 간격 최대 3회)</p>
+</div>
+
+<div style="background:#1a252f; color:white; border-radius:10px; padding:20px; margin-bottom:30px">
+<p style="font-size:1.2rem; font-weight:600;">A1: VIP 유지</p>
+<p>높은 재구매율과 낮은 이탈 위험을 보이는 최우수 고객입니다. 충성도를 유지하고 장기적인 관계를 강화해야 합니다.</p>
+<p><strong>추천 액션</strong></p>
+<ol style="margin-left:20px">
+<li>연간 구독 갱신 유도 혜택 제공</li>
+<li>독점 콘텐츠 선공개 기회 부여</li>
+<li>맞춤형 감사 메시지 발송</li>
+</ol>
+<p><strong>CRM 메시지 예시</strong></p>
+<p>"[고객명]님, 저희 서비스를 사랑해주셔서 감사합니다! 특별 혜택을 확인해보세요."</p>
+<p><strong>발송 채널</strong>: 이메일, 앱 푸시 (월 1~2회)</p>
+</div>
+
+<div style="background:#1a252f; color:white; border-radius:10px; padding:20px; margin-bottom:30px">
+<p style="font-size:1.2rem; font-weight:600;">A2: 3주차 시청 독려</p>
+<p>초기 시청량은 높으나 3주차 시청 유지율이 주의 단계인 고객입니다. 지속적인 시청을 유도해야 합니다.</p>
+<p><strong>추천 액션</strong></p>
+<ol style="margin-left:20px">
+<li>맞춤형 콘텐츠 추천 강화</li>
+<li>시리즈 완결 알림 기능 활용</li>
+<li>시청 기록 기반 추천 강화</li>
+</ol>
+<p><strong>CRM 메시지 예시</strong></p>
+<p>"[고객명]님, 요즘 이런 콘텐츠는 어떠세요? 지금 바로 확인해보세요!"</p>
+<p><strong>발송 채널</strong>: 앱 푸시 (주 1~2회)</p>
+</div>
+
+<div style="background:#1a252f; color:white; border-radius:10px; padding:20px; margin-bottom:30px">
+<p style="font-size:1.2rem; font-weight:600;">B1: 시청량 확대</p>
+<p>초기 시청량은 낮으나 3주차 시청 유지율은 높은 고객입니다. 콘텐츠 소비를 늘려 재구매율을 더욱 높여야 합니다.</p>
+<p><strong>추천 액션</strong></p>
+<ol style="margin-left:20px">
+<li>신규 장르 탐색 제안</li>
+<li>요금제 업그레이드 혜택 안내</li>
+<li>인기 시리즈 정주행 추천</li>
+</ol>
+<p><strong>CRM 메시지 예시</strong></p>
+<p>"[고객명]님, 새로운 재미를 발견할 시간! 다양한 장르를 만나보세요."</p>
+<p><strong>발송 채널</strong>: 앱 푸시, 이메일 (월 1~2회)</p>
+</div>
+
+<div style="background:#1a252f; color:white; border-radius:10px; padding:20px; margin-bottom:30px">
+<p style="font-size:1.2rem; font-weight:600;">B2: 습관 형성</p>
+<p>초기 시청량은 낮고 3주차 시청 유지율도 주의 단계인 고객입니다. 꾸준한 시청 습관 형성이 필요합니다.</p>
+<p><strong>추천 액션</strong></p>
+<ol style="margin-left:20px">
+<li>단편 콘텐츠 추천 강화</li>
+<li>주간 인기 콘텐츠 뉴스레터 발송</li>
+<li>시청 시간대별 맞춤 콘텐츠 제안</li>
+</ol>
+<p><strong>CRM 메시지 예시</strong></p>
+<p>"[고객명]님, 짧지만 강렬한 재미! 취향 저격 콘텐츠를 추천해드려요."</p>
+<p><strong>발송 채널</strong>: 이메일, 앱 푸시 (주 1회)</p>
+</div>
+
+<h2 style="color:#1a252f;border-left:5px solid #2980b9;padding-left:14px;margin-top:40px">섹션 6 — 프로모션 유저 특별 관리</h2>
+<p style="margin-bottom:15px">
+프로모션 가입 유저는 더 많은 콘텐츠를 시청하는 경향을 보이지만, 재구매율은 오히려 낮게 나타나는 현상이 관찰됩니다. 이는 프로모션 혜택에만 집중하여 서비스 본연의 가치를 느끼지 못했거나, 일회성 혜택으로 인한 가입일 가능성을 시사합니다. 따라서 프로모션 유저를 위한 맞춤형 관리가 중요합니다.
+</p>
+
+<div style="position:relative;width:100%;max-width:400px;margin:0 auto"><canvas id="chart5"></canvas></div>
+
+<p style="margin-top:20px; margin-bottom:15px">
+<strong>주차별 프로모션 전용 CRM 전략</strong>
+</p>
+<div style="background:#1a252f; color:white; border-radius:10px; padding:20px; margin-bottom:10px">
+<p><strong>1주차</strong>: 다양한 콘텐츠 노출 액션 — "지금 인기있는 드라마 TOP 10을 확인하세요!"</p>
+</div>
+<div style="background:#1a252f; color:white; border-radius:10px; padding:20px; margin-bottom:10px">
+<p><strong>2주차</strong>: 시청 지속 유도 액션 — "이어볼 콘텐츠를 추천해드려요. 바로 시청 시작!"</p>
+</div>
+<div style="background:#1a252f; color:white; border-radius:10px; padding:20px; margin-bottom:30px">
+<p><strong>3주차</strong>: 재구독 혜택 제공 액션 — "이용권 만료 D-3! 특별 할인 혜택으로 계속 즐기세요!"</p>
+</div>
+
+<h2 style="color:#1a252f;border-left:5px solid #2980b9;padding-left:14px;margin-top:40px">섹션 7 — 이번 주 액션 플랜</h2>
+<p style="margin-bottom:15px">
+오늘 당장 실행해야 할 우선순위 액션 플랜입니다.
+</p>
+
+<div style="border:2px solid #e74c3c; border-radius:10px; padding:20px; background:#fdf2f2; margin-bottom:30px">
+<p style="font-size:1.2rem; font-weight:600; color:#e74c3c">1순위: B3 즉각 개입</p>
+<p><strong>대상 인원</strong>: 4,846명 (전체 21.00%)</p>
+<p><strong>추천 액션</strong>: 무료 콘텐츠 체험 확대 및 50% 할인 쿠폰 즉시 제공</p>
+<p><strong>발송 채널</strong>: 앱 푸시, SMS, 이메일 (3일 간격 최대 3회)</p>
+<p><strong>예상 효과</strong>: 이탈 직전 고객의 재참여율 극대화</p>
+</div>
+
+<div style="border:2px solid #e74c3c; border-radius:10px; padding:20px; background:#fdf2f2; margin-bottom:30px">
+<p style="font-size:1.2rem; font-weight:600; color:#e74c3c">2순위: A3 긴급 재활성화</p>
+<p><strong>대상 인원</strong>: 3,525명 (전체 15.27%)</p>
+<p><strong>추천 액션</strong>: 이어보기 딥링크 및 30% 할인 쿠폰 즉시 제공</p>
+<p><strong>발송 채널</strong>: 앱 푸시, SMS, 이메일 (최대 3회)</p>
+<p><strong>예상 효과</strong>: 3주차 시청 부재 고객의 이탈 방지 및 재구독 유도</p>
+</div>
+
+<div style="border:2px solid #2ecc71; border-radius:10px; padding:20px; background:#f0fff4; margin-bottom:30px">
+<p style="font-size:1.2rem; font-weight:600; color:#2ecc71">3순위: Day 7 조기 발굴</p>
+<p><strong>기준</strong>: 1주차 시청 시간 27분 미만</p>
+<p><strong>대상 인원</strong>: 11,523명</p>
+<p><strong>추천 액션</strong>: 맞춤형 콘텐츠 추천 및 시청 습관 형성 가이드 제공</p>
+<p><strong>발송 채널</strong>: 앱 푸시, 이메일</p>
+<p><strong>예상 효과</strong>: 초기 이탈 가능성이 높은 고객의 경험 개선 및 유지율 증대</p>
+</div>
+
+<p style="text-align:center;color:#bdc3c7;font-size:0.82rem;margin-top:60px">신통방통팀 | OTT 이탈 방지 파이프라인 | 고객관리팀 보고서 | 이 결과는 AI 예측이며 확정이 아닙니다</p>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+  // Chart 1: 세그먼트별 재구매율 bar
+  new Chart(document.getElementById('chart1'), {
+    type: 'bar',
+    data: {
+      labels: ['A1','A2','A3','B1','B2','B3'],
+      datasets: [{
+        label: '재구매율 (%)',
+        data: [92.48, 76.62, 61.19, 91.86, 72.71, 49.65],
+        backgroundColor: ['#2ecc71','#27ae60','#e74c3c','#3498db','#f39c12','#c0392b']
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        title: { display: true, text: '세그먼트별 재구매율' }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { callback: function(value) { return value + '%'; } }
+        }
+      }
+    }
+  });
+
+  // Chart 2: 버블 산점도 (x: 이탈위험, y: 재구매율, r: 인원)
+  new Chart(document.getElementById('chart2'), {
+    type: 'bubble',
+    data: {
+      datasets: [
+        {
+          label: 'A1',
+          data: [{x: 7.17, y: 92.48, r: 7.70}],
+          backgroundColor: '#2ecc71'
+        },
+        {
+          label: 'A2',
+          data: [{x: 21.90, y: 76.62, r: 8.15}],
+          backgroundColor: '#27ae60'
+        },
+        {
+          label: 'A3',
+          data: [{x: 39.41, y: 61.19, r: 7.42}],
+          backgroundColor: '#e74c3c'
+        },
+        {
+          label: 'B1',
+          data: [{x: 7.73, y: 91.86, r: 5.58}],
+          backgroundColor: '#3498db'
+        },
+        {
+          label: 'B2',
+          data: [{x: 27.70, y: 72.71, r: 8.55}],
+          backgroundColor: '#f39c12'
+        },
+        {
+          label: 'B3',
+          data: [{x: 51.27, y: 49.65, r: 8.70}],
+          backgroundColor: '#c0392b'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        title: { display: true, text: '세그먼트별 이탈위험 vs 재구매율' }
+      },
+      scales: {
+        x: {
+          title: { display: true, text: '이탈 위험 (%)' },
+          beginAtZero: false,
+          ticks: { callback: function(value) { return value + '%'; } }
+        },
+        y: {
+          title: { display: true, text: '재구매율 (%)' },
+          beginAtZero: false,
+          ticks: { callback: function(value) { return value + '%'; } }
+        }
+      }
+    }
+  });
+
+  // Chart 3: 세그먼트별 인원 도넛
+  new Chart(document.getElementById('chart3'), {
+    type: 'doughnut',
+    data: {
+      labels: ['A1','A2','A3','B1','B2','B3'],
+      datasets: [{
+        data: [3801, 4248, 3525, 1989, 4672, 4846],
+        backgroundColor: ['#2ecc71','#27ae60','#e74c3c','#3498db','#f39c12','#c0392b']
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        title: { display: true, text: '세그먼트별 유저 비율' }
+      }
+    }
+  });
+
+  // Chart 4: 조기 개입 인원 bar
+  new Chart(document.getElementById('chart4'), {
+    type: 'bar',
+    data: {
+      labels: ['Day 7','Day 14','A3+B3 최종'],
+      datasets: [{
+        label: '개입 필요 인원',
+        data: [11523, 11507, 8371],
+        backgroundColor: ['#e67e22','#e74c3c','#c0392b']
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        title: { display: true, text: '조기 개입 시점별 대상 인원' }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: { display: true, text: '인원' }
+        }
+      }
+    }
+  });
+
+  // Chart 5: 상위 vs 하위 재구매율 pie
+  new Chart(document.getElementById('chart5'), {
+    type: 'pie',
+    data: {
+      labels: ['상위 시청군(A1~A3)','하위 시청군(B1~B3)'],
+      datasets: [{
+        data: [77.16, 66.29],
+        backgroundColor: ['#2ecc71','#e74c3c']
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        title: { display: true, text: '상위 vs 하위 시청군 재구매율' },
+        tooltip: { callbacks: { label: function(context) { return context.label + ': ' + context.raw + '%'; } } }
+      }
+    }
+  });
+
+  // Chart 6: 이탈 연관 지표 Top 10 horizontal bar
+  new Chart(document.getElementById('chart6'), {
+    type: 'bar',
+    data: {
+      labels: [
+        '2주차 시청 유지율',
+        '3주차 시청 유지율',
+        '드라마 시청 비중',
+        '프로모션 가입 여부',
+        '로맨스 장르 시청 비중',
+        '패밀리/애니메이션 장르 시청 비중',
+        '가입 첫 3일 내 시청 시작 여부',
+        '스릴러/범죄 장르 시청 비중',
+        '3주차 총 시청 시간',
+        '액션/어드벤처 장르 시청 비중'
+      ],
+      datasets: [{
+        data: [0.448584, 0.440731, 0.377666, 0.377165, 0.315562, 0.312097, 0.296324, 0.280563, 0.280059, 0.211304],
+        backgroundColor: ['#1a5276','#1f618d','#2471a3','#2980b9','#3498db','#5dade2','#7fb3d3','#a9cce3','#d6eaf8','#ebf5fb']
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: 'y',
+      plugins: {
+        title: { display: true, text: '이탈 연관 행동 지표 Top 10' },
+        legend: { display: false }
+      },
+      scales: {
+        x: {
+          beginAtZero: true,
+          title: { display: true, text: '영향력 (SHAP 값)' }
+        }
+      }
+    }
+  });
+
+});
+</script>
+<div class="footer">신통방통팀 | OTT 이탈 방지 파이프라인 | 고객관리팀 보고서</div>
+</body>
+</html>
