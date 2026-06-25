@@ -1,0 +1,25 @@
+# ── 파이프라인 / API ──────────────────────────────────────────
+fastapi
+uvicorn[standard]
+python-multipart
+
+# ── 데이터 처리 ───────────────────────────────────────────────
+pandas
+numpy
+
+# ── 모델링 (스태킹 앙상블) ────────────────────────────────────
+scikit-learn
+lightgbm
+xgboost
+catboost
+optuna
+
+# ── 해석 (XAI) ────────────────────────────────────────────────
+shap
+joblib
+
+# ── (선택) LLM 에이전트 — app/agents/ 실행 시에만 필요 ────────
+# langgraph
+# langchain-core
+# langchain-google-genai
+# requests

@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+    background: #060810;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 28px 20px;
+  }
+
+  /* ── 슬라이드 전체 ── */
+  .slide {
+    width: 1100px;
+    background: #0c0e1e;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 24px 72px rgba(0,0,0,0.8);
+  }
+
+  /* ── 헤더 ── */
+  .hdr {
+    background: linear-gradient(135deg, #1a1a3e 0%, #2d2d6e 100%);
+    padding: 12px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .hdr-brand { font-size: 11px; color: rgba(255,255,255,0.5); }
+  .hdr-title { font-size: 19px; font-weight: bold; color: white; }
+  .hdr-badge { background: #ff6b35; color: white; padding: 3px 11px; border-radius: 5px; font-size: 12px; font-weight: bold; }
+
+  /* ── 바디 ── */
+  .body { padding: 24px 26px 20px; }
+  .slide-title { font-size: 22px; font-weight: bold; color: white; margin-bottom: 18px; }
+
+  /* ══════════════════════════════════
+     흰 다이어그램 컨테이너
+  ══════════════════════════════════ */
+  .diagram-box {
+    background: white;
+    border-radius: 16px;
+    padding: 20px 18px;
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    margin-bottom: 14px;
+  }
+
+  /* 각 컬럼 (col-label + main-box) */
+  .col { display: flex; flex-direction: column; }
+  .col-label {
+    font-size: 10px;
+    font-weight: bold;
+    color: #999;
+    text-align: center;
+    letter-spacing: 0.5px;
+    margin-bottom: 7px;
+  }
+
+  /* ── 화살표 연결 ── */
+  .arw {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    width: 46px;
+    flex-shrink: 0;
+    padding-top: 17px; /* col-label 높이만큼 */
+  }
+  .arw-r { font-size: 22px; color: #ff6b35; line-height: 1; }
+  .arw-l { font-size: 22px; color: rgba(255,107,53,0.35); line-height: 1; }
+
+  /* ─────────────────────
+     DIFY 박스 (제일 넓음)
+  ───────────────────── */
+  .box-dify {
+    flex: 0 0 360px;
+    background: #f0f4ff;
+    border: 2.5px solid #3d5afe;
+    border-radius: 14px;
+    padding: 14px 12px;
+  }
+  .box-dify .bname {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 15px; font-weight: bold; color: #1a237e;
+    margin-bottom: 10px;
+  }
+  .box-dify .bname .icon { font-size: 22px; }
+
+  /* 파이프라인 컴팩트 플로우 */
+  .pflow { display: flex; flex-direction: column; gap: 0; }
+
+  .pnode {
+    border-radius: 6px;
+    padding: 5px 9px;
+    font-size: 10.5px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .pn-start  { background: #1a237e; color: white; }
+  .pn-http   { background: #1e2a3a; color: #80cbc4; border: 1.5px solid #4db6ac; }
+  .pn-llm    { background: #2d2d42; color: #ffcc80; border: 1.5px solid #ffcc80; }
+  .pn-save   { background: #1a2e1a; color: #a5d6a7; border: 1.5px solid #66bb6a; }
+  .pn-code   { background: #2a1a3a; color: #ce93d8; border: 1.5px solid #ce93d8; }
+  .pn-out    { background: #c62828; color: white; }
+  .pn-json   { background: #1a2a2a; color: #80cbc4; border: 1.5px solid #4db6ac; }
+
+  .pflow-arr { font-size: 12px; color: #999; text-align: center; line-height: 1.4; margin: 1px 0; }
+
+  /* 병렬 그룹 */
+  .ppar {
+    background: rgba(61,90,254,0.07);
+    border: 1.5px dashed #3d5afe;
+    border-radius: 7px;
+    padding: 5px 7px;
+  }
+  .ppar-label { font-size: 8.5px; color: #3d5afe; font-weight: bold; margin-bottom: 4px; }
+  .ppar-row { display: flex; gap: 5px; }
+
+  /* Gemini 중첩 박스 (점선) */
+  .gemini-nest {
+    background: rgba(45,45,66,0.85);
+    border: 1.5px dashed #ffcc80;
+    border-radius: 8px;
+    padding: 7px 8px;
+    margin: 2px 0;
+  }
+  .gemini-nest .gn-label { font-size: 8.5px; color: rgba(255,255,255,0.4); margin-bottom: 4px; }
+  .gemini-nest .gn-name { font-size: 11px; font-weight: bold; color: #ffcc80; display: flex; align-items: center; gap: 4px; }
+  .gemini-nest .gn-row { display: flex; gap: 4px; margin-top: 5px; }
+  .gtag { font-size: 9px; font-weight: bold; padding: 2px 6px; border-radius: 3px; color: white; }
+  .gtag-crm { background: #1565c0; }
+  .gtag-dev { background: #2e7d32; }
+  .gtag-ceo { background: #6a1b9a; }
+
+  /* HTTP 뱃지 */
+  .hbadge { font-size: 8px; background: rgba(77,182,172,0.2); color: #4db6ac; border-radius: 2px; padding: 1px 4px; }
+  .sbadge { font-size: 8px; background: rgba(102,187,106,0.2); color: #66bb6a; border-radius: 2px; padding: 1px 4px; }
+
+  /* ─────────────────────
+     NGROK 박스
+  ───────────────────── */
+  .box-ngrok {
+    flex: 0 0 110px;
+    background: #2a1a0a;
+    border: 2.5px solid #ff6b35;
+    border-radius: 14px;
+    padding: 14px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .box-ngrok .ng-icon { font-size: 32px; }
+  .box-ngrok .ng-name { font-size: 18px; font-weight: bold; color: #ff6b35; }
+  .box-ngrok .ng-sub { font-size: 9px; color: rgba(255,255,255,0.4); text-align: center; line-height: 1.5; }
+  .box-ngrok .ng-badge {
+    background: rgba(255,107,53,0.15);
+    border: 1px solid rgba(255,107,53,0.4);
+    color: #ff8c5a;
+    font-size: 9px;
+    border-radius: 4px;
+    padding: 3px 8px;
+    text-align: center;
+  }
+
+  /* ─────────────────────
+     FASTAPI 박스
+  ───────────────────── */
+  .box-fastapi {
+    flex: 0 0 300px;
+    background: #111927;
+    border: 2.5px solid #4db6ac;
+    border-radius: 14px;
+    padding: 14px 12px;
+  }
+  .box-fastapi .bname {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 15px; font-weight: bold; color: #4db6ac;
+    margin-bottom: 10px;
+  }
+  .box-fastapi .bname .icon { font-size: 20px; }
+  .ep-list { display: flex; flex-direction: column; gap: 4px; }
+  .ep {
+    background: rgba(255,255,255,0.04);
+    border-left: 3px solid #4db6ac;
+    border-radius: 4px;
+    padding: 5px 9px;
+    font-size: 10px;
+    color: #b0bec5;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .ep .ep-tag {
+    font-size: 8.5px;
+    font-weight: bold;
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: white;
+    flex-shrink: 0;
+  }
+  .ep .post { background: #1565c0; }
+  .ep .get  { background: #2e7d32; }
+  .ep-group-label { font-size: 9px; color: rgba(255,255,255,0.3); margin: 7px 0 3px; font-style: italic; }
+
+  /* ─────────────────────
+     CACHE 박스
+  ───────────────────── */
+  .box-cache {
+    flex: 1;
+    background: white;
+    border: 2.5px solid #ccc;
+    border-radius: 14px;
+    padding: 14px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .box-cache .ca-icon { font-size: 34px; }
+  .box-cache .ca-name { font-size: 15px; font-weight: bold; color: #333; }
+  .ca-files { display: flex; flex-direction: column; gap: 4px; width: 100%; }
+  .ca-file {
+    background: #f5f5f5;
+    border-radius: 5px;
+    padding: 4px 8px;
+    font-size: 10px;
+    color: #555;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  /* ══════════════════════════════════
+     하단 케이스 설명
+  ══════════════════════════════════ */
+  .cases {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .case {
+    border-radius: 10px;
+    padding: 13px 14px;
+    border: 1.5px solid;
+  }
+  .case.c1 { background: rgba(255,107,53,0.08); border-color: rgba(255,107,53,0.4); }
+  .case.c2 { background: rgba(61,90,254,0.08); border-color: rgba(61,90,254,0.4); }
+  .case-hd { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; }
+  .case-num {
+    width: 22px; height: 22px; border-radius: 50%;
+    font-size: 12px; font-weight: bold; color: white;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .c1 .case-num { background: #ff6b35; }
+  .c2 .case-num { background: #3d5afe; }
+  .case-title { font-size: 12px; font-weight: bold; color: white; }
+  .case-steps { display: flex; flex-direction: column; gap: 4px; }
+  .cstep { display: flex; gap: 7px; font-size: 10.5px; color: rgba(255,255,255,0.7); line-height: 1.5; }
+  .cstep-dot { width: 5px; height: 5px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+  .c1 .cstep-dot { background: #ff6b35; }
+  .c2 .cstep-dot { background: #3d5afe; }
+  .hl { font-weight: bold; color: white; }
+
+  .ftr { text-align: right; padding: 8px 26px 10px; font-size: 11px; color: rgba(255,255,255,0.3); }
+</style>
+</head>
+<body>
+<div class="slide">
+
+  <!-- 헤더 -->
+  <div class="hdr">
+    <span class="hdr-brand">기업연계 프로젝트</span>
+    <span class="hdr-title">4. 아키텍처 구성 &amp; 동작 흐름</span>
+    <span class="hdr-badge">OTT</span>
+  </div>
+
+  <div class="body">
+    <div class="slide-title">4-2. 동작 흐름</div>
+
+    <!-- 흰 다이어그램 컨테이너 -->
+    <div class="diagram-box">
+
+      <!-- ①  DIFY -->
+      <div class="col" style="flex:0 0 360px;">
+        <div class="col-label">WEB / UI</div>
+        <div class="box-dify">
+          <div class="bname"><span class="icon">🤖</span>Dify Workflow</div>
+
+          <div class="pflow">
+
+            <div class="pnode pn-start">🟢 시작 — 7개 입력 변수</div>
+            <div class="pflow-arr">↓</div>
+
+            <div class="pnode pn-http">step00 <span class="hbadge">POST</span> 피처 엔지니어링</div>
+            <div class="pflow-arr">↓</div>
+
+            <div class="pnode pn-http">step01 <span class="hbadge">POST</span> 데이터 검증</div>
+            <div class="pflow-arr">↓</div>
+
+            <div class="ppar">
+              <div class="ppar-label">⚡ 병렬 실행</div>
+              <div class="ppar-row">
+                <div class="pnode pn-http" style="flex:1;">step02 <span class="hbadge">POST</span></div>
+                <div class="pnode pn-http" style="flex:1;">step03 <span class="hbadge">POST</span></div>
+                <div class="pnode pn-http" style="flex:1;">step04 <span class="hbadge">POST</span></div>
+              </div>
+              <div style="font-size:8.5px; color:#888; margin-top:3px;">프로모션 EDA · 2×2 EDA · 피처 감사</div>
+            </div>
+            <div class="pflow-arr">↓</div>
+
+            <div class="pnode pn-http">step05 <span class="hbadge">POST</span> 스태킹 앙상블 (tune→oof→meta→score→test)</div>
+            <div class="pflow-arr">↓</div>
+
+            <div class="ppar">
+              <div class="ppar-label">⚡ 병렬 실행</div>
+              <div class="ppar-row">
+                <div class="pnode pn-http" style="flex:1;">step06 <span class="hbadge">POST</span> SHAP</div>
+                <div class="pnode pn-http" style="flex:1;">step07 <span class="hbadge">POST</span> 세그먼트</div>
+              </div>
+            </div>
+            <div class="pflow-arr">↓</div>
+
+            <div class="pnode pn-json">GET_REPORT_JSON <span class="hbadge">GET</span></div>
+            <div class="pflow-arr">↓</div>
+
+            <!-- Gemini 중첩 (점선) -->
+            <div class="gemini-nest">
+              <div class="gn-label">내부 LLM 노드</div>
+              <div class="gn-name">✨ Gemini 2.5 Flash</div>
+              <div class="gn-row">
+                <span class="gtag gtag-crm">CRM</span>
+                <span class="gtag gtag-dev">DEV</span>
+                <span class="gtag gtag-ceo">CEO</span>
+                <span style="font-size:8.5px; color:rgba(255,255,255,0.4); margin-left:4px;">× 3 병렬 생성</span>
+              </div>
+            </div>
+            <div class="pflow-arr">↓</div>
+
+            <div class="ppar">
+              <div class="ppar-label">⚡ 병렬 저장</div>
+              <div class="ppar-row">
+                <div class="pnode pn-save" style="flex:1;">SAVE_CRM <span class="sbadge">POST</span></div>
+                <div class="pnode pn-save" style="flex:1;">SAVE_DEV <span class="sbadge">POST</span></div>
+                <div class="pnode pn-save" style="flex:1;">SAVE_CEO <span class="sbadge">POST</span></div>
+              </div>
+            </div>
+            <div class="pflow-arr">↓</div>
+
+            <div class="ppar-row" style="gap:6px;">
+              <div class="pnode pn-code" style="flex:1;">🔗 URL 코드 노드</div>
+              <div class="pnode pn-out" style="flex:1;">🔴 출력 (3개 URL)</div>
+            </div>
+
+          </div><!-- /pflow -->
+        </div><!-- /box-dify -->
+      </div><!-- /col -->
+
+      <!-- 화살표 -->
+      <div class="arw">
+        <div class="arw-r">→</div>
+        <div class="arw-l">←</div>
+      </div>
+
+      <!-- ②  NGROK -->
+      <div class="col" style="flex:0 0 110px;">
+        <div class="col-label">TUNNEL</div>
+        <div class="box-ngrok">
+          <div class="ng-icon">🔗</div>
+          <div class="ng-name">ngrok</div>
+          <div class="ng-badge">Public URL</div>
+          <div class="ng-sub">Cloud ↔ Local<br>중계 터널</div>
+        </div>
+      </div>
+
+      <!-- 화살표 -->
+      <div class="arw">
+        <div class="arw-r">→</div>
+        <div class="arw-l">←</div>
+      </div>
+
+      <!-- ③  FASTAPI -->
+      <div class="col" style="flex:0 0 290px;">
+        <div class="col-label">API SERVER</div>
+        <div class="box-fastapi">
+          <div class="bname"><span class="icon">⚡</span>FastAPI  <span style="font-size:11px; color:rgba(77,182,172,0.6);">port 8000</span></div>
+          <div class="ep-list">
+            <div class="ep-group-label">— 파이프라인 실행</div>
+            <div class="ep"><span class="ep-tag post">POST</span>/00/feature-engineering</div>
+            <div class="ep"><span class="ep-tag post">POST</span>/01/data-contract</div>
+            <div class="ep"><span class="ep-tag post">POST</span>/02~04 EDA · 피처감사</div>
+            <div class="ep"><span class="ep-tag post">POST</span>/05/stacking (tune~test)</div>
+            <div class="ep"><span class="ep-tag post">POST</span>/06/shap · /07/segmentation</div>
+            <div class="ep-group-label">— 결과 조회</div>
+            <div class="ep"><span class="ep-tag get">GET</span>/pipeline/report/json</div>
+            <div class="ep-group-label">— 보고서 저장</div>
+            <div class="ep"><span class="ep-tag post">POST</span>/report/save-html/crm</div>
+            <div class="ep"><span class="ep-tag post">POST</span>/report/save-html/dev</div>
+            <div class="ep"><span class="ep-tag post">POST</span>/report/save-html/ceo</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 화살표 -->
+      <div class="arw">
+        <div class="arw-r">→</div>
+        <div class="arw-l">←</div>
+      </div>
+
+      <!-- ④  CACHE -->
+      <div class="col" style="flex:1;">
+        <div class="col-label">STORAGE</div>
+        <div class="box-cache">
+          <div class="ca-icon">🗄️</div>
+          <div class="ca-name">Cache</div>
+          <div class="ca-files">
+            <div class="ca-file">📦 .pkl  모델 파일</div>
+            <div class="ca-file">📄 .csv  결과 데이터</div>
+            <div class="ca-file">📋 .json 파이프라인 결과</div>
+            <div class="ca-file">🌐 .html AI 보고서</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /diagram-box -->
+
+    <!-- 하단 케이스 -->
+    <div class="cases">
+      <div class="case c1">
+        <div class="case-hd">
+          <div class="case-num">1</div>
+          <div class="case-title">새로 돌릴 때 — 전체 파이프라인 실행 (force=false)</div>
+        </div>
+        <div class="case-steps">
+          <div class="cstep"><div class="cstep-dot"></div><div>step00~07 <span class="hl">전부 HTTP 호출</span> → FastAPI 실행 → Cache에 결과 <span class="hl">쓰기</span></div></div>
+          <div class="cstep"><div class="cstep-dot"></div><div>GET_REPORT_JSON → Gemini 보고서 생성 → SAVE_HTML × 3 → Cache에 HTML 저장 → URL 반환</div></div>
+        </div>
+      </div>
+      <div class="case c2">
+        <div class="case-hd">
+          <div class="case-num">2</div>
+          <div class="case-title">새로 안 돌릴 때 — 캐시 조회 (force=false, 캐시 적중)</div>
+        </div>
+        <div class="case-steps">
+          <div class="cstep"><div class="cstep-dot"></div><div>step00~07 캐시 적중 시 <span class="hl">즉시 반환</span> (재계산 없음) → GET_REPORT_JSON이 Cache에서 <span class="hl">읽기</span></div></div>
+          <div class="cstep"><div class="cstep-dot"></div><div>Gemini가 기존 데이터로 보고서 재생성 → SAVE_HTML × 3 → Cache 덮어쓰기 → URL 반환</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /body -->
+
+  <div class="ftr">24-15</div>
+</div>
+</body>
+</html>
