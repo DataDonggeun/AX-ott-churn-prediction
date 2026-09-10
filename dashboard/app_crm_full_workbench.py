@@ -5,9 +5,9 @@ from __future__ import annotations
 #   python -m streamlit run app_crm_full_workbench.py
 
 """
-100원딜 OTT 이탈 분석 | CRM Full Workbench 후보본
+100원딜 OTT 이탈 분석 | CRM Full Workbench
 
-이 앱은 발표/멘토링/Streamlit 시연을 위한 확장 후보본입니다.
+이 앱은 발표·멘토링·시연용 Streamlit 대시보드입니다.
 
 고정 원칙
 - 공식 입력: 06x_expanded_dataset.csv
@@ -453,7 +453,7 @@ def get_api_key() -> Optional[str]:
 def build_prompt(row: pd.Series, branch: str, lever: str, titles: list[str], channel: str) -> str:
     allowed_title = ", ".join(titles) if titles else "없음: 작품명을 문구에 넣지 말 것"
     return f"""
-당신은 Wavve 100원 프로모션 CRM 문구 작성 보조 도구입니다.
+당신은 OTT 서비스의 100원 프로모션 CRM 문구 작성 보조 도구입니다.
 새로운 전략 판단을 하지 말고 아래 입력 범위 안에서만 메시지를 작성하세요.
 
 [승인된 분석 입력]
@@ -927,7 +927,7 @@ elif page == "🧪 실험 설계":
         {"단계": "검증 설계", "보여줄 것": "실험군·대조군·측정 지표"},
     ])
     st.dataframe(demo, use_container_width=True, hide_index=True)
-    st.markdown("<div class='callout safe'><strong>외부 사례 위치:</strong> 시청 행동 기반 보상은 Sling TV Rewards 같은 참고 사례가 존재합니다. 다만 이 사례는 Wavve 효과 입증이 아니라 실험 아이디어의 벤치마킹으로만 사용합니다.</div>", unsafe_allow_html=True)
+    st.markdown("<div class='callout safe'><strong>외부 사례 위치:</strong> 시청 행동 기반 보상은 Sling TV Rewards 같은 참고 사례가 존재합니다. 다만 이 사례는 본 서비스의 효과 입증이 아니라 실험 아이디어의 벤치마킹으로만 사용합니다.</div>", unsafe_allow_html=True)
 
 
 # =============================================================================
@@ -952,7 +952,7 @@ elif page == "🔍 검증·한계":
         if path.exists():
             file_rows.append({"파일": path.name, "역할": key, "SHA256": sha256(path), "size_bytes": path.stat().st_size})
     st.dataframe(pd.DataFrame(file_rows), use_container_width=True, hide_index=True)
-    with st.expander("Claude HTML에서 재사용하지 않은 내용"):
-        st.markdown("- 광일 hard gate를 공식 기준으로 승격하지 않았습니다.\n- S6 724건 누락 구조를 가져오지 않았습니다.\n- 작품·장르별 재구매율 기반 트리거를 사용하지 않았습니다.\n- W4를 CRM 효과처럼 표현하지 않았습니다.\n- 출처 미확인 외부 효과 수치를 사용하지 않았습니다.")
+    with st.expander("이전 HTML 보고서에서 재사용하지 않은 내용"):
+        st.markdown("- 기존 hard gate를 공식 기준으로 승격하지 않았습니다.\n- S6 724건 누락 구조를 가져오지 않았습니다.\n- 작품·장르별 재구매율 기반 트리거를 사용하지 않았습니다.\n- W4를 CRM 효과처럼 표현하지 않았습니다.\n- 출처 미확인 외부 효과 수치를 사용하지 않았습니다.")
     with st.expander("향후 실제 운영화에 필요한 데이터"):
         st.markdown("- 메시지 발송 여부·발송 시각·채널·템플릿 ID\n- 노출/클릭/앱 오픈/시청 시작 로그\n- 보상 노출·수령·사용 비용 로그\n- 리퍼럴 초대·가입·결제 연결 로그\n- holdout 또는 A/B test assignment")
